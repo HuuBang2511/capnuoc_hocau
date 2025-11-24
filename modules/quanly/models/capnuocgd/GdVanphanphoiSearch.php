@@ -1,0 +1,149 @@
+<?php
+
+namespace app\modules\quanly\models\capnuocgd;
+
+use Yii;
+use yii\base\Model;
+use yii\data\ActiveDataProvider;
+use app\modules\quanly\models\capnuocgd\GdVanphanphoi;
+
+/**
+ * GdVanphanphoiSearch represents the model behind the search form about `app\modules\quanly\models\capnuocgd\GdVanphanphoi`.
+ */
+class GdVanphanphoiSearch extends GdVanphanphoi
+{
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        return [
+            [['id', 'cochiakhoa', 'covan', 'namlapdat', 'created_by', 'updated_by', 'status'], 'integer'],
+            [['geom', 'idvan', 'idhamkythu', 'vatlieu', 'hieu', 'nuocsanxua', 'ngaylapdat', 'chieudongv', 'vitrivan', 'tinhtrang', 'loaivan', 'tinhtrangh', 'trangthai', 'madma', 'ghichu', 'ghichuhamk', 'maphuong', 'maquan', 'chucnangva', 'globalid', 'created_at', 'updated_at', 'lat', 'long', 'geojson'], 'safe'],
+            [['objectid', 'dosau', 'svdongvan', 'toadox', 'toadoy', 'docao'], 'number'],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function scenarios()
+    {
+        // bypass scenarios() implementation in the parent class
+        return Model::scenarios();
+    }
+
+    /**
+     * Creates data provider instance with search query applied
+     *
+     * @param array $params
+     *
+     * @return ActiveDataProvider
+     */
+    public function search($params)
+    {
+        $query = GdVanphanphoi::find()->where(['status'=>1]);
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+
+        $this->load($params);
+
+        if (!$this->validate()) {
+            // uncomment the following line if you do not want to return any records when validation fails
+            // $query->where('0=1');
+            return $dataProvider;
+        }
+
+        $query->andFilterWhere([
+            'id' => $this->id,
+            'objectid' => $this->objectid,
+            'cochiakhoa' => $this->cochiakhoa,
+            'dosau' => $this->dosau,
+            'svdongvan' => $this->svdongvan,
+            'covan' => $this->covan,
+            'toadox' => $this->toadox,
+            'toadoy' => $this->toadoy,
+            'docao' => $this->docao,
+            'namlapdat' => $this->namlapdat,
+            'created_at' => $this->created_at,
+            'created_by' => $this->created_by,
+            'updated_at' => $this->updated_at,
+            'updated_by' => $this->updated_by,
+            'status' => $this->status,
+        ]);
+
+        $query->andFilterWhere(['like', 'upper(geom)', mb_strtoupper($this->geom)])
+            ->andFilterWhere(['like', 'upper(idvan)', mb_strtoupper($this->idvan)])
+            ->andFilterWhere(['like', 'upper(idhamkythu)', mb_strtoupper($this->idhamkythu)])
+            ->andFilterWhere(['like', 'upper(vatlieu)', mb_strtoupper($this->vatlieu)])
+            ->andFilterWhere(['like', 'upper(hieu)', mb_strtoupper($this->hieu)])
+            ->andFilterWhere(['like', 'upper(nuocsanxua)', mb_strtoupper($this->nuocsanxua)])
+            ->andFilterWhere(['like', 'upper(ngaylapdat)', mb_strtoupper($this->ngaylapdat)])
+            ->andFilterWhere(['like', 'upper(chieudongv)', mb_strtoupper($this->chieudongv)])
+            ->andFilterWhere(['like', 'upper(vitrivan)', mb_strtoupper($this->vitrivan)])
+            ->andFilterWhere(['like', 'upper(tinhtrang)', mb_strtoupper($this->tinhtrang)])
+            ->andFilterWhere(['like', 'upper(loaivan)', mb_strtoupper($this->loaivan)])
+            ->andFilterWhere(['like', 'upper(tinhtrangh)', mb_strtoupper($this->tinhtrangh)])
+            ->andFilterWhere(['like', 'upper(trangthai)', mb_strtoupper($this->trangthai)])
+            ->andFilterWhere(['like', 'upper(madma)', mb_strtoupper($this->madma)])
+            ->andFilterWhere(['like', 'upper(ghichu)', mb_strtoupper($this->ghichu)])
+            ->andFilterWhere(['like', 'upper(ghichuhamk)', mb_strtoupper($this->ghichuhamk)])
+            ->andFilterWhere(['like', 'upper(maphuong)', mb_strtoupper($this->maphuong)])
+            ->andFilterWhere(['like', 'upper(maquan)', mb_strtoupper($this->maquan)])
+            ->andFilterWhere(['like', 'upper(chucnangva)', mb_strtoupper($this->chucnangva)])
+            ->andFilterWhere(['like', 'upper(globalid)', mb_strtoupper($this->globalid)])
+            ->andFilterWhere(['like', 'upper(lat)', mb_strtoupper($this->lat)])
+            ->andFilterWhere(['like', 'upper(long)', mb_strtoupper($this->long)])
+            ->andFilterWhere(['like', 'upper(geojson)', mb_strtoupper($this->geojson)]);
+
+        return $dataProvider;
+    }
+
+    public function getExportColumns()
+    {
+        return [
+            [
+                'class' => 'kartik\grid\SerialColumn',
+            ],
+            'id',
+        'geom',
+        'objectid',
+        'idvan',
+        'idhamkythu',
+        'cochiakhoa',
+        'vatlieu',
+        'hieu',
+        'nuocsanxua',
+        'ngaylapdat',
+        'dosau',
+        'chieudongv',
+        'svdongvan',
+        'vitrivan',
+        'tinhtrang',
+        'covan',
+        'loaivan',
+        'tinhtrangh',
+        'trangthai',
+        'madma',
+        'toadox',
+        'toadoy',
+        'docao',
+        'ghichu',
+        'ghichuhamk',
+        'namlapdat',
+        'maphuong',
+        'maquan',
+        'chucnangva',
+        'globalid',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        'status',
+        'lat',
+        'long',
+        'geojson',        ];
+    }
+}

@@ -25,46 +25,46 @@ class DashboardController extends QuanlyBaseController
 {
     public function actionIndex()
     {
-        $thongke['dongho_kh'] = GdDonghoKhGd::find()->count();
-        $thongke['nhamay_nuoc'] = GdDonghoTongGd::find()->count();
-        $thongke['van_mangluoi'] = GdVanphanphoi::find()->count();
-        $thongke['ong_phanphoi'] = GdOngcai::find()->select('shape_leng')->sum('shape_leng');
-        $thongke['ong_phanphoi'] = round($thongke['ong_phanphoi']/1000);
-        $thongke['suco'] = GdSuco::find()->count();
-        $thongke['pccc'] = GdTramcuuhoa::find()->count();
-        $thongke['trambom'] = GdTrambom::find()->count();
-        $thongke['ham'] = GdHamkythuat::find()->count();
+        // $thongke['dongho_kh'] = GdDonghoKhGd::find()->count();
+        // $thongke['nhamay_nuoc'] = GdDonghoTongGd::find()->count();
+        // $thongke['van_mangluoi'] = GdVanphanphoi::find()->count();
+        // $thongke['ong_phanphoi'] = GdOngcai::find()->select('shape_leng')->sum('shape_leng');
+        // $thongke['ong_phanphoi'] = round($thongke['ong_phanphoi']/1000);
+        // $thongke['suco'] = GdSuco::find()->count();
+        // $thongke['pccc'] = GdTramcuuhoa::find()->count();
+        // $thongke['trambom'] = GdTrambom::find()->count();
+        // $thongke['ham'] = GdHamkythuat::find()->count();
 
-        $dataMap = [];
+        // $dataMap = [];
 
-        $geojsonDma = DMA::find()->select(['st_asgeojson(ST_Transform(geom, 4326))', 'madma'])->orderBy('geom')->asArray()->all();
+        // $geojsonDma = DMA::find()->select(['st_asgeojson(ST_Transform(geom, 4326))', 'madma'])->orderBy('geom')->asArray()->all();
 
-        //dd($geojsonDma);
-        foreach($geojsonDma as $i => $item){
-            $geojson = json_decode($item['st_asgeojson']);
-            //dd($geojson->coordinates[0][0]);
-            $dataMap[] = [
-                "coordinates" => json_encode($geojson->coordinates[0][0]),
-                "name" => $item['madma'],
-                "id" => $item['madma'],
-            ];
-        }
+        // //dd($geojsonDma);
+        // foreach($geojsonDma as $i => $item){
+        //     $geojson = json_decode($item['st_asgeojson']);
+        //     //dd($geojson->coordinates[0][0]);
+        //     $dataMap[] = [
+        //         "coordinates" => json_encode($geojson->coordinates[0][0]),
+        //         "name" => $item['madma'],
+        //         "id" => $item['madma'],
+        //     ];
+        // }
 
-        $sovanDma = Yii::$app->db
-        ->createCommand('
-        SELECT id, madma as name, sovan as value  FROM "v2_4326_DMA"  order by madma
-        ')
-        ->queryAll();
+        // $sovanDma = Yii::$app->db
+        // ->createCommand('
+        // SELECT id, madma as name, sovan as value  FROM "v2_4326_DMA"  order by madma
+        // ')
+        // ->queryAll();
 
 
         //dd(($sovanDma));
 
 
 
-        return $this->render('index', [
-            'thongke' => $thongke,
-            'dataMap' => $dataMap,
-            'sovanDma' => $sovanDma,
+        return $this->render('index1', [
+            // 'thongke' => $thongke,
+            // 'dataMap' => $dataMap,
+            // 'sovanDma' => $sovanDma,
         ]);
     }
 

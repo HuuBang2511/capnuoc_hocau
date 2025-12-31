@@ -1,7 +1,9 @@
 <?php
 
 namespace app\modules\quanly\models\hocau;
-
+use app\modules\quanly\base\QuanlyBaseModel;
+use app\modules\quanly\models\danhmuc\DmLoaimoinoi;
+use app\modules\quanly\models\danhmuc\DmTinhtrang;
 use Yii;
 
 /**
@@ -35,7 +37,7 @@ use Yii;
  * @property DmLoaimoinoi $loaimoinoi0
  * @property DmTinhtrang $tinhtrang
  */
-class Moinoi extends \yii\db\ActiveRecord
+class Moinoi extends QuanlyBaseModel
 {
     /**
      * {@inheritdoc}

@@ -1,7 +1,11 @@
 <?php
 
 namespace app\modules\quanly\models\hocau;
-
+use app\modules\quanly\base\QuanlyBaseModel;
+use app\modules\quanly\models\danhmuc\DmTinhtrang;
+use app\modules\quanly\models\danhmuc\DmSucoNguyennhan;
+use app\modules\quanly\models\danhmuc\DmSucoTinhtrang;
+use app\modules\quanly\models\danhmuc\DmSucoLoai;
 use Yii;
 
 /**
@@ -43,7 +47,7 @@ use Yii;
  * @property DmSucoTinhtrang $tinhtrangsuco
  * @property DmTinhtrang $tinhtrang
  */
-class Suco extends \yii\db\ActiveRecord
+class Suco extends QuanlyBaseModel
 {
     /**
      * {@inheritdoc}

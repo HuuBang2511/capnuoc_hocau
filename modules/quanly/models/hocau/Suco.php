@@ -1,7 +1,7 @@
 <?php
 
 namespace app\modules\quanly\models\hocau;
-use app\modules\quanly\base\QuanlyBaseModel;
+
 use Yii;
 
 /**
@@ -11,7 +11,7 @@ use Yii;
  * @property string|null $geom
  * @property int|null $objectid_1
  * @property int|null $objectid
- * @property string|null $tinhtrang
+ * @property string|null $tinh_trang
  * @property int|null $masuco
  * @property string|null $vitri
  * @property string|null $loai
@@ -33,8 +33,17 @@ use Yii;
  * @property int|null $created_by
  * @property int|null $updated_by
  * @property string|null $file_dinhkem
+ * @property int|null $loaisuco_id
+ * @property int|null $nguyennhansuco_id
+ * @property int|null $tinhtrangsuco_id
+ * @property int|null $tinhtrang_id
+ *
+ * @property DmSucoLoai $loaisuco
+ * @property DmSucoNguyennhan $nguyennhansuco
+ * @property DmSucoTinhtrang $tinhtrangsuco
+ * @property DmTinhtrang $tinhtrang
  */
-class Suco extends QuanlyBaseModel
+class Suco extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
@@ -51,14 +60,18 @@ class Suco extends QuanlyBaseModel
     {
         return [
             [['geom', 'lat', 'long', 'geojson', 'file_dinhkem'], 'string'],
-            [['objectid_1', 'objectid', 'masuco', 'status', 'created_by', 'updated_by'], 'default', 'value' => null],
-            [['objectid_1', 'objectid', 'masuco', 'status', 'created_by', 'updated_by'], 'integer'],
+            [['objectid_1', 'objectid', 'masuco', 'status', 'created_by', 'updated_by', 'loaisuco_id', 'nguyennhansuco_id', 'tinhtrangsuco_id', 'tinhtrang_id'], 'default', 'value' => null],
+            [['objectid_1', 'objectid', 'masuco', 'status', 'created_by', 'updated_by', 'loaisuco_id', 'nguyennhansuco_id', 'tinhtrangsuco_id', 'tinhtrang_id'], 'integer'],
             [['n_phathien', 'n_xuly', 'n_hoancong', 'created_at', 'updated_at'], 'safe'],
-            [['tinhtrang'], 'string', 'max' => 10],
+            [['tinh_trang'], 'string', 'max' => 10],
             [['vitri', 'd_phathien', 'd_xuly', 'nguyennhan'], 'string', 'max' => 50],
             [['loai', 'mataisan'], 'string', 'max' => 25],
             [['cachxuly'], 'string', 'max' => 100],
             [['ghichu'], 'string', 'max' => 200],
+            [['loaisuco_id'], 'exist', 'skipOnError' => true, 'targetClass' => DmSucoLoai::className(), 'targetAttribute' => ['loaisuco_id' => 'id']],
+            [['nguyennhansuco_id'], 'exist', 'skipOnError' => true, 'targetClass' => DmSucoNguyennhan::className(), 'targetAttribute' => ['nguyennhansuco_id' => 'id']],
+            [['tinhtrangsuco_id'], 'exist', 'skipOnError' => true, 'targetClass' => DmSucoTinhtrang::className(), 'targetAttribute' => ['tinhtrangsuco_id' => 'id']],
+            [['tinhtrang_id'], 'exist', 'skipOnError' => true, 'targetClass' => DmTinhtrang::className(), 'targetAttribute' => ['tinhtrang_id' => 'id']],
         ];
     }
 
@@ -72,7 +85,7 @@ class Suco extends QuanlyBaseModel
             'geom' => 'Geom',
             'objectid_1' => 'Objectid 1',
             'objectid' => 'Objectid',
-            'tinhtrang' => 'Tinhtrang',
+            'tinh_trang' => 'Tinh Trang',
             'masuco' => 'Masuco',
             'vitri' => 'Vitri',
             'loai' => 'Loai',
@@ -94,6 +107,50 @@ class Suco extends QuanlyBaseModel
             'created_by' => 'Created By',
             'updated_by' => 'Updated By',
             'file_dinhkem' => 'File Dinhkem',
+            'loaisuco_id' => 'Loaisuco ID',
+            'nguyennhansuco_id' => 'Nguyennhansuco ID',
+            'tinhtrangsuco_id' => 'Tinhtrangsuco ID',
+            'tinhtrang_id' => 'Tinhtrang ID',
         ];
+    }
+
+    /**
+     * Gets query for [[Loaisuco]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getLoaisuco()
+    {
+        return $this->hasOne(DmSucoLoai::className(), ['id' => 'loaisuco_id']);
+    }
+
+    /**
+     * Gets query for [[Nguyennhansuco]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getNguyennhansuco()
+    {
+        return $this->hasOne(DmSucoNguyennhan::className(), ['id' => 'nguyennhansuco_id']);
+    }
+
+    /**
+     * Gets query for [[Tinhtrangsuco]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getTinhtrangsuco()
+    {
+        return $this->hasOne(DmSucoTinhtrang::className(), ['id' => 'tinhtrangsuco_id']);
+    }
+
+    /**
+     * Gets query for [[Tinhtrang]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getTinhtrang()
+    {
+        return $this->hasOne(DmTinhtrang::className(), ['id' => 'tinhtrang_id']);
     }
 }

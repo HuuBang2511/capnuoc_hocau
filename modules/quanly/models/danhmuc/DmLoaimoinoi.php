@@ -1,0 +1,69 @@
+<?php
+
+namespace app\modules\quanly\models\danhmuc;
+
+use Yii;
+
+/**
+ * This is the model class for table "dm_loaimoinoi".
+ *
+ * @property int $id
+ * @property string $ten
+ * @property string|null $ghichu
+ * @property string|null $created_at
+ * @property string|null $created_by
+ * @property string|null $updated_at
+ * @property string|null $updated_by
+ *
+ * @property NetworkMoinoi[] $networkMoinois
+ */
+class DmLoaimoinoi extends \yii\db\ActiveRecord
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function tableName()
+    {
+        return 'dm_loaimoinoi';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function rules()
+    {
+        return [
+            [['ten'], 'required'],
+            [['ghichu'], 'string'],
+            [['created_at', 'updated_at'], 'safe'],
+            [['ten'], 'string', 'max' => 255],
+            [['created_by', 'updated_by'], 'string', 'max' => 100],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function attributeLabels()
+    {
+        return [
+            'id' => 'ID',
+            'ten' => 'Ten',
+            'ghichu' => 'Ghichu',
+            'created_at' => 'Created At',
+            'created_by' => 'Created By',
+            'updated_at' => 'Updated At',
+            'updated_by' => 'Updated By',
+        ];
+    }
+
+    /**
+     * Gets query for [[NetworkMoinois]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getNetworkMoinois()
+    {
+        return $this->hasMany(NetworkMoinoi::className(), ['loaimoinoi_id' => 'id']);
+    }
+}

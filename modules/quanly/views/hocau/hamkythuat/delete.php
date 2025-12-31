@@ -4,11 +4,11 @@ use kartik\form\ActiveForm;
 
 ?>
 
-<div class="gd-dm-suco-bienphapxuly-form">
+<div class="hamkythuat-form">
 
     <?php $form = ActiveForm::begin(); ?>
 
-    <h4>Xóa Danh mục sự cố biện pháp xử lý <?= $model->ten ?></h4>
+    <h4>Xóa thông tin hầm kỹ thuật</h4>
 
     <?php ActiveForm::end(); ?>
 

@@ -2,13 +2,14 @@
 
 use yii\helpers\Html;
 
-
 /* @var $this yii\web\View */
-/* @var $model app\modules\quanly\models\capnuocgd\danhmuc\GdDmSucoBienphapxuly */
-
+/* @var $model app\modules\quanly\models\hocau\Hamkythuat */
 ?>
-<div class="gd-dm-suco-bienphapxuly-create">
+<div class="hamkythuat-update">
+
     <?= $this->render('_form', [
         'model' => $model,
+        'filedinhkem' => $filedinhkem,
     ]) ?>
+
 </div>

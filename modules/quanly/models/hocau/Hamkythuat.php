@@ -11,9 +11,9 @@ use Yii;
  * @property string|null $geom
  * @property int|null $objectid_1
  * @property int|null $objectid
- * @property string|null $tinhtrang
+ * @property string|null $tinh_trang
  * @property string|null $maham
- * @property string|null $loaiham
+ * @property string|null $loai_ham
  * @property string|null $kichthuoc
  * @property string|null $vatlieu
  * @property string|null $sonap
@@ -32,6 +32,11 @@ use Yii;
  * @property int|null $created_by
  * @property int|null $updated_by
  * @property string|null $file_dinhkem
+ * @property int|null $tinhtrang_id
+ * @property int|null $loaiham_id
+ *
+ * @property DmLoaiham $loaiham
+ * @property DmTinhtrang $tinhtrang
  */
 class Hamkythuat extends QuanlyBaseModel
 {
@@ -50,14 +55,16 @@ class Hamkythuat extends QuanlyBaseModel
     {
         return [
             [['geom', 'geojson', 'file_dinhkem'], 'string'],
-            [['objectid_1', 'objectid', 'status', 'created_by', 'updated_by'], 'default', 'value' => null],
-            [['objectid_1', 'objectid', 'status', 'created_by', 'updated_by'], 'integer'],
+            [['objectid_1', 'objectid', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaiham_id'], 'default', 'value' => null],
+            [['objectid_1', 'objectid', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaiham_id'], 'integer'],
             [['ngaylapdat', 'created_at', 'updated_at'], 'safe'],
             [['shape_leng', 'shape_area'], 'number'],
-            [['tinhtrang', 'kichthuoc', 'vatlieu', 'sonap', 'vitri', 'dvtk', 'dvtc', 'bvhc'], 'string', 'max' => 50],
+            [['tinh_trang', 'kichthuoc', 'vatlieu', 'sonap', 'vitri', 'dvtk', 'dvtc', 'bvhc'], 'string', 'max' => 50],
             [['maham'], 'string', 'max' => 25],
-            [['loaiham'], 'string', 'max' => 10],
+            [['loai_ham'], 'string', 'max' => 10],
             [['ghichu'], 'string', 'max' => 200],
+            [['loaiham_id'], 'exist', 'skipOnError' => true, 'targetClass' => DmLoaiham::className(), 'targetAttribute' => ['loaiham_id' => 'id']],
+            [['tinhtrang_id'], 'exist', 'skipOnError' => true, 'targetClass' => DmTinhtrang::className(), 'targetAttribute' => ['tinhtrang_id' => 'id']],
         ];
     }
 
@@ -71,18 +78,18 @@ class Hamkythuat extends QuanlyBaseModel
             'geom' => 'Geom',
             'objectid_1' => 'Objectid 1',
             'objectid' => 'Objectid',
-            'tinhtrang' => 'Tinhtrang',
-            'maham' => 'Maham',
-            'loaiham' => 'Loaiham',
-            'kichthuoc' => 'Kichthuoc',
-            'vatlieu' => 'Vatlieu',
-            'sonap' => 'Sonap',
-            'vitri' => 'Vitri',
-            'ngaylapdat' => 'Ngaylapdat',
-            'dvtk' => 'Dvtk',
-            'dvtc' => 'Dvtc',
-            'bvhc' => 'Bvhc',
-            'ghichu' => 'Ghichu',
+            'tinhtrang' => 'Tình trạng',
+            'maham' => 'Mã hầm',
+            'loaiham' => 'Loại hầm',
+            'kichthuoc' => 'Kích thước',
+            'vatlieu' => 'Vật liệu',
+            'sonap' => 'Số nắp',
+            'vitri' => 'Vị trí',
+            'ngaylapdat' => 'Ngày lắp đặt',
+            'dvtk' => 'DVTK',
+            'dvtc' => 'DVTC',
+            'bvhc' => 'BVHC',
+            'ghichu' => 'Ghi chú',
             'shape_leng' => 'Shape Leng',
             'shape_area' => 'Shape Area',
             'geojson' => 'Geojson',
@@ -91,7 +98,29 @@ class Hamkythuat extends QuanlyBaseModel
             'updated_at' => 'Updated At',
             'created_by' => 'Created By',
             'updated_by' => 'Updated By',
-            'file_dinhkem' => 'File Dinhkem',
+            'file_dinhkem' => 'File đính kèm',
+            'tinhtrang_id' => 'Tình trạng',
+            'loaiham_id' => 'Loại hầm',
         ];
+    }
+
+    /**
+     * Gets query for [[Loaiham]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getLoaiham()
+    {
+        return $this->hasOne(DmLoaiham::className(), ['id' => 'loaiham_id']);
+    }
+
+    /**
+     * Gets query for [[Tinhtrang]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getTinhtrang()
+    {
+        return $this->hasOne(DmTinhtrang::className(), ['id' => 'tinhtrang_id']);
     }
 }

@@ -3,10 +3,7 @@ namespace app\modules\services;
 
 use app\modules\danhmuc\models\DmKtvhxh;
 use app\modules\danhmuc\models\DmTongiao;
-use app\modules\quanly\models\capnuocgd\danhmuc\GdDmSucoBienphapxuly;
-use app\modules\quanly\models\capnuocgd\danhmuc\GdDmSucoKetcaumatduong;
-use app\modules\quanly\models\capnuocgd\danhmuc\GdDmSucoNguyennhan;
-use app\modules\quanly\models\capnuocgd\danhmuc\GdDmXulysuco;
+
 use app\modules\quanly\models\RanhphuongThuduc;
 
 class CategoriesService

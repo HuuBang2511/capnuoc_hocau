@@ -1,7 +1,7 @@
 <?php
 
 namespace app\modules\quanly\models\hocau;
-use app\modules\quanly\base\QuanlyBaseModel;
+
 use Yii;
 
 /**
@@ -21,8 +21,11 @@ use Yii;
  * @property int|null $created_by
  * @property int|null $updated_by
  * @property string|null $file_dinhkem
+ * @property int|null $tinhtrang_id
+ *
+ * @property DmTinhtrang $tinhtrang
  */
-class Ghichu extends QuanlyBaseModel
+class Ghichu extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
@@ -39,10 +42,11 @@ class Ghichu extends QuanlyBaseModel
     {
         return [
             [['geom', 'lat', 'long', 'geojson', 'file_dinhkem'], 'string'],
-            [['objectid', 'status', 'created_by', 'updated_by'], 'default', 'value' => null],
-            [['objectid', 'status', 'created_by', 'updated_by'], 'integer'],
+            [['objectid', 'status', 'created_by', 'updated_by', 'tinhtrang_id'], 'default', 'value' => null],
+            [['objectid', 'status', 'created_by', 'updated_by', 'tinhtrang_id'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
             [['ten', 'vitri'], 'string', 'max' => 50],
+            [['tinhtrang_id'], 'exist', 'skipOnError' => true, 'targetClass' => DmTinhtrang::className(), 'targetAttribute' => ['tinhtrang_id' => 'id']],
         ];
     }
 
@@ -66,6 +70,17 @@ class Ghichu extends QuanlyBaseModel
             'created_by' => 'Created By',
             'updated_by' => 'Updated By',
             'file_dinhkem' => 'File Dinhkem',
+            'tinhtrang_id' => 'Tinhtrang ID',
         ];
+    }
+
+    /**
+     * Gets query for [[Tinhtrang]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getTinhtrang()
+    {
+        return $this->hasOne(DmTinhtrang::className(), ['id' => 'tinhtrang_id']);
     }
 }

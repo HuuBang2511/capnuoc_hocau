@@ -1,7 +1,7 @@
 <?php
 
 namespace app\modules\quanly\models\hocau;
-use app\modules\quanly\base\QuanlyBaseModel;
+
 use Yii;
 
 /**
@@ -11,7 +11,7 @@ use Yii;
  * @property string|null $geom
  * @property int|null $objectid_1
  * @property int|null $objectid
- * @property string|null $tinhtrang
+ * @property string|null $tinh_trang
  * @property string|null $mavan
  * @property string|null $vitri
  * @property int|null $covan
@@ -31,8 +31,13 @@ use Yii;
  * @property int|null $created_by
  * @property int|null $updated_by
  * @property string|null $file_dinhkem
+ * @property int|null $tinhtrang_id
+ * @property int|null $loaivan_id
+ *
+ * @property DmLoaivan $loaivan0
+ * @property DmTinhtrang $tinhtrang
  */
-class Van extends QuanlyBaseModel
+class Van extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
@@ -49,14 +54,16 @@ class Van extends QuanlyBaseModel
     {
         return [
             [['geom', 'lat', 'long', 'geojson', 'file_dinhkem'], 'string'],
-            [['objectid_1', 'objectid', 'covan', 'cochiakhoa', 'sovong', 'status', 'created_by', 'updated_by'], 'default', 'value' => null],
-            [['objectid_1', 'objectid', 'covan', 'cochiakhoa', 'sovong', 'status', 'created_by', 'updated_by'], 'integer'],
+            [['objectid_1', 'objectid', 'covan', 'cochiakhoa', 'sovong', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaivan_id'], 'default', 'value' => null],
+            [['objectid_1', 'objectid', 'covan', 'cochiakhoa', 'sovong', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaivan_id'], 'integer'],
             [['ngaylapdat', 'created_at', 'updated_at'], 'safe'],
-            [['tinhtrang'], 'string', 'max' => 10],
+            [['tinh_trang'], 'string', 'max' => 10],
             [['mavan'], 'string', 'max' => 25],
             [['vitri', 'loaivan'], 'string', 'max' => 50],
             [['chieudong', 'dongmo'], 'string', 'max' => 1],
             [['ghichu'], 'string', 'max' => 200],
+            [['loaivan_id'], 'exist', 'skipOnError' => true, 'targetClass' => DmLoaivan::className(), 'targetAttribute' => ['loaivan_id' => 'id']],
+            [['tinhtrang_id'], 'exist', 'skipOnError' => true, 'targetClass' => DmTinhtrang::className(), 'targetAttribute' => ['tinhtrang_id' => 'id']],
         ];
     }
 
@@ -70,7 +77,7 @@ class Van extends QuanlyBaseModel
             'geom' => 'Geom',
             'objectid_1' => 'Objectid 1',
             'objectid' => 'Objectid',
-            'tinhtrang' => 'Tinhtrang',
+            'tinh_trang' => 'Tinh Trang',
             'mavan' => 'Mavan',
             'vitri' => 'Vitri',
             'covan' => 'Covan',
@@ -90,6 +97,28 @@ class Van extends QuanlyBaseModel
             'created_by' => 'Created By',
             'updated_by' => 'Updated By',
             'file_dinhkem' => 'File Dinhkem',
+            'tinhtrang_id' => 'Tinhtrang ID',
+            'loaivan_id' => 'Loaivan ID',
         ];
+    }
+
+    /**
+     * Gets query for [[Loaivan0]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getLoaivan0()
+    {
+        return $this->hasOne(DmLoaivan::className(), ['id' => 'loaivan_id']);
+    }
+
+    /**
+     * Gets query for [[Tinhtrang]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getTinhtrang()
+    {
+        return $this->hasOne(DmTinhtrang::className(), ['id' => 'tinhtrang_id']);
     }
 }

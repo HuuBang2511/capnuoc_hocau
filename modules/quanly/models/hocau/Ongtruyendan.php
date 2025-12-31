@@ -1,7 +1,7 @@
 <?php
 
 namespace app\modules\quanly\models\hocau;
-use app\modules\quanly\base\QuanlyBaseModel;
+
 use Yii;
 
 /**
@@ -10,7 +10,7 @@ use Yii;
  * @property int $id
  * @property string|null $geom
  * @property int|null $objectid
- * @property string|null $tinhtrang
+ * @property string|null $tinh_trang
  * @property string|null $vatlieu
  * @property int|null $coong
  * @property string|null $mavattu
@@ -30,8 +30,13 @@ use Yii;
  * @property int|null $created_by
  * @property int|null $updated_by
  * @property string|null $file_dinhkem
+ * @property int|null $tinhtrang_id
+ * @property int|null $loaiong_id
+ *
+ * @property DmLoaiong $loaiong
+ * @property DmTinhtrang $tinhtrang
  */
-class Ongtruyendan extends QuanlyBaseModel
+class Ongtruyendan extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
@@ -48,14 +53,16 @@ class Ongtruyendan extends QuanlyBaseModel
     {
         return [
             [['geom', 'lat', 'long', 'geojson', 'file_dinhkem'], 'string'],
-            [['objectid', 'coong', 'status', 'created_by', 'updated_by'], 'default', 'value' => null],
-            [['objectid', 'coong', 'status', 'created_by', 'updated_by'], 'integer'],
+            [['objectid', 'coong', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaiong_id'], 'default', 'value' => null],
+            [['objectid', 'coong', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaiong_id'], 'integer'],
             [['ngaylapdat', 'created_at', 'updated_at'], 'safe'],
             [['shape_leng'], 'number'],
-            [['tinhtrang', 'vatlieu'], 'string', 'max' => 10],
+            [['tinh_trang', 'vatlieu'], 'string', 'max' => 10],
             [['mavattu'], 'string', 'max' => 25],
             [['congtrinh', 'dvtk', 'dvtc', 'bvhc'], 'string', 'max' => 50],
             [['ghichu'], 'string', 'max' => 200],
+            [['loaiong_id'], 'exist', 'skipOnError' => true, 'targetClass' => DmLoaiong::className(), 'targetAttribute' => ['loaiong_id' => 'id']],
+            [['tinhtrang_id'], 'exist', 'skipOnError' => true, 'targetClass' => DmTinhtrang::className(), 'targetAttribute' => ['tinhtrang_id' => 'id']],
         ];
     }
 
@@ -68,7 +75,7 @@ class Ongtruyendan extends QuanlyBaseModel
             'id' => 'ID',
             'geom' => 'Geom',
             'objectid' => 'Objectid',
-            'tinhtrang' => 'Tinhtrang',
+            'tinh_trang' => 'Tinh Trang',
             'vatlieu' => 'Vatlieu',
             'coong' => 'Coong',
             'mavattu' => 'Mavattu',
@@ -88,6 +95,28 @@ class Ongtruyendan extends QuanlyBaseModel
             'created_by' => 'Created By',
             'updated_by' => 'Updated By',
             'file_dinhkem' => 'File Dinhkem',
+            'tinhtrang_id' => 'Tinhtrang ID',
+            'loaiong_id' => 'Loaiong ID',
         ];
+    }
+
+    /**
+     * Gets query for [[Loaiong]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getLoaiong()
+    {
+        return $this->hasOne(DmLoaiong::className(), ['id' => 'loaiong_id']);
+    }
+
+    /**
+     * Gets query for [[Tinhtrang]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getTinhtrang()
+    {
+        return $this->hasOne(DmTinhtrang::className(), ['id' => 'tinhtrang_id']);
     }
 }

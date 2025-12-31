@@ -7,16 +7,16 @@ use app\widgets\gridview\GridView;
 use app\widgets\export\ExportMenu;
 
 /* @var $this yii\web\View */
-/* @var $searchModel app\modules\quanly\models\capnuocgd\danhmuc\GdDmSucoNguyennhanSearch */
+/* @var $searchModel app\modules\quanly\models\hocau\HamkythuatSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = (isset($const['title'])) ? $const['title'] : 'Danh mục sự cố nguyên nhân';
+$this->title = (isset($const['title'])) ? $const['title'] : '';
 $this->params['breadcrumbs'][] = $this->title;
 
 CrudAsset::register($this);
 
 ?>
-<div class="gd-dm-suco-nguyennhan-index">
+<div class="hamkythuat-index">
     <div id="ajaxCrudDatatable">
         <?php $fullExportMenu = ExportMenu::widget([
             'dataProvider' => $dataProvider,
@@ -50,7 +50,7 @@ CrudAsset::register($this);
                 $fullExportMenu,
                 ['content'=>
                     Html::a('<i class="fa fa-plus"></i> Thêm mới', ['create'],
-                    ['role'=>'modal-remote','title'=> 'Thêm mới Danh mục sự cố nguyên nhân','class'=>'btn btn-success'])
+                    ['title'=> 'Thêm mới ','class'=>'btn btn-success'])
                 ],
             ],          
             'striped' => true,

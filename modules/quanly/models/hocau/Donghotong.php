@@ -62,6 +62,7 @@ class Donghotong extends QuanlyBaseModel
             [['vitri', 'ghichu'], 'string', 'max' => 50],
             [['hieu', 'mavattu', 'sothan', 'khuvuc'], 'string', 'max' => 25],
             [['tinhtrang_id'], 'exist', 'skipOnError' => true, 'targetClass' => DmTinhtrang::className(), 'targetAttribute' => ['tinhtrang_id' => 'id']],
+            [['hieudongho_id'], 'exist', 'skipOnError' => true, 'targetClass' => DmHieudongho::className(), 'targetAttribute' => ['hieudongho_id' => 'id']],
         ];
     }
 
@@ -107,5 +108,10 @@ class Donghotong extends QuanlyBaseModel
     public function getTinhtrang()
     {
         return $this->hasOne(DmTinhtrang::className(), ['id' => 'tinhtrang_id']);
+    }
+
+    public function getHieudongho()
+    {
+        return $this->hasOne(DmHieudongho::className(), ['id' => 'tinhtrang_id']);
     }
 }

@@ -4,7 +4,17 @@ namespace app\modules\services;
 use app\modules\danhmuc\models\DmKtvhxh;
 use app\modules\danhmuc\models\DmTongiao;
 
-use app\modules\quanly\models\RanhphuongThuduc;
+use app\modules\quanly\models\danhmuc\DmHieudongho;
+use app\modules\quanly\models\danhmuc\DmLoaiham;
+use app\modules\quanly\models\danhmuc\DmLoaimoinoi;
+use app\modules\quanly\models\danhmuc\DmLoainhamay;
+use app\modules\quanly\models\danhmuc\DmLoaiong;
+use app\modules\quanly\models\danhmuc\DmLoaivan;
+use app\modules\quanly\models\danhmuc\DmSucoLoai;
+use app\modules\quanly\models\danhmuc\DmSucoNguyennhan;
+use app\modules\quanly\models\danhmuc\DmSucoTinhtrang;
+use app\modules\quanly\models\danhmuc\DmTinhtrang;
+
 
 class CategoriesService
 {
@@ -12,9 +22,17 @@ class CategoriesService
     public static function getCategories()
     {
         $categories = [];
-        $categories['phuong'] = RanhphuongThuduc::find()->where(['status'=>1])->orderBy('name_3')->asArray()->all();
-        $categories['dm_ktvhxh'] = DmKtvhxh::find()->where(['status'=>1])->orderBy('dm_tv')->asArray()->all();
-        $categories['dm_tongiao'] = DmTongiao::find()->where(['status'=>1])->orderBy('dm_tv')->asArray()->all();
+        $categories['hieudongho'] = DmHieudongho::find()->orderBy('ten')->asArray()->all();
+        $categories['loaiham'] = DmLoaiham::find()->orderBy('ten')->asArray()->all();
+        $categories['loaimoinoi'] = DmLoaimoinoi::find()->orderBy('ten')->asArray()->all();
+        $categories['loainhamay'] = DmLoainhamay::find()->orderBy('ten')->asArray()->all();
+        $categories['loaiong'] = DmLoaiong::find()->orderBy('ten')->asArray()->all();
+        $categories['loaivan'] = DmLoaivan::find()->orderBy('ten')->asArray()->all();
+        $categories['loaisuco'] = DmSucoLoai::find()->orderBy('ten')->asArray()->all();
+        $categories['nguyennhansuco'] = DmSucoNguyennhan::find()->orderBy('ten')->asArray()->all();
+        $categories['tinhtrangsuco'] = DmSucoTinhtrang::find()->orderBy('ten')->asArray()->all();
+        $categories['tinhtrang'] = DmTinhtrang::find()->orderBy('ten')->asArray()->all();
+
         return $categories;
     }
 

@@ -18,8 +18,8 @@ class HamkythuatSearch extends Hamkythuat
     public function rules()
     {
         return [
-            [['id', 'objectid_1', 'objectid', 'status', 'created_by', 'updated_by'], 'integer'],
-            [['geom', 'tinhtrang', 'maham', 'loaiham', 'kichthuoc', 'vatlieu', 'sonap', 'vitri', 'ngaylapdat', 'dvtk', 'dvtc', 'bvhc', 'ghichu', 'geojson', 'created_at', 'updated_at', 'file_dinhkem'], 'safe'],
+            [['id', 'objectid_1', 'objectid', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaiham_id'], 'integer'],
+            [['geom', 'tinh_trang', 'maham', 'loai_ham', 'kichthuoc', 'vatlieu', 'sonap', 'vitri', 'ngaylapdat', 'dvtk', 'dvtc', 'bvhc', 'ghichu', 'geojson', 'created_at', 'updated_at', 'file_dinhkem'], 'safe'],
             [['shape_leng', 'shape_area'], 'number'],
         ];
     }
@@ -42,7 +42,7 @@ class HamkythuatSearch extends Hamkythuat
      */
     public function search($params)
     {
-        $query = Hamkythuat::find();
+        $query = Hamkythuat::find()->where(['status' => 1]);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
@@ -68,12 +68,14 @@ class HamkythuatSearch extends Hamkythuat
             'updated_at' => $this->updated_at,
             'created_by' => $this->created_by,
             'updated_by' => $this->updated_by,
+            'tinhtrang_id' => $this->tinhtrang_id,
+            'loaiham_id' => $this->loaiham_id,
         ]);
 
         $query->andFilterWhere(['like', 'upper(geom)', mb_strtoupper($this->geom)])
-            ->andFilterWhere(['like', 'upper(tinhtrang)', mb_strtoupper($this->tinhtrang)])
+            ->andFilterWhere(['like', 'upper(tinh_trang)', mb_strtoupper($this->tinh_trang)])
             ->andFilterWhere(['like', 'upper(maham)', mb_strtoupper($this->maham)])
-            ->andFilterWhere(['like', 'upper(loaiham)', mb_strtoupper($this->loaiham)])
+            ->andFilterWhere(['like', 'upper(loai_ham)', mb_strtoupper($this->loai_ham)])
             ->andFilterWhere(['like', 'upper(kichthuoc)', mb_strtoupper($this->kichthuoc)])
             ->andFilterWhere(['like', 'upper(vatlieu)', mb_strtoupper($this->vatlieu)])
             ->andFilterWhere(['like', 'upper(sonap)', mb_strtoupper($this->sonap)])
@@ -98,9 +100,9 @@ class HamkythuatSearch extends Hamkythuat
         'geom',
         'objectid_1',
         'objectid',
-        'tinhtrang',
+        'tinh_trang',
         'maham',
-        'loaiham',
+        'loai_ham',
         'kichthuoc',
         'vatlieu',
         'sonap',
@@ -118,6 +120,8 @@ class HamkythuatSearch extends Hamkythuat
         'updated_at',
         'created_by',
         'updated_by',
-        'file_dinhkem',        ];
+        'file_dinhkem',
+        'tinhtrang_id',
+        'loaiham_id',        ];
     }
 }

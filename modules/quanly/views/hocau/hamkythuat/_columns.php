@@ -1,4 +1,6 @@
 <?php
+use kartik\grid\GridView;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
 use yii\helpers\Html;
 
@@ -19,21 +21,47 @@ return [
     //     'class'=>'\kartik\grid\DataColumn',
     //     'attribute'=>'objectid_1',
     // ],
-    [
-        'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'objectid',
-    ],
-    [
-        'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'tinhtrang',
-    ],
+    // [
+    //     'class'=>'\kartik\grid\DataColumn',
+    //     'attribute'=>'objectid',
+    // ],
+    // [
+    //     'class'=>'\kartik\grid\DataColumn',
+    //     'attribute'=>'tinhtrang',
+    // ],
     [
         'class'=>'\kartik\grid\DataColumn',
         'attribute'=>'maham',
     ],
     [
-        'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'loaiham',
+        'class' => '\kartik\grid\DataColumn',
+        'attribute' => 'loaiham_id',
+        'format' => 'raw',
+        'value' => 'loaiham.ten',
+        'filter' => ArrayHelper::map($categories['loaiham'], 'id', 'ten'),
+        //'filter' => $categories['loaiham'],
+        'filterType' => GridView::FILTER_SELECT2,
+        'filterWidgetOptions' => [
+            'options' => ['prompt' => 'Chọn loại hầm'],
+            'pluginOptions' => [
+                'allowClear' => true,
+            ],
+        ],
+    ],
+    [
+        'class' => '\kartik\grid\DataColumn',
+        'attribute' => 'tinhtrang_id',
+        'format' => 'raw',
+        'value' => 'tinhtrang.ten',
+        'filter' => ArrayHelper::map($categories['tinhtrang'], 'id', 'ten'),
+        //'filter' => $categories['loaiham'],
+        'filterType' => GridView::FILTER_SELECT2,
+        'filterWidgetOptions' => [
+            'options' => ['prompt' => 'Chọn tình trạng'],
+            'pluginOptions' => [
+                'allowClear' => true,
+            ],
+        ],
     ],
     [
         'class'=>'\kartik\grid\DataColumn',

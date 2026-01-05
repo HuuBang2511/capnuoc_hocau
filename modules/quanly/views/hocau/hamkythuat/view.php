@@ -124,9 +124,19 @@ $this->params['breadcrumbs'][] = $this->title;
                             <?= DetailView::widget([
                                 'model' => $model,
                                 'attributes' => [
-                                    'tinh_trang',
+                                    [
+                                        'label' => 'Tình trạng',
+                                        'value' => function($model){
+                                            return ($model->tinhtrang_id != null) ? $model->tinhtrang->ten : '';
+                                        }
+                                    ],
                                     'maham',
-                                    'loaiham',
+                                    [
+                                        'label' => 'Loại hầm',
+                                        'value' => function($model){
+                                            return ($model->loaiham_id != null) ? $model->loaiham->ten : '';
+                                        }
+                                    ],
                                     'kichthuoc',
                                     'vatlieu',
                                     'sonap',
@@ -140,9 +150,25 @@ $this->params['breadcrumbs'][] = $this->title;
                             ]) ?>
                         </div>
                     </div>
+                    <h3>File đính kèm</h3>
                     <div class="row">
                         <div class="col-lg-12">
-
+                            <table class="table table-striped table-bordered">
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Tên file</th>
+                                    
+                                </tr>
+                                <?php if ($files != null) : ?>
+                                    <?php foreach ($files as $i => $file) : ?>
+                                        <tr>
+                                            <td><?= $i + 1 ?></td>
+                                            <td><a href="<?= Yii::$app->homeUrl . $file['url'] ?>" target="_blank"><?= $file['name'] ?></a></td>
+                                            
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </table>
                         </div>
                     </div>
                 </div>

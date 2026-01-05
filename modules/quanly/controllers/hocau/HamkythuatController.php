@@ -13,6 +13,7 @@ use yii\helpers\Html;
 use app\modules\quanly\base\QuanlyBaseController;
 use app\modules\quanly\base\UploadFile;
 use yii\web\UploadedFile;
+use app\modules\services\CategoriesService;
 
 /**
  * HamkythuatController implements the CRUD actions for Hamkythuat model.
@@ -34,6 +35,7 @@ class HamkythuatController extends QuanlyBaseController
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'categories' => CategoriesService::getCategories(),
         ]);
     }
 
@@ -117,6 +119,8 @@ class HamkythuatController extends QuanlyBaseController
         } else {
             return $this->render('create', [
                 'model' => $model,
+                'filedinhkem' => $filedinhkem,
+                'categories' => CategoriesService::getCategories(),
             ]);
         }
 
@@ -168,6 +172,7 @@ class HamkythuatController extends QuanlyBaseController
             return $this->render('update', [
                 'model' => $model,
                 'filedinhkem' => $filedinhkem,
+                'categories' => CategoriesService::getCategories(),
             ]);
         }
     }

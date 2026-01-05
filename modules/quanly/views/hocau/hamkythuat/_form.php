@@ -62,13 +62,25 @@ $geojson_data = !empty($model->geojson) ? Json::encode($model->geojson) : 'null'
 
             <div class="row">
                 <div class="col-lg-3">
-                    <?= $form->field($model, 'tinh_trang')->textInput(['maxlength' => true]) ?>
+                    <?= $form->field($model, 'tinhtrang_id')->widget(Select2::className(), [
+                        'data' => ArrayHelper::map($categories['tinhtrang'], 'id', 'ten'),
+                        'options' => ['placeholder' => 'Tình trạng' ],
+                        'pluginOptions' => [
+                            'allowClear' => true
+                        ],
+                    ]) ?>
                 </div>
                 <div class="col-lg-3">
                     <?= $form->field($model, 'maham')->textInput(['maxlength' => true]) ?>
                 </div>
                 <div class="col-lg-3">
-                    <?= $form->field($model, 'loaiham')->textInput(['maxlength' => true]) ?>
+                    <?= $form->field($model, 'loaiham_id')->widget(Select2::className(), [
+                        'data' => ArrayHelper::map($categories['loaiham'], 'id', 'ten'),
+                        'options' => ['placeholder' => 'Loại hầm' ],
+                        'pluginOptions' => [
+                            'allowClear' => true
+                        ],
+                    ]) ?>
                 </div>
                 <div class="col-lg-3">
                     <?= $form->field($model, 'kichthuoc')->textInput(['maxlength' => true]) ?>
@@ -107,6 +119,7 @@ $geojson_data = !empty($model->geojson) ? Json::encode($model->geojson) : 'null'
                 <div class="col-lg-3">
                     <?= $form->field($model, 'bvhc')->textInput(['maxlength' => true]) ?>
                 </div>
+                
             </div>
 
             <div class="row">
@@ -208,6 +221,15 @@ const baseLayers = {
     }),
 };
 
+const overlayers = {
+    "Hầm kỹ thuật": L.tileLayer.wms('http://103.9.77.141:8080/geoserver/capnuoc_hocau/wms', {
+    layers: 'capnuoc_hocau:network_hamkythuat',
+    format: 'image/png',
+    transparent: true,
+    maxZoom: 22 // Đặt maxZoom là 22
+})
+}
+
 // --- THÊM CÁC LỚP WMS MẶC ĐỊNH ---
 const wmsBaseUrl = 'https://nongdanviet.net/geoserver/giscapnuoc/wms';
 const wmsDefaultOptions = {
@@ -217,7 +239,7 @@ const wmsDefaultOptions = {
 };
 
 // Chỉ thêm bảng điều khiển cho lớp nền
-L.control.layers(baseLayers).addTo(map);
+L.control.layers(baseLayers, overlayers).addTo(map);
 
 
 // --- CẤU HÌNH LEAFLET.DRAW ---

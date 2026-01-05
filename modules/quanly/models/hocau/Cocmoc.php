@@ -61,8 +61,8 @@ class Cocmoc extends QuanlyBaseModel
             'id' => 'ID',
             'geom' => 'Geom',
             'objectid' => 'Objectid',
-            'loai' => 'Loai',
-            'vitri' => 'Vitri',
+            'loai' => 'Loại',
+            'vitri' => 'Vị trí',
             'status' => 'Status',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
@@ -71,8 +71,8 @@ class Cocmoc extends QuanlyBaseModel
             'geojson' => 'Geojson',
             'lat' => 'Lat',
             'long' => 'Long',
-            'file_dinhkem' => 'File Dinhkem',
-            'tinhtrang_id' => 'Tinhtrang ID',
+            'file_dinhkem' => 'File đính kèm',
+            'tinhtrang_id' => 'Tình trạng',
         ];
     }
 

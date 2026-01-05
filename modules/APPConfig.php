@@ -136,8 +136,8 @@ class APPConfig
             [
                 'name' => 'Hầm kỹ thuật',
                 'icon' => 'fa fa-list',
-                'url' => 'quanly/capnuocgd/gd-hamkythuat',
-                'key'=>'quanly.capnuocgd/gd-hamkythuat.index',
+                'url' => 'quanly/hocau/hamkythuat',
+                'key'=>'quanly.hocau/hamkythuat.index',
                 'hasChild' => false,
             ],
             [

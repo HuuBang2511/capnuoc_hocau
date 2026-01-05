@@ -62,7 +62,7 @@ $geojson_data = !empty($model->geojson) ? Json::encode($model->geojson) : 'null'
 
             <div class="row">
                 <div class="col-lg-3">
-                    <?= $form->field($model, 'tinhtrang')->textInput(['maxlength' => true]) ?>
+                    <?= $form->field($model, 'tinh_trang')->textInput(['maxlength' => true]) ?>
                 </div>
                 <div class="col-lg-3">
                     <?= $form->field($model, 'maham')->textInput(['maxlength' => true]) ?>

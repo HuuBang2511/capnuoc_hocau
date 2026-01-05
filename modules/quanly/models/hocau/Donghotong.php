@@ -112,6 +112,6 @@ class Donghotong extends QuanlyBaseModel
 
     public function getHieudongho()
     {
-        return $this->hasOne(DmHieudongho::className(), ['id' => 'tinhtrang_id']);
+        return $this->hasOne(DmHieudongho::className(), ['id' => 'hieudongho_id']);
     }
 }

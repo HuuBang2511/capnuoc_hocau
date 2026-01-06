@@ -51,6 +51,42 @@ class QuanlyBaseModel extends ActiveRecord
                 ->bindValue(':id', $this->id)
                 ->execute();
         }
+
+        if ($this->formName() == 'Donghotong' && $this->long != null){
+            $tableName = $this->tableName();
+            \Yii::$app->db->createCommand("UPDATE $tableName SET geom = ST_SetSRID(ST_MakePoint($this->long,$this->lat),4326) WHERE id=:id")
+                ->bindValue(':id', $this->id)
+                ->execute();
+        }
+
+        if ($this->formName() == 'Donghonhamay' && $this->long != null){
+            $tableName = $this->tableName();
+            \Yii::$app->db->createCommand("UPDATE $tableName SET geom = ST_SetSRID(ST_MakePoint($this->long,$this->lat),4326) WHERE id=:id")
+                ->bindValue(':id', $this->id)
+                ->execute();
+        }
+
+        if ($this->formName() == 'Moinoi' && $this->long != null){
+            $tableName = $this->tableName();
+            \Yii::$app->db->createCommand("UPDATE $tableName SET geom = ST_SetSRID(ST_MakePoint($this->long,$this->lat),4326) WHERE id=:id")
+                ->bindValue(':id', $this->id)
+                ->execute();
+        }
+
+        if ($this->formName() == 'Suco' && $this->long != null){
+            $tableName = $this->tableName();
+            \Yii::$app->db->createCommand("UPDATE $tableName SET geom = ST_SetSRID(ST_MakePoint($this->long,$this->lat),4326) WHERE id=:id")
+                ->bindValue(':id', $this->id)
+                ->execute();
+        }
+
+        if ($this->formName() == 'Van' && $this->long != null){
+            $tableName = $this->tableName();
+            \Yii::$app->db->createCommand("UPDATE $tableName SET geom = ST_SetSRID(ST_MakePoint($this->long,$this->lat),4326) WHERE id=:id")
+                ->bindValue(':id', $this->id)
+                ->execute();
+        }
+
         
        parent::afterSave($insert, $changedAttributes);
     }

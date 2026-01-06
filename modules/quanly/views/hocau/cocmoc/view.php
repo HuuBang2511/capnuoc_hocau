@@ -52,6 +52,12 @@ $this->params['breadcrumbs'][] = $this->title;
                             'model' => $model,
                             'attributes' => [
                                 'vitri',
+                                [
+                                    'label' => 'Tình trạng',
+                                    'value' => function($model){
+                                        return ($model->tinhtrang_id != null) ? $model->tinhtrang->ten : '';
+                                    }
+                                ],
                             ],
                         ]) ?>
                         <table class="table table-striped table-bordered">

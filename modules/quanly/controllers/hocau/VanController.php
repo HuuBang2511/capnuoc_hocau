@@ -3,8 +3,8 @@
 namespace app\modules\quanly\controllers\hocau;
 
 use Yii;
-use app\modules\quanly\models\hocau\Cocmoc;
-use app\modules\quanly\models\hocau\CocmocSearch;
+use app\modules\quanly\models\hocau\Van;
+use app\modules\quanly\models\hocau\VanSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -14,34 +14,32 @@ use app\modules\quanly\base\QuanlyBaseController;
 use app\modules\quanly\base\UploadFile;
 use yii\web\UploadedFile;
 use app\modules\services\CategoriesService;
-
 /**
- * CocmocController implements the CRUD actions for Cocmoc model.
+ * VanController implements the CRUD actions for Van model.
  */
-class CocmocController extends QuanlyBaseController
+class VanController extends QuanlyBaseController
 {
 
-    public $title = "Cọc mốc";
+    public $title = "Van";
 
     /**
-     * Lists all Cocmoc models.
+     * Lists all Van models.
      * @return mixed
      */
     public function actionIndex()
     {
-        $searchModel = new CocmocSearch();
+        $searchModel = new VanSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
-            'categories' => CategoriesService::getCategories(),
         ]);
     }
 
 
     /**
-     * Displays a single Cocmoc model.
+     * Displays a single Van model.
      * @param integer $id
      * @return mixed
      */
@@ -75,7 +73,7 @@ class CocmocController extends QuanlyBaseController
     }
 
     /**
-     * Creates a new Cocmoc model.
+     * Creates a new Van model.
      * For ajax request will return json object
      * and for non-ajax request if creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
@@ -83,7 +81,7 @@ class CocmocController extends QuanlyBaseController
     public function actionCreate()
     {
         $request = Yii::$app->request;
-        $model = new Cocmoc();
+        $model = new Van();
 
         $filedinhkem = new UploadFile();
 
@@ -99,8 +97,8 @@ class CocmocController extends QuanlyBaseController
                         $item->name = str_replace("'","_",$item->name);
                     }
 
-                    $file[] = 'uploads/cocmoc/'.$model->id.'/'.$item->baseName.'.'.$item->extension;
-                    $path = 'uploads/cocmoc/'.$model->id.'/';
+                    $file[] = 'uploads/van/'.$model->id.'/'.$item->baseName.'.'.$item->extension;
+                    $path = 'uploads/van/'.$model->id.'/';
 
                     $filedinhkem->uploadFile($path, $item);
                 }
@@ -122,7 +120,7 @@ class CocmocController extends QuanlyBaseController
     }
 
     /**
-     * Updates an existing Cocmoc model.
+     * Updates an existing Van model.
      * For ajax request will return json object
      * and for non-ajax request if update is successful, the browser will be redirected to the 'view' page.
      * @param integer $id
@@ -147,8 +145,8 @@ class CocmocController extends QuanlyBaseController
                         $item->name = str_replace("'","_",$item->name);
                     }
 
-                    $file[] = 'uploads/cocmoc/'.$model->id.'/'.$item->baseName.'.'.$item->extension;
-                    $path = 'uploads/cocmoc/'.$model->id.'/';
+                    $file[] = 'uploads/van/'.$model->id.'/'.$item->baseName.'.'.$item->extension;
+                    $path = 'uploads/van/'.$model->id.'/';
 
                     $filedinhkem->uploadFile($path, $item);
                 }
@@ -169,7 +167,7 @@ class CocmocController extends QuanlyBaseController
     }
 
     /**
-     * Delete an existing Cocmoc model.
+     * Delete an existing Van model.
      * For ajax request will return json object
      * and for non-ajax request if deletion is successful, the browser will be redirected to the 'index' page.
      * @param integer $id
@@ -188,7 +186,7 @@ class CocmocController extends QuanlyBaseController
             Yii::$app->response->format = Response::FORMAT_JSON;
             if($request->isGet){
                 return [
-                    'title'=> "Xóa Cocmoc #".$id,
+                    'title'=> "Xóa Van #".$id,
                     'content'=>$this->renderAjax('delete', [
                         'model' => $model,
                     ]),
@@ -198,7 +196,7 @@ class CocmocController extends QuanlyBaseController
             }else if($request->isPost && $model->save()){
                 return [
                     'forceReload'=>'#crud-datatable-pjax',
-                    'title'=> "Cocmoc #".$id,
+                    'title'=> "Van #".$id,
                     'content'=>$this->renderAjax('view', [
                         'model' => $model,
                     ]),
@@ -207,7 +205,7 @@ class CocmocController extends QuanlyBaseController
                 ];
             }else{
                 return [
-                    'title'=> "Update Cocmoc #".$id,
+                    'title'=> "Update Van #".$id,
                     'content'=>$this->renderAjax('delete', [
                         'model' => $model,
                     ]),
@@ -232,15 +230,15 @@ class CocmocController extends QuanlyBaseController
 
     
     /**
-     * Finds the Cocmoc model based on its primary key value.
+     * Finds the Van model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param integer $id
-     * @return Cocmoc the loaded model
+     * @return Van the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id)
     {
-        if (($model = Cocmoc::findOne($id)) !== null) {
+        if (($model = Van::findOne($id)) !== null) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');

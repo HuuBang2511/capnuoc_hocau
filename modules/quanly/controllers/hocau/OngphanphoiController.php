@@ -3,8 +3,8 @@
 namespace app\modules\quanly\controllers\hocau;
 
 use Yii;
-use app\modules\quanly\models\hocau\Cocmoc;
-use app\modules\quanly\models\hocau\CocmocSearch;
+use app\modules\quanly\models\hocau\Ongphanphoi;
+use app\modules\quanly\models\hocau\OngphanphoiSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -16,20 +16,20 @@ use yii\web\UploadedFile;
 use app\modules\services\CategoriesService;
 
 /**
- * CocmocController implements the CRUD actions for Cocmoc model.
+ * OngphanphoiController implements the CRUD actions for Ongphanphoi model.
  */
-class CocmocController extends QuanlyBaseController
+class OngphanphoiController extends QuanlyBaseController
 {
 
-    public $title = "Cọc mốc";
+    public $title = "Ống phân phối";
 
     /**
-     * Lists all Cocmoc models.
+     * Lists all Ongphanphoi models.
      * @return mixed
      */
     public function actionIndex()
     {
-        $searchModel = new CocmocSearch();
+        $searchModel = new OngphanphoiSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
@@ -41,7 +41,7 @@ class CocmocController extends QuanlyBaseController
 
 
     /**
-     * Displays a single Cocmoc model.
+     * Displays a single Ongphanphoi model.
      * @param integer $id
      * @return mixed
      */
@@ -57,8 +57,8 @@ class CocmocController extends QuanlyBaseController
 
             foreach($filedinhkem as $i => $item){
 
-                $filename = basename($item); 
-                $filename = str_replace(' ', '_', $filename);
+                $filename = basename($item); // HDSD 1.2.pdf
+                $filename = str_replace(' ', '_', $filename); // HDSD_1.2.pdf
 
                 $files[$i]['url'] = $item;
                 $files[$i]['name'] = $filename;
@@ -73,9 +73,8 @@ class CocmocController extends QuanlyBaseController
             'files' => $files,
         ]);
     }
-
     /**
-     * Creates a new Cocmoc model.
+     * Creates a new Ongphanphoi model.
      * For ajax request will return json object
      * and for non-ajax request if creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
@@ -83,12 +82,12 @@ class CocmocController extends QuanlyBaseController
     public function actionCreate()
     {
         $request = Yii::$app->request;
-        $model = new Cocmoc();
+        $model = new Ongphanphoi();
 
         $filedinhkem = new UploadFile();
 
-        if($model->load($request->post()) && $model->save() && $filedinhkem->load($request->post())){
-            
+        if ($model->load($request->post()) && $model->save() && $filedinhkem->load($request->post())) {
+
             $filedinhkem->fileupload = UploadedFile::getInstances($filedinhkem, 'fileupload');
 
             if($filedinhkem->fileupload != null){
@@ -99,8 +98,8 @@ class CocmocController extends QuanlyBaseController
                         $item->name = str_replace("'","_",$item->name);
                     }
 
-                    $file[] = 'uploads/cocmoc/'.$model->id.'/'.$item->baseName.'.'.$item->extension;
-                    $path = 'uploads/cocmoc/'.$model->id.'/';
+                    $file[] = 'uploads/ongphanphoi/'.$model->id.'/'.$item->baseName.'.'.$item->extension;
+                    $path = 'uploads/ongphanphoi/'.$model->id.'/';
 
                     $filedinhkem->uploadFile($path, $item);
                 }
@@ -109,20 +108,22 @@ class CocmocController extends QuanlyBaseController
                 $model->save();
             }
 
+            Yii::$app->db->createCommand("UPDATE network_ongphanphoi SET geom = ST_SETSRID(ST_GeomFromText(ST_AsText(ST_GeomFromGeoJSON('" . $model->geojson . "'))),4326) WHERE id = :id")
+            ->bindValue(':id', $model->id)
+            ->execute();
             return $this->redirect(['view', 'id' => $model->id]);
+        } else {
+            return $this->render('create', [
+                'model' => $model,
+                'filedinhkem' => $filedinhkem,
+                'categories' => CategoriesService::getCategories(),
+            ]);
         }
-
-
-        return $this->render('create', [
-            'model' => $model,
-            'filedinhkem' => $filedinhkem,
-            'categories' => CategoriesService::getCategories(),
-        ]);
 
     }
 
     /**
-     * Updates an existing Cocmoc model.
+     * Updates an existing Ongphanphoi model.
      * For ajax request will return json object
      * and for non-ajax request if update is successful, the browser will be redirected to the 'view' page.
      * @param integer $id
@@ -135,8 +136,8 @@ class CocmocController extends QuanlyBaseController
 
         $filedinhkem = new UploadFile();
 
-        if($model->load($request->post()) && $model->save() && $filedinhkem->load($request->post())){
-            
+        if ($model->load($request->post()) && $model->save() && $filedinhkem->load($request->post())) {
+
             $filedinhkem->fileupload = UploadedFile::getInstances($filedinhkem, 'fileupload');
 
             if($filedinhkem->fileupload != null){
@@ -147,8 +148,8 @@ class CocmocController extends QuanlyBaseController
                         $item->name = str_replace("'","_",$item->name);
                     }
 
-                    $file[] = 'uploads/cocmoc/'.$model->id.'/'.$item->baseName.'.'.$item->extension;
-                    $path = 'uploads/cocmoc/'.$model->id.'/';
+                    $file[] = 'uploads/ongphanphoi/'.$model->id.'/'.$item->baseName.'.'.$item->extension;
+                    $path = 'uploads/ongphanphoi/'.$model->id.'/';
 
                     $filedinhkem->uploadFile($path, $item);
                 }
@@ -157,19 +158,21 @@ class CocmocController extends QuanlyBaseController
                 $model->save();
             }
 
+            Yii::$app->db->createCommand("UPDATE network_ongphanphoi SET geom = ST_SETSRID(ST_GeomFromText(ST_AsText(ST_GeomFromGeoJSON('" . $model->geojson . "'))),4326) WHERE id = :id")
+            ->bindValue(':id', $model->id)
+            ->execute();
             return $this->redirect(['view', 'id' => $model->id]);
+        } else {
+            return $this->render('update', [
+                'model' => $model,
+                'filedinhkem' => $filedinhkem,
+                'categories' => CategoriesService::getCategories(),
+            ]);
         }
-
-
-        return $this->render('update', [
-            'model' => $model,
-            'filedinhkem' => $filedinhkem,
-            'categories' => CategoriesService::getCategories(),
-        ]);
     }
 
     /**
-     * Delete an existing Cocmoc model.
+     * Delete an existing Ongphanphoi model.
      * For ajax request will return json object
      * and for non-ajax request if deletion is successful, the browser will be redirected to the 'index' page.
      * @param integer $id
@@ -188,7 +191,7 @@ class CocmocController extends QuanlyBaseController
             Yii::$app->response->format = Response::FORMAT_JSON;
             if($request->isGet){
                 return [
-                    'title'=> "Xóa Cocmoc #".$id,
+                    'title'=> "Xóa Ongphanphoi #".$id,
                     'content'=>$this->renderAjax('delete', [
                         'model' => $model,
                     ]),
@@ -198,7 +201,7 @@ class CocmocController extends QuanlyBaseController
             }else if($request->isPost && $model->save()){
                 return [
                     'forceReload'=>'#crud-datatable-pjax',
-                    'title'=> "Cocmoc #".$id,
+                    'title'=> "Ongphanphoi #".$id,
                     'content'=>$this->renderAjax('view', [
                         'model' => $model,
                     ]),
@@ -207,7 +210,7 @@ class CocmocController extends QuanlyBaseController
                 ];
             }else{
                 return [
-                    'title'=> "Update Cocmoc #".$id,
+                    'title'=> "Update Ongphanphoi #".$id,
                     'content'=>$this->renderAjax('delete', [
                         'model' => $model,
                     ]),
@@ -232,15 +235,15 @@ class CocmocController extends QuanlyBaseController
 
     
     /**
-     * Finds the Cocmoc model based on its primary key value.
+     * Finds the Ongphanphoi model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param integer $id
-     * @return Cocmoc the loaded model
+     * @return Ongphanphoi the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id)
     {
-        if (($model = Cocmoc::findOne($id)) !== null) {
+        if (($model = Ongphanphoi::findOne($id)) !== null) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');

@@ -10,5 +10,7 @@ use yii\helpers\Html;
 <div class="ongtruyendan-create">
     <?= $this->render('_form', [
         'model' => $model,
+        'filedinhkem' => $filedinhkem,
+        'categories' => $categories,
     ]) ?>
 </div>

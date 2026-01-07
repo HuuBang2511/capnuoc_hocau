@@ -25,6 +25,7 @@ use Yii;
  * @property int|null $created_by
  * @property int|null $updated_by
  * @property int|null $loainhamay_id
+ * @property string|null $ten
  *
  * @property DmLoainhamay $loainhamay
  */
@@ -44,7 +45,7 @@ class Nhamaynuoc extends QuanlyBaseModel
     public function rules()
     {
         return [
-            [['geom', 'file_dinhkem', 'lat', 'long', 'geojson'], 'string'],
+            [['geom', 'file_dinhkem', 'lat', 'long', 'geojson', 'ten'], 'string'],
             [['objectid', 'shape_leng', 'shape_area'], 'number'],
             [['status', 'created_by', 'updated_by', 'loainhamay_id'], 'default', 'value' => null],
             [['status', 'created_by', 'updated_by', 'loainhamay_id'], 'integer'],
@@ -64,8 +65,8 @@ class Nhamaynuoc extends QuanlyBaseModel
             'geom' => 'Geom',
             'objectid' => 'Objectid',
             'loai' => 'Loai',
-            'shape_leng' => 'Shape Leng',
-            'shape_area' => 'Shape Area',
+            'shape_leng' => 'Chu vi',
+            'shape_area' => 'Diện tích',
             'file_dinhkem' => 'File Dinhkem',
             'lat' => 'Lat',
             'long' => 'Long',
@@ -75,7 +76,8 @@ class Nhamaynuoc extends QuanlyBaseModel
             'updated_at' => 'Updated At',
             'created_by' => 'Created By',
             'updated_by' => 'Updated By',
-            'loainhamay_id' => 'Loainhamay ID',
+            'loainhamay_id' => 'Loại nhà máy',
+            'ten' => 'Tên',
         ];
     }
 

@@ -54,7 +54,7 @@ class QuanlyBaseModel extends ActiveRecord
 
         if ($this->formName() == 'Donghotong' && $this->long != null){
             $tableName = $this->tableName();
-            \Yii::$app->db->createCommand("UPDATE $tableName SET geom = ST_SetSRID(ST_MakePoint($this->long,$this->lat),4326) WHERE id=:id")
+            \Yii::$app->db->createCommand("UPDATE $tableName SET geom = ST_SetSRID(ST_MakePoint($this->long,$this->lat,0),4326) WHERE id=:id")
                 ->bindValue(':id', $this->id)
                 ->execute();
         }

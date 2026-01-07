@@ -49,6 +49,21 @@ return [
         'class'=>'\kartik\grid\DataColumn',
         'attribute'=>'congtrinh',
     ],
+    [
+        'class' => '\kartik\grid\DataColumn',
+        'attribute' => 'tinhtrang_id',
+        'format' => 'raw',
+        'value' => 'tinhtrang.ten',
+        'filter' => ArrayHelper::map($categories['tinhtrang'], 'id', 'ten'),
+        //'filter' => $categories['loaiham'],
+        'filterType' => GridView::FILTER_SELECT2,
+        'filterWidgetOptions' => [
+            'options' => ['prompt' => 'Chọn tình trạng'],
+            'pluginOptions' => [
+                'allowClear' => true,
+            ],
+        ],
+    ],
     // [
         // 'class'=>'\kartik\grid\DataColumn',
         // 'attribute'=>'dvtk',

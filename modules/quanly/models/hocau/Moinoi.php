@@ -79,13 +79,13 @@ class Moinoi extends QuanlyBaseModel
             'objectid' => 'Objectid',
             'tinh_trang' => 'Tinh Trang',
             'loaimoinoi' => 'Loaimoinoi',
-            'kichthuoc' => 'Kichthuoc',
+            'kichthuoc' => 'Kích thước',
             'x' => 'X',
             'y' => 'Y',
             'z' => 'Z',
-            'vattu' => 'Vattu',
-            'mavitri' => 'Mavitri',
-            'ghichu' => 'Ghichu',
+            'vattu' => 'Vật tư',
+            'mavitri' => 'Mã vị trí',
+            'ghichu' => 'Ghi chú',
             'lat' => 'Lat',
             'long' => 'Long',
             'geojson' => 'Geojson',
@@ -95,8 +95,8 @@ class Moinoi extends QuanlyBaseModel
             'created_by' => 'Created By',
             'updated_by' => 'Updated By',
             'file_dinhkem' => 'File Dinhkem',
-            'tinhtrang_id' => 'Tinhtrang ID',
-            'loaimoinoi_id' => 'Loaimoinoi ID',
+            'tinhtrang_id' => 'Tình trạng',
+            'loaimoinoi_id' => 'Loại mối nối',
         ];
     }
 

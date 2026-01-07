@@ -10,7 +10,7 @@ use app\widgets\export\ExportMenu;
 /* @var $searchModel app\modules\quanly\models\hocau\HanglangantoanSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = (isset($const['title'])) ? $const['title'] : '';
+$this->title = (isset($const['title'])) ? $const['title'] : 'Hành lanh an toàn';
 $this->params['breadcrumbs'][] = $this->title;
 
 CrudAsset::register($this);
@@ -50,7 +50,7 @@ CrudAsset::register($this);
                 $fullExportMenu,
                 ['content'=>
                     Html::a('<i class="fa fa-plus"></i> Thêm mới', ['create'],
-                    ['role'=>'modal-remote','title'=> 'Thêm mới ','class'=>'btn btn-success'])
+                    ['title'=> 'Thêm mới ','class'=>'btn btn-success'])
                 ],
             ],          
             'striped' => true,

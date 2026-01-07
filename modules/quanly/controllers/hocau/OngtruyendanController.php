@@ -34,6 +34,7 @@ class OngtruyendanController extends QuanlyBaseController
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'categories' => CategoriesService::getCategories(),
         ]);
     }
 
@@ -46,21 +47,30 @@ class OngtruyendanController extends QuanlyBaseController
     public function actionView($id)
     {
         $request = Yii::$app->request;
-        if($request->isAjax){
-            Yii::$app->response->format = Response::FORMAT_JSON;
-            return [
-                    'title'=> "Ongtruyendan #".$id,
-                    'content'=>$this->renderAjax('view', [
-                        'model' => $this->findModel($id),
-                    ]),
-                    'footer'=> Html::button('Đóng',['class'=>'btn btn-light float-right','data-bs-dismiss'=>"modal"]).
-                            Html::a('Cập nhật',['update','id'=>$id],['class'=>'btn btn-primary float-left','role'=>'modal-remote'])
-                ];
+        $model = $this->findModel($id);
+
+        if($model->file_dinhkem != null){
+            $filedinhkem = json_decode($model->file_dinhkem);
+
+            $files = [];
+
+            foreach($filedinhkem as $i => $item){
+
+                $filename = basename($item); // HDSD 1.2.pdf
+                $filename = str_replace(' ', '_', $filename); // HDSD_1.2.pdf
+
+                $files[$i]['url'] = $item;
+                $files[$i]['name'] = $filename;
+                
+            }
         }else{
-            return $this->render('view', [
-                'model' => $this->findModel($id),
-            ]);
+            $files = null;
         }
+
+        return $this->render('view', [
+            'model' => $this->findModel($id),
+            'files' => $files,
+        ]);
     }
 
     /**
@@ -74,50 +84,40 @@ class OngtruyendanController extends QuanlyBaseController
         $request = Yii::$app->request;
         $model = new Ongtruyendan();
 
-        if($request->isAjax){
-            /*
-            *   Process for ajax request
-            */
-            Yii::$app->response->format = Response::FORMAT_JSON;
-            if($request->isGet){
-                return [
-                    'title'=> "Thêm mới Ongtruyendan",
-                    'content'=>$this->renderAjax('create', [
-                        'model' => $model,
-                    ]),
-                    'footer'=> Html::button('Lưu',['class'=>'btn btn-primary float-left','type'=>"submit"]).
-                            Html::button('Đóng',['class'=>'btn btn-light float-right','data-bs-dismiss'=>"modal"])
-                ];
-            }else if($model->load($request->post()) && $model->save()){
-                return [
-                    'forceReload'=>'#crud-datatable-pjax',
-                    'title'=> "Thêm mới Ongtruyendan",
-                    'content'=>'<span class="text-success">Thêm mới Ongtruyendan thành công</span>',
-                    'footer'=> Html::button('Đóng',['class'=>'btn btn-light float-right','data-bs-dismiss'=>"modal"]).
-                            Html::a('Tiếp tục thêm mới',['create'],['class'=>'btn btn-primary float-left','role'=>'modal-remote'])
-                ];
-            }else{
-                return [
-                    'title'=> "Create new Ongtruyendan",
-                    'content'=>$this->renderAjax('create', [
-                        'model' => $model,
-                    ]),
-                    'footer'=> Html::button('Đóng',['class'=>'btn btn-light float-right','data-bs-dismiss'=>"modal"]).
-                                Html::button('Lưu',['class'=>'btn btn-primary float-left','type'=>"submit"])
+        $filedinhkem = new UploadFile();
 
-                ];
+        if ($model->load($request->post()) && $model->save() && $filedinhkem->load($request->post())) {
+
+            $filedinhkem->fileupload = UploadedFile::getInstances($filedinhkem, 'fileupload');
+
+            if($filedinhkem->fileupload != null){
+                //dd($filedinhkem->fileupload);
+                $file = [];
+                foreach($filedinhkem->fileupload as $i => $item){
+                    if(strpos($item->name, "'") == true){
+                        $item->name = str_replace("'","_",$item->name);
+                    }
+
+                    $file[] = 'uploads/ongtruyendan/'.$model->id.'/'.$item->baseName.'.'.$item->extension;
+                    $path = 'uploads/ongtruyendan/'.$model->id.'/';
+
+                    $filedinhkem->uploadFile($path, $item);
+                }
+
+                $model->file_dinhkem = json_encode($file);
+                $model->save();
             }
-        }else{
-            /*
-            *   Process for non-ajax request
-            */
-            if ($model->load($request->post()) && $model->save()) {
-                return $this->redirect(['view', 'id' => $model->id]);
-            } else {
-                return $this->render('create', [
-                    'model' => $model,
-                ]);
-            }
+
+            Yii::$app->db->createCommand("UPDATE network_ongtruyendan SET geom = ST_SETSRID(ST_GeomFromText(ST_AsText(ST_GeomFromGeoJSON('" . $model->geojson . "'))),4326) WHERE id = :id")
+            ->bindValue(':id', $model->id)
+            ->execute();
+            return $this->redirect(['view', 'id' => $model->id]);
+        } else {
+            return $this->render('create', [
+                'model' => $model,
+                'filedinhkem' => $filedinhkem,
+                'categories' => CategoriesService::getCategories(),
+            ]);
         }
 
     }
@@ -134,51 +134,40 @@ class OngtruyendanController extends QuanlyBaseController
         $request = Yii::$app->request;
         $model = $this->findModel($id);
 
-        if($request->isAjax){
-            /*
-            *   Process for ajax request
-            */
-            Yii::$app->response->format = Response::FORMAT_JSON;
-            if($request->isGet){
-                return [
-                    'title'=> "Cập nhật Ongtruyendan #".$id,
-                    'content'=>$this->renderAjax('update', [
-                        'model' => $model,
-                    ]),
-                    'footer'=> Html::button('Đóng',['class'=>'btn btn-light float-right','data-bs-dismiss'=>"modal"]).
-                                Html::button('Lưu',['class'=>'btn btn-primary float-left','type'=>"submit"])
-                ];
-            }else if($model->load($request->post()) && $model->save()){
-                return [
-                    'forceReload'=>'#crud-datatable-pjax',
-                    'title'=> "Ongtruyendan #".$id,
-                    'content'=>$this->renderAjax('view', [
-                        'model' => $model,
-                    ]),
-                    'footer'=> Html::button('Đóng',['class'=>'btn btn-light float-right','data-bs-dismiss'=>"modal"]).
-                            Html::a('Lưu',['update','id'=>$id],['class'=>'btn btn-primary float-left','role'=>'modal-remote'])
-                ];
-            }else{
-                 return [
-                    'title'=> "Cập nhật Ongtruyendan #".$id,
-                    'content'=>$this->renderAjax('update', [
-                        'model' => $model,
-                    ]),
-                    'footer'=> Html::button('Đóng',['class'=>'btn btn-light float-right','data-bs-dismiss'=>"modal"]).
-                                Html::button('Lưu',['class'=>'btn btn-primary float-left','type'=>"submit"])
-                ];
+        $filedinhkem = new UploadFile();
+
+        if ($model->load($request->post()) && $model->save() && $filedinhkem->load($request->post())) {
+
+            $filedinhkem->fileupload = UploadedFile::getInstances($filedinhkem, 'fileupload');
+
+            if($filedinhkem->fileupload != null){
+                //dd($filedinhkem->fileupload);
+                $file = [];
+                foreach($filedinhkem->fileupload as $i => $item){
+                    if(strpos($item->name, "'") == true){
+                        $item->name = str_replace("'","_",$item->name);
+                    }
+
+                    $file[] = 'uploads/ongtruyendan/'.$model->id.'/'.$item->baseName.'.'.$item->extension;
+                    $path = 'uploads/ongtruyendan/'.$model->id.'/';
+
+                    $filedinhkem->uploadFile($path, $item);
+                }
+
+                $model->file_dinhkem = json_encode($file);
+                $model->save();
             }
-        }else{
-            /*
-            *   Process for non-ajax request
-            */
-            if ($model->load($request->post()) && $model->save()) {
-                return $this->redirect(['view', 'id' => $model->id]);
-            } else {
-                return $this->render('update', [
-                    'model' => $model,
-                ]);
-            }
+
+            Yii::$app->db->createCommand("UPDATE network_ongtruyendan SET geom = ST_SETSRID(ST_GeomFromText(ST_AsText(ST_GeomFromGeoJSON('" . $model->geojson . "'))),4326) WHERE id = :id")
+            ->bindValue(':id', $model->id)
+            ->execute();
+            return $this->redirect(['view', 'id' => $model->id]);
+        } else {
+            return $this->render('update', [
+                'model' => $model,
+                'filedinhkem' => $filedinhkem,
+                'categories' => CategoriesService::getCategories(),
+            ]);
         }
     }
 

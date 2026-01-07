@@ -19,7 +19,7 @@ class NhamaynuocSearch extends Nhamaynuoc
     {
         return [
             [['id', 'status', 'created_by', 'updated_by', 'loainhamay_id'], 'integer'],
-            [['geom', 'loai', 'file_dinhkem', 'lat', 'long', 'geojson', 'created_at', 'updated_at'], 'safe'],
+            [['geom', 'loai', 'file_dinhkem', 'lat', 'long', 'geojson', 'created_at', 'updated_at', 'ten'], 'safe'],
             [['objectid', 'shape_leng', 'shape_area'], 'number'],
         ];
     }
@@ -74,6 +74,7 @@ class NhamaynuocSearch extends Nhamaynuoc
             ->andFilterWhere(['like', 'upper(file_dinhkem)', mb_strtoupper($this->file_dinhkem)])
             ->andFilterWhere(['like', 'upper(lat)', mb_strtoupper($this->lat)])
             ->andFilterWhere(['like', 'upper(long)', mb_strtoupper($this->long)])
+            ->andFilterWhere(['like', 'upper(ten)', mb_strtoupper($this->ten)])
             ->andFilterWhere(['like', 'upper(geojson)', mb_strtoupper($this->geojson)]);
 
         return $dataProvider;

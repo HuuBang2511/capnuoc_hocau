@@ -1,4 +1,6 @@
 <?php
+use kartik\grid\GridView;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
 use yii\helpers\Html;
 
@@ -11,25 +13,40 @@ return [
         // 'class'=>'\kartik\grid\DataColumn',
         // 'attribute'=>'id',
     // ],
+    // [
+    //     'class'=>'\kartik\grid\DataColumn',
+    //     'attribute'=>'geom',
+    // ],
+    // [
+    //     'class'=>'\kartik\grid\DataColumn',
+    //     'attribute'=>'objectid',
+    // ],
+    // [
+    //     'class'=>'\kartik\grid\DataColumn',
+    //     'attribute'=>'loai',
+    // ],
+    // [
+    //     'class'=>'\kartik\grid\DataColumn',
+    //     'attribute'=>'shape_leng',
+    // ],
     [
         'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'geom',
+        'attribute'=>'ten',
     ],
     [
-        'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'objectid',
-    ],
-    [
-        'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'loai',
-    ],
-    [
-        'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'shape_leng',
-    ],
-    [
-        'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'shape_area',
+        'class' => '\kartik\grid\DataColumn',
+        'attribute' => 'loainhamay_id',
+        'format' => 'raw',
+        'value' => 'loainhamay.ten',
+        'filter' => ArrayHelper::map($categories['loainhamay'], 'id', 'ten'),
+        //'filter' => $categories['loaiham'],
+        'filterType' => GridView::FILTER_SELECT2,
+        'filterWidgetOptions' => [
+            'options' => ['prompt' => 'Chọn loại nhà máy'],
+            'pluginOptions' => [
+                'allowClear' => true,
+            ],
+        ],
     ],
     // [
         // 'class'=>'\kartik\grid\DataColumn',
@@ -81,10 +98,10 @@ return [
         },
         'buttons' => [
             'view' => function ($url, $model, $key) {
-                return Html::a('<span class="fa fa-info"></span>',$url,['class' => 'btn btn-info btn-sm','role' => 'modal-remote','title'=>'Xem']);
+                return Html::a('<span class="fa fa-info"></span>',$url,['class' => 'btn btn-info btn-sm','title'=>'Xem']);
             },
             'update' => function ($url, $model, $key) {
-                return Html::a('<span class="fa fa-pen"></span>',$url,['class' => 'btn btn-warning btn-sm','role' => 'modal-remote','title'=>'Cập nhật']);
+                return Html::a('<span class="fa fa-pen"></span>',$url,['class' => 'btn btn-warning btn-sm','title'=>'Cập nhật']);
             },
             'delete' => function ($url, $model, $key) {
                 return Html::a('<span class="fa fa-trash"></span>',$url,['class' => 'btn btn-danger btn-sm','role' => 'modal-remote','title'=>'Xóa']);

@@ -1,4 +1,6 @@
 <?php
+use kartik\grid\GridView;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
 use yii\helpers\Html;
 
@@ -11,26 +13,69 @@ return [
         // 'class'=>'\kartik\grid\DataColumn',
         // 'attribute'=>'id',
     // ],
-    [
-        'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'geom',
-    ],
-    [
-        'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'objectid',
-    ],
-    [
-        'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'tinh_trang',
-    ],
+    // [
+    //     'class'=>'\kartik\grid\DataColumn',
+    //     'attribute'=>'geom',
+    // ],
+    // [
+    //     'class'=>'\kartik\grid\DataColumn',
+    //     'attribute'=>'objectid_1',
+    // ],
+    // [
+    //     'class'=>'\kartik\grid\DataColumn',
+    //     'attribute'=>'objectid',
+    // ],
+    // [
+    //     'class'=>'\kartik\grid\DataColumn',
+    //     'attribute'=>'tinh_trang',
+    // ],
     [
         'class'=>'\kartik\grid\DataColumn',
         'attribute'=>'madongho',
     ],
     [
         'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'vitri',
+        'attribute'=>'co',
+        
     ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'sothan',
+    ],
+    [
+        'class' => '\kartik\grid\DataColumn',
+        'attribute' => 'tinhtrang_id',
+        'format' => 'raw',
+        'value' => 'tinhtrang.ten',
+        'filter' => ArrayHelper::map($categories['tinhtrang'], 'id', 'ten'),
+        //'filter' => $categories['loaiham'],
+        'filterType' => GridView::FILTER_SELECT2,
+        'filterWidgetOptions' => [
+            'options' => ['prompt' => 'Chọn tình trạng'],
+            'pluginOptions' => [
+                'allowClear' => true,
+            ],
+        ],
+    ],
+    [
+        'class' => '\kartik\grid\DataColumn',
+        'attribute' => 'hieudongho_id',
+        'format' => 'raw',
+        'value' => 'hieudongho.ten',
+        'filter' => ArrayHelper::map($categories['hieudongho'], 'id', 'ten'),
+        //'filter' => $categories['loaiham'],
+        'filterType' => GridView::FILTER_SELECT2,
+        'filterWidgetOptions' => [
+            'options' => ['prompt' => 'Chọn hiệu đồng hồ'],
+            'pluginOptions' => [
+                'allowClear' => true,
+            ],
+        ],
+    ],
+    // [
+        // 'class'=>'\kartik\grid\DataColumn',
+        // 'attribute'=>'vitri',
+    // ],
     // [
         // 'class'=>'\kartik\grid\DataColumn',
         // 'attribute'=>'co',
@@ -113,10 +158,10 @@ return [
         },
         'buttons' => [
             'view' => function ($url, $model, $key) {
-                return Html::a('<span class="fa fa-info"></span>',$url,['class' => 'btn btn-info btn-sm','role' => 'modal-remote','title'=>'Xem']);
+                return Html::a('<span class="fa fa-info"></span>',$url,['class' => 'btn btn-info btn-sm','title'=>'Xem']);
             },
             'update' => function ($url, $model, $key) {
-                return Html::a('<span class="fa fa-pen"></span>',$url,['class' => 'btn btn-warning btn-sm','role' => 'modal-remote','title'=>'Cập nhật']);
+                return Html::a('<span class="fa fa-pen"></span>',$url,['class' => 'btn btn-warning btn-sm','title'=>'Cập nhật']);
             },
             'delete' => function ($url, $model, $key) {
                 return Html::a('<span class="fa fa-trash"></span>',$url,['class' => 'btn btn-danger btn-sm','role' => 'modal-remote','title'=>'Xóa']);

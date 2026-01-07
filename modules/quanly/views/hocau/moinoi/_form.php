@@ -64,6 +64,47 @@ $this->params['breadcrumbs'][] = $this->title;
     </div>
 
     <div class="block-content">
+
+        <div class="row mt-3">
+            <div class="col-lg-3">
+                <?= $form->field($model, 'kichthuoc')->textInput(['maxlength' => true]) ?>
+            </div>
+            <div class="col-lg-3">
+                <?= $form->field($model, 'mavitri')->textInput(['maxlength' => true]) ?>
+            </div>
+            <div class="col-lg-3">
+                <?= $form->field($model, 'tinhtrang_id')->widget(Select2::className(), [
+                        'data' => ArrayHelper::map($categories['tinhtrang'], 'id', 'ten'),
+                        'options' => ['placeholder' => 'Tình trạng' ],
+                        'pluginOptions' => [
+                            'allowClear' => true
+                        ],
+                ]) ?>
+            </div>
+            <div class="col-lg-3">
+                <?= $form->field($model, 'loaimoinoi_id')->widget(Select2::className(), [
+                        'data' => ArrayHelper::map($categories['loaimoinoi'], 'id', 'ten'),
+                        'options' => ['placeholder' => 'Loại mối nối'],
+                        'pluginOptions' => [
+                            'allowClear' => true
+                        ],
+                ]) ?>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-lg-12">
+                <?= $form->field($model, 'vattu')->textInput(['maxlength' => true]) ?>
+            </div>
+        </div>
+        
+
+        <div class="row">
+                <div class="col-lg-12">
+                    <?= $form->field($model, 'ghichu')->textArea(['rows' => 3]) ?>
+                </div>
+            </div>
+
         <div class="row">
             <div class="tab-pane" id="filedinhkem-view">
                 <div class="row px-3">
@@ -183,8 +224,8 @@ const baseLayers = {
 };
 
 const overlayers = {
-    "Cọc mốc": L.tileLayer.wms('http://103.9.77.141:8080/geoserver/capnuoc_hocau/wms', {
-    layers: 'capnuoc_hocau:network_cocmoc',
+    "Mối nối": L.tileLayer.wms('http://103.9.77.141:8080/geoserver/capnuoc_hocau/wms', {
+    layers: 'capnuoc_hocau:network_moinoi',
     format: 'image/png',
     transparent: true,
     maxZoom: 22 // Đặt maxZoom là 22

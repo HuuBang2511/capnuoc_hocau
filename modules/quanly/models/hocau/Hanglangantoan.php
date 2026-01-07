@@ -65,9 +65,9 @@ class Hanglangantoan extends QuanlyBaseModel
             'id' => 'ID',
             'geom' => 'Geom',
             'objectid' => 'Objectid',
-            'hanhlang' => 'Hanhlang',
+            'hanhlang' => 'Hành lang',
             'tinh_trang' => 'Tinh Trang',
-            'ghichu' => 'Ghichu',
+            'ghichu' => 'Ghi chú',
             'shape_leng' => 'Shape Leng',
             'lat' => 'Lat',
             'long' => 'Long',
@@ -78,7 +78,7 @@ class Hanglangantoan extends QuanlyBaseModel
             'created_by' => 'Created By',
             'updated_by' => 'Updated By',
             'file_dinhkem' => 'File Dinhkem',
-            'tinhtrang_id' => 'Tinhtrang ID',
+            'tinhtrang_id' => 'Tình trạng',
         ];
     }
 

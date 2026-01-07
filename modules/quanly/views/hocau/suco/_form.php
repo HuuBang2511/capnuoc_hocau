@@ -64,6 +64,94 @@ $this->params['breadcrumbs'][] = $this->title;
     </div>
 
     <div class="block-content">
+
+        <div class="row mt-3">
+            <div class="col-lg-3">
+                <?= $form->field($model, 'masuco')->textInput(['maxlength' => true]) ?>
+            </div>
+            <div class="col-lg-3">
+                <?= $form->field($model, 'mataisan')->textInput(['maxlength' => true]) ?>
+            </div>
+            <div class="col-lg-3">
+                <?= $form->field($model, 'n_phathien')->widget(DatePicker::className(), [
+                        'pluginOptions' => [
+                            'format' => 'dd/mm/yyyy',
+                            'autoclose' => true,
+                        ],
+//                        'language' => 'vn',
+                        'options' => ['placeholder' => 'Ngày phát hiện'],
+                ]) ?>
+            </div>
+            <div class="col-lg-3">
+                <?= $form->field($model, 'n_xuly')->widget(DatePicker::className(), [
+                        'pluginOptions' => [
+                            'format' => 'dd/mm/yyyy',
+                            'autoclose' => true,
+                        ],
+//                        'language' => 'vn',
+                        'options' => ['placeholder' => 'Ngày xử lý'],
+                ]) ?>
+            </div>
+            <div class="col-lg-3">
+                <?= $form->field($model, 'n_hoancong')->widget(DatePicker::className(), [
+                        'pluginOptions' => [
+                            'format' => 'dd/mm/yyyy',
+                            'autoclose' => true,
+                        ],
+//                        'language' => 'vn',
+                        'options' => ['placeholder' => 'Ngày hoàn công'],
+                ]) ?>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-3">
+                <?= $form->field($model, 'nguyennhansuco_id')->widget(Select2::className(), [
+                        'data' => ArrayHelper::map($categories['nguyennhansuco'], 'id', 'ten'),
+                        'options' => ['placeholder' => 'Nguyên nhân sự cố' ],
+                        'pluginOptions' => [
+                            'allowClear' => true
+                        ],
+                ]) ?>
+            </div>
+            <div class="col-lg-3">
+                <?= $form->field($model, 'tinhtrangsuco_id')->widget(Select2::className(), [
+                        'data' => ArrayHelper::map($categories['tinhtrangsuco'], 'id', 'ten'),
+                        'options' => ['placeholder' => 'Tình trạng sự cố' ],
+                        'pluginOptions' => [
+                            'allowClear' => true
+                        ],
+                ]) ?>
+            </div>
+            <div class="col-lg-3">
+                <?= $form->field($model, 'loaisuco_id')->widget(Select2::className(), [
+                        'data' => ArrayHelper::map($categories['loaisuco'], 'id', 'ten'),
+                        'options' => ['placeholder' => 'Loại sự cố' ],
+                        'pluginOptions' => [
+                            'allowClear' => true
+                        ],
+                ]) ?>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <?= $form->field($model, 'vitri')->textInput(['maxlength' => true]) ?>
+            </div>
+        </div>
+
+         <div class="row">
+            <div class="col-lg-12">
+                <?= $form->field($model, 'cachxuly')->textInput(['maxlength' => true]) ?>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-12">
+                <?= $form->field($model, 'ghichu')->textArea(['rows' => 3]) ?>
+            </div>
+        </div>
+
         <div class="row">
             <div class="tab-pane" id="filedinhkem-view">
                 <div class="row px-3">
@@ -183,8 +271,8 @@ const baseLayers = {
 };
 
 const overlayers = {
-    "Cọc mốc": L.tileLayer.wms('http://103.9.77.141:8080/geoserver/capnuoc_hocau/wms', {
-    layers: 'capnuoc_hocau:network_cocmoc',
+    "Sự cố": L.tileLayer.wms('http://103.9.77.141:8080/geoserver/capnuoc_hocau/wms', {
+    layers: 'capnuoc_hocau:network_suco',
     format: 'image/png',
     transparent: true,
     maxZoom: 22 // Đặt maxZoom là 22

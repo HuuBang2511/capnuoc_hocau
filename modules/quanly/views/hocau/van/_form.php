@@ -64,6 +64,71 @@ $this->params['breadcrumbs'][] = $this->title;
     </div>
 
     <div class="block-content">
+
+        <div class="row mt-3">
+            <div class="col-lg-3">
+                <?= $form->field($model, 'mavan')->textInput(['maxlength' => true]) ?>
+            </div>
+            <div class="col-lg-3">
+                <?= $form->field($model, 'covan')->textInput(['maxlength' => true]) ?>
+            </div>
+            <div class="col-lg-3">
+                <?= $form->field($model, 'cochiakhoa')->textInput(['maxlength' => true]) ?>
+            </div>
+            <div class="col-lg-3">
+                <?= $form->field($model, 'ngaylapdat')->widget(DatePicker::className(), [
+                        'pluginOptions' => [
+                            'format' => 'dd/mm/yyyy',
+                            'autoclose' => true,
+                        ],
+//                        'language' => 'vn',
+                        'options' => ['placeholder' => 'Ngày lắp đặt'],
+                ]) ?>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-3">
+                <?= $form->field($model, 'sovong')->textInput(['maxlength' => true]) ?>
+            </div>
+            <div class="col-lg-3">
+                <?= $form->field($model, 'chieudong')->textInput(['maxlength' => true]) ?>
+            </div>
+            <div class="col-lg-3">
+                <?= $form->field($model, 'dongmo')->textInput(['maxlength' => true]) ?>
+            </div>
+            <div class="col-lg-3">
+                <?= $form->field($model, 'tinhtrang_id')->widget(Select2::className(), [
+                        'data' => ArrayHelper::map($categories['tinhtrang'], 'id', 'ten'),
+                        'options' => ['placeholder' => 'Tình trạng' ],
+                        'pluginOptions' => [
+                            'allowClear' => true
+                        ],
+                ]) ?>
+            </div>
+            <div class="col-lg-3">
+                <?= $form->field($model, 'loaivan_id')->widget(Select2::className(), [
+                        'data' => ArrayHelper::map($categories['loaivan'], 'id', 'ten'),
+                        'options' => ['placeholder' => 'Loại van' ],
+                        'pluginOptions' => [
+                            'allowClear' => true
+                        ],
+                ]) ?>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <?= $form->field($model, 'vitri')->textInput(['maxlength' => true]) ?>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-12">
+                <?= $form->field($model, 'ghichu')->textArea(['rows' => 3]) ?>
+            </div>
+        </div>
+
         <div class="row">
             <div class="tab-pane" id="filedinhkem-view">
                 <div class="row px-3">
@@ -183,8 +248,8 @@ const baseLayers = {
 };
 
 const overlayers = {
-    "Cọc mốc": L.tileLayer.wms('http://103.9.77.141:8080/geoserver/capnuoc_hocau/wms', {
-    layers: 'capnuoc_hocau:network_cocmoc',
+    "Van": L.tileLayer.wms('http://103.9.77.141:8080/geoserver/capnuoc_hocau/wms', {
+    layers: 'capnuoc_hocau:network_van',
     format: 'image/png',
     transparent: true,
     maxZoom: 22 // Đặt maxZoom là 22

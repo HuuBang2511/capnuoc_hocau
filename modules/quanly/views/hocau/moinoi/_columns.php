@@ -1,4 +1,6 @@
 <?php
+use kartik\grid\GridView;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
 use yii\helpers\Html;
 
@@ -11,30 +13,30 @@ return [
         // 'class'=>'\kartik\grid\DataColumn',
         // 'attribute'=>'id',
     // ],
-    [
-        'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'geom',
-    ],
-    [
-        'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'objectid_1',
-    ],
-    [
-        'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'objectid',
-    ],
-    [
-        'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'tinh_trang',
-    ],
-    [
-        'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'loaimoinoi',
-    ],
     // [
-        // 'class'=>'\kartik\grid\DataColumn',
-        // 'attribute'=>'kichthuoc',
+    //     'class'=>'\kartik\grid\DataColumn',
+    //     'attribute'=>'geom',
     // ],
+    // [
+    //     'class'=>'\kartik\grid\DataColumn',
+    //     'attribute'=>'objectid_1',
+    // ],
+    // [
+    //     'class'=>'\kartik\grid\DataColumn',
+    //     'attribute'=>'objectid',
+    // ],
+    // [
+    //     'class'=>'\kartik\grid\DataColumn',
+    //     'attribute'=>'tinh_trang',
+    // ],
+    // [
+    //     'class'=>'\kartik\grid\DataColumn',
+    //     'attribute'=>'loaimoinoi',
+    // ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'kichthuoc',
+    ],
     // [
         // 'class'=>'\kartik\grid\DataColumn',
         // 'attribute'=>'x',
@@ -47,18 +49,48 @@ return [
         // 'class'=>'\kartik\grid\DataColumn',
         // 'attribute'=>'z',
     // ],
-    // [
-        // 'class'=>'\kartik\grid\DataColumn',
-        // 'attribute'=>'vattu',
-    // ],
-    // [
-        // 'class'=>'\kartik\grid\DataColumn',
-        // 'attribute'=>'mavitri',
-    // ],
-    // [
-        // 'class'=>'\kartik\grid\DataColumn',
-        // 'attribute'=>'ghichu',
-    // ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'vattu',
+    ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'mavitri',
+    ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'ghichu',
+    ],
+    [
+        'class' => '\kartik\grid\DataColumn',
+        'attribute' => 'tinhtrang_id',
+        'format' => 'raw',
+        'value' => 'tinhtrang.ten',
+        'filter' => ArrayHelper::map($categories['tinhtrang'], 'id', 'ten'),
+        //'filter' => $categories['loaiham'],
+        'filterType' => GridView::FILTER_SELECT2,
+        'filterWidgetOptions' => [
+            'options' => ['prompt' => 'Chọn tình trạng'],
+            'pluginOptions' => [
+                'allowClear' => true,
+            ],
+        ],
+    ],
+    [
+        'class' => '\kartik\grid\DataColumn',
+        'attribute' => 'loaimoinoi_id',
+        'format' => 'raw',
+        'value' => 'loaimoinoi0.ten',
+        'filter' => ArrayHelper::map($categories['loaimoinoi'], 'id', 'ten'),
+        //'filter' => $categories['loaiham'],
+        'filterType' => GridView::FILTER_SELECT2,
+        'filterWidgetOptions' => [
+            'options' => ['prompt' => 'Chọn loại mối nối'],
+            'pluginOptions' => [
+                'allowClear' => true,
+            ],
+        ],
+    ],
     // [
         // 'class'=>'\kartik\grid\DataColumn',
         // 'attribute'=>'lat',

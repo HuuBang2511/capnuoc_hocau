@@ -197,7 +197,7 @@ class HamkythuatController extends QuanlyBaseController
             Yii::$app->response->format = Response::FORMAT_JSON;
             if ($request->isGet) {
                 return [
-                    'title' => "Xóa #" . $id,
+                    'title' => "Xóa hầm kỹ thuật #" . $id,
                     'content' => $this->renderAjax('delete', [
                         'model' => $model,
                     ]),
@@ -207,7 +207,7 @@ class HamkythuatController extends QuanlyBaseController
             } else if ($request->isPost && $model->save()) {
                 return [
                     'forceReload' => '#crud-datatable-pjax',
-                    'title' => "Xóa thành công #" . $id,
+                    'title' => "Xóa hầm kỹ thuật thành công #" . $id,
                     'content' => '<span class="text-success">Xóa thành công</span>',
                     'footer' => Html::button('Close', ['class' => 'btn btn-light float-right', 'data-bs-dismiss' => "modal"])
                 ];

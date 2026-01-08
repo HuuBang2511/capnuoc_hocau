@@ -4,7 +4,6 @@ use yii\helpers\Url;
 use yii\widgets\DetailView;
 use app\widgets\maps\LeafletMapAsset;
 use yii\helpers\Html;
-use app\widgets\gridview\GridView;
 
 LeafletMapAsset::register($this);
 
@@ -16,150 +15,159 @@ $this->title = Yii::t('app', $label[$requestedAction->id] . ' ' . $controller->t
 $this->params['breadcrumbs'][] = ['label' => $label['search'] . ' ' . $controller->title, 'url' => $controller->url];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="gd-hamkythuat-view">
+
+<div class="gd-hamkythuat-view container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h4 fw-bold mb-1 text-primary"><i class="fa fa-door-open me-2"></i><?= Html::encode($model->ten) ?></h2>
+            <div class="text-muted small">Chi tiết thông tin hầm kỹ thuật</div>
+        </div>
+        <div class="btn-group shadow-sm">
+            <?= Html::a('<i class="fa fa-list me-1"></i> Danh sách', Url::to(['index']), ['class' => 'btn btn-outline-secondary']) ?>
+            <?= Html::a('<i class="fa fa-edit me-1"></i> Cập nhật', ['update', 'id' => $model->id], ['class' => 'btn btn-warning']) ?>
+        </div>
+    </div>
+
     <div class="row">
-        <div class="col-lg-12">
-            <div class="block block-themed">
-                <div class="block-header">
-                    <h3 class="block-title"><?= $this->title ?></h3>
-                    <div class="block-options">
-                        <a class="btn btn-warning btn-sm" href="<?= Url::to(['update', 'id' => $model->id]) ?>">Cập nhật</a>
-                        <a class="btn btn-light btn-sm" href="<?= Url::to(['index']) ?>">Danh sách</a>
-                    </div>
+        <div class="col-xl-8 col-lg-7 order-lg-2 mb-4">
+            <div class="card border-0 shadow-sm h-100 overflow-hidden">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-bold"><i class="fa fa-map-marked-alt text-success me-2"></i>Sơ đồ mặt bằng GeoJSON</h5>
+                    <div class="badge bg-soft-info text-info border border-info px-3">Tự động căn chỉnh</div>
                 </div>
-                <div class="block-content">
-                    <div class="row">
-                        <div class="col-lg-12 pb-2">
+                <div class="card-body p-0">
+                    <div id="map" style="height: 65vh; min-height: 500px; width: 100%;"></div>
+                </div>
+            </div>
+        </div>
 
-                            <div id="map" style="height: 400px; width: 100%;"></div>
-                            <script>
-
-                                // center of the map
-                                var center = [10.804291919691535, 106.69527258767485];
-
-                                // Create the map
-                                var map = L.map('map').setView(center, 14);
-
-                                L.tileLayer('http://{s}.google.com/vt/lyrs=' + 'r' + '&x={x}&y={y}&z={z}', {
-                                    maxZoom: 22,
-                                    subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
-                                }).addTo(map);
-                                var baseMaps = {
-                                    "Bản đồ Google": L.tileLayer('http://{s}.google.com/vt/lyrs=' + 'r' + '&x={x}&y={y}&z={z}', {
-                                        maxZoom: 22,
-                                        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
-                                    }),
-                                    "Ảnh vệ tinh": L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
-                                        maxZoom: 22,
-                                        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-                                    }),
-                                    // "MapBox": L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoic2thZGFtYmkiLCJhIjoiY2lqdndsZGg3MGNua3U1bTVmcnRqM2xvbiJ9.9I5ggqzhUVrErEQ328syYQ#3/0.00/0.00', {
-                                    //     maxZoom: 18,
-                                    //     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-                                    //     id: 'streets-v9',
-                                    // }),
-                                    // "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                    //     attribution: '© <a href="https://www.openstreetmap.org" target="_blank">OpenStreetMap</a>',
-                                    //     maxZoom: 18
-                                    // }),
-                                };
-
-                                var layerControl = L.control.layers(baseMaps);
-                                layerControl.addTo(map);
-                                
-                                <?php if($model->geojson != null) :?>
-                                var states = [{
-                                    "type": "Feature",
-                                    "properties": {"": ""},
-                                    "geometry": <?= $model->geojson ?>
-                                }];
-
-                                // var polygon = L.geoJSON(states).addTo(map);
-                                // var bounds = polygon.getBounds();
-                                // if (bounds.isValid()) {
-                                //     console.log('1');
-                                //     map.fitBounds(bounds);
-                                //     //map.invalidateSize();
-                                // } else {
-                                //     map.setZoom(14); // Đặt zoom mặc định nếu bounds không hợp lệ
-                                // }
-
-                                // var centerpolygon = bounds.getCenter()
-                                // map.panTo(centerpolygon)
-
-                                // map.on('zoomend', function() {
-                                //     console.log('Zoom level: ' + map.getZoom());
-                                //     map.invalidateSize();
-                                // });
-
-                                try {
-                                    var polygon = L.geoJSON(states).addTo(map);
-                                    var bounds = polygon.getBounds();
-                                    if (bounds.isValid()) {
-                                        map.fitBounds(bounds, { padding: [50, 50] }); // Thêm padding để tránh zoom quá sát
-                                        map.panTo(bounds.getCenter()); // Di chuyển đến trung tâm của bounds
-
-                                        var centerpolygon = bounds.getCenter()
-                                        map.panTo(centerpolygon)
-                                    } else {
-                                        console.warn('Bounds không hợp lệ, sử dụng zoom mặc định');
-                                        map.setView(center, 14); // Đặt lại vị trí và zoom mặc định
-                                    }
-                                } catch (e) {
-                                    console.error('Lỗi khi xử lý GeoJSON: ', e);
-                                    map.setView(center, 14); // Đặt lại vị trí và zoom mặc định nếu có lỗi
+        <div class="col-xl-4 col-lg-5 order-lg-1 mb-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0 fw-bold"><i class="fa fa-info-circle text-primary me-2"></i>Thông số đo đạc</h5>
+                </div>
+                <div class="card-body p-0">
+                    <?= DetailView::widget([
+                        'model' => $model,
+                        'options' => ['class' => 'table table-hover mb-0 detail-view-table'],
+                        'attributes' => [
+                            [
+                                'attribute' => 'ten',
+                                'label' => 'Tên gọi',
+                                'contentOptions' => ['class' => 'fw-bold'],
+                            ],
+                            [
+                                'attribute' => 'shape_area',
+                                'label' => 'Diện tích (m²)',
+                                'value' => function($model) {
+                                    return number_format($model->shape_area, 2) . ' m²';
                                 }
-                                <?php endif;?>
+                            ],
+                            [
+                                'attribute' => 'shape_leng',
+                                'label' => 'Chu vi/Chiều dài (m)',
+                                'value' => function($model) {
+                                    return number_format($model->shape_leng, 2) . ' m';
+                                }
+                            ],
+                            [
+                                'label' => 'Loại hầm/nhà máy',
+                                'format' => 'raw',
+                                'value' => function($model) {
+                                    $text = $model->loainhamay ? $model->loainhamay->ten : 'N/A';
+                                    return '<span class="badge bg-soft-primary text-primary border border-primary px-3">' . $text . '</span>';
+                                }
+                            ],
+                        ],
+                    ]) ?>
+                </div>
+            </div>
 
-                                map.on('zoomend', function() {
-                                    console.log('Zoom level: ' + map.getZoom());
-                                    map.invalidateSize();
-                                });
-
-                            </script>
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title mb-0 fw-bold"><i class="fa fa-file-pdf text-danger me-2"></i>Tài liệu thiết kế</h5>
+                </div>
+                <div class="card-body py-2">
+                    <?php if (!empty($files)) : ?>
+                        <div class="list-group list-group-flush">
+                            <?php foreach ($files as $i => $file) : ?>
+                                <a href="<?= Yii::$app->homeUrl . $file['url'] ?>" target="_blank" class="list-group-item list-group-item-action border-0 px-0 d-flex align-items-center">
+                                    <div class="bg-light rounded p-2 me-3 text-center" style="width: 40px;">
+                                        <i class="fa fa-paperclip text-muted"></i>
+                                    </div>
+                                    <div class="text-truncate small fw-medium text-dark">
+                                        <?= Html::encode($file['name']) ?>
+                                    </div>
+                                </a>
+                            <?php endforeach; ?>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <?= DetailView::widget([
-                                'model' => $model,
-                                'attributes' => [
-                                    'ten',
-                                    'shape_area',
-                                    'shape_leng',
-                                    [
-                                        'label' => 'Loại',
-                                        'value' => function($model){
-                                            return ($model->loainhamay_id != null) ? $model->loainhamay->ten : '';
-                                        }
-                                    ],
-                                ],
-                            ]) ?>
+                    <?php else : ?>
+                        <div class="text-center py-4 text-muted small italic">
+                            <i class="fa fa-ghost fa-2x mb-2 opacity-25"></i><br>Không có file đính kèm
                         </div>
-                    </div>
-                    <h3>File đính kèm</h3>
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <table class="table table-striped table-bordered">
-                                <tr>
-                                    <th>STT</th>
-                                    <th>Tên file</th>
-                                    
-                                </tr>
-                                <?php if ($files != null) : ?>
-                                    <?php foreach ($files as $i => $file) : ?>
-                                        <tr>
-                                            <td><?= $i + 1 ?></td>
-                                            <td><a href="<?= Yii::$app->homeUrl . $file['url'] ?>" target="_blank"><?= $file['name'] ?></a></td>
-                                            
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </table>
-                        </div>
-                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .bg-soft-info { background-color: rgba(13, 202, 240, 0.1); }
+    .bg-soft-primary { background-color: rgba(13, 110, 253, 0.1); }
+    .detail-view-table th { background-color: #f8f9fa; width: 40%; color: #555; font-size: 0.85rem; text-transform: uppercase; }
+    .card { border-radius: 12px; }
+    #map { z-index: 1; border-radius: 0 0 12px 12px; }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var center = [10.804291919691535, 106.69527258767485];
+        var map = L.map('map').setView(center, 14);
+
+        var baseMaps = {
+            "Bản đồ Google": L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+                maxZoom: 22, subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+            }).addTo(map),
+            "Ảnh vệ tinh": L.tileLayer('http://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+                maxZoom: 22, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            })
+        };
+
+        L.control.layers(baseMaps).addTo(map);
+
+        <?php if($model->geojson != null) :?>
+            try {
+                var geoData = {
+                    "type": "Feature",
+                    "properties": {"name": "<?= $model->ten ?>"},
+                    "geometry": <?= $model->geojson ?>
+                };
+
+                var geoLayer = L.geoJSON(geoData, {
+                    style: function(feature) {
+                        return {
+                            color: "#e74c3c",
+                            weight: 3,
+                            fillColor: "#e74c3c",
+                            fillOpacity: 0.3
+                        };
+                    }
+                }).addTo(map);
+
+                // Gắn popup thông tin vào Polygon
+                geoLayer.bindPopup("<strong><?= $model->ten ?></strong><br>Diện tích: <?= number_format($model->shape_area, 2) ?> m²");
+
+                var bounds = geoLayer.getBounds();
+                if (bounds.isValid()) {
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                }
+            } catch (e) {
+                console.error('Lỗi GeoJSON:', e);
+            }
+        <?php endif;?>
+
+        // Fix lỗi mảng trắng khi container thay đổi
+        setTimeout(function(){ map.invalidateSize(); }, 400);
+    });
+</script>

@@ -191,64 +191,44 @@ class APPConfig
             ],
         ],
         'map' => [
-            // [
-            //     'name' => 'Cấp nước Đức Trọng',
-            //     'icon' => 'fa fa-list',
-            //     'url' => 'quanly/map/ductrong',
-            //     'key'=>'quanly.map.ductrong',
-            //     'hasChild' => false,
-            // ],
             [
                 'name' => 'Bản đồ hệ thống mạng lưới cấp nước',
                 'icon' => 'fa fa-list',
-                'url' => 'quanly/map/giadinh',
-                'key'=>'quanly.map.giadinh',
+                'url' => 'quanly/map/hocau',
+                'key'=>'quanly.map.hocau',
                 'hasChild' => false,
             ],
-            [
-                'name' => 'Map test',
-                'icon' => 'fa fa-list',
-                'url' => 'quanly/map-camau/index',
-                'key'=>'quanly.map-camau.index',
-                'hasChild' => false,
-            ],
-            [
-                'name' => 'Map IOT',
-                'icon' => 'fa fa-list',
-                'url' => 'quanly/map/map_iot',
-                'key'=>'quanly.map.map_iot.index',
-                'hasChild' => false,
-            ]
+            
         ],
         'danhmuc' => [
-             [
-                 'name' => 'Danh mục Sự cố biện pháp xử lý',
-                 'icon' => 'fa fa-list',
-                 'url' => 'quanly/capnuocgd/danhmuc/gd-dm-suco-bienphapxuly',
-                 'key'=>'quanly.capnuocgd.danhmuc/gd-dm-suco-bienphapxuly.index',
-                 'hasChild' => false,
-             ],
-            [
-                'name' => 'Danh mục Sự cố kết cấu mặt đường',
-                'icon' => 'fa fa-list',
-                'url' => 'quanly/capnuocgd/danhmuc/gd-dm-suco-ketcaumatduong',
-                'key'=>'quanly.capnuocgd.danhmuc/gd-dm-suco-ketcaumatduong.index',
-                'hasChild' => false,
-            ],
-            [
-                'name' => 'Danh mục Sự cố nguyên nhân',
-                'icon' => 'fa fa-list',
-                'url' => 'quanly/capnuocgd/danhmuc/gd-dm-suco-nguyennhan',
-                'key'=>'quanly.capnuocgd.danhmuc/gd-dm-suco-nguyennhan.index',
-                'hasChild' => false,
-            ],
-            [
-                'name' => 'Danh mục xử lý Sự cố',
-                'icon' => 'fa fa-list',
-                'url' => 'quanly/capnuocgd/danhmuc/gd-dm-xulysuco',
-                'key'=>'quanly.capnuocgd.danhmuc/gd-dm-xulysuco.index',
-                'hasChild' => false,
-            ],
+            // [
+            //     'name' => 'Danh mục Sự cố biện pháp xử lý',
+            //     'icon' => 'fa fa-list',
+            //     'url' => 'quanly/capnuocgd/danhmuc/gd-dm-suco-bienphapxuly',
+            //     'key'=>'quanly.capnuocgd.danhmuc/gd-dm-suco-bienphapxuly.index',
+            //     'hasChild' => false,
+            // ],
+            // [
+            //     'name' => 'Danh mục Sự cố kết cấu mặt đường',
+            //     'icon' => 'fa fa-list',
+            //     'url' => 'quanly/capnuocgd/danhmuc/gd-dm-suco-ketcaumatduong',
+            //     'key'=>'quanly.capnuocgd.danhmuc/gd-dm-suco-ketcaumatduong.index',
+            //     'hasChild' => false,
+            // ],
+            // [
+            //     'name' => 'Danh mục Sự cố nguyên nhân',
+            //     'icon' => 'fa fa-list',
+            //     'url' => 'quanly/capnuocgd/danhmuc/gd-dm-suco-nguyennhan',
+            //     'key'=>'quanly.capnuocgd.danhmuc/gd-dm-suco-nguyennhan.index',
+            //     'hasChild' => false,
+            // ],
+            // [
+            //     'name' => 'Danh mục xử lý Sự cố',
+            //     'icon' => 'fa fa-list',
+            //     'url' => 'quanly/capnuocgd/danhmuc/gd-dm-xulysuco',
+            //     'key'=>'quanly.capnuocgd.danhmuc/gd-dm-xulysuco.index',
+            //     'hasChild' => false,
+            // ],
         ],
 
     ];

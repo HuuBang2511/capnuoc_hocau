@@ -4,7 +4,6 @@ use yii\helpers\Url;
 use yii\widgets\DetailView;
 use app\widgets\maps\LeafletMapAsset;
 use yii\helpers\Html;
-use app\widgets\gridview\GridView;
 
 LeafletMapAsset::register($this);
 
@@ -16,163 +15,164 @@ $this->title = Yii::t('app', $label[$requestedAction->id] . ' ' . $controller->t
 $this->params['breadcrumbs'][] = ['label' => $label['search'] . ' ' . $controller->title, 'url' => $controller->url];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
+
 <div class="gd-hamkythuat-view">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h3 fw-bold mb-0 text-primary">
+            <i class="fa fa-info-circle me-2"></i><?= Html::encode($this->title) ?>
+        </h2>
+        <div class="btn-group">
+            <a class="btn btn-outline-primary shadow-sm" href="<?= Url::to(['index']) ?>">
+                <i class="fa fa-list me-1"></i> Danh sách
+            </a>
+            <a class="btn btn-warning shadow-sm" href="<?= Url::to(['update', 'id' => $model->id]) ?>">
+                <i class="fa fa-edit me-1"></i> Cập nhật
+            </a>
+        </div>
+    </div>
+
     <div class="row">
-        <div class="col-lg-12">
-            <div class="block block-themed">
-                <div class="block-header">
-                    <h3 class="block-title"><?= $this->title ?></h3>
-                    <div class="block-options">
-                        <a class="btn btn-warning btn-sm" href="<?= Url::to(['update', 'id' => $model->id]) ?>">Cập nhật</a>
-                        <a class="btn btn-light btn-sm" href="<?= Url::to(['index']) ?>">Danh sách</a>
-                    </div>
+        <div class="col-xl-7 col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0"><i class="fa fa-map-marker-alt text-danger me-2"></i>Vị trí trên bản đồ</h5>
                 </div>
-                <div class="block-content">
-                    <div class="row">
-                        <div class="col-lg-12 pb-2">
+                <div class="card-body p-0">
+                    <div id="map" style="height: 500px; width: 100%; border-bottom-left-radius: .35rem; border-bottom-right-radius: .35rem;"></div>
+                </div>
+            </div>
+        </div>
 
-                            <div id="map" style="height: 400px; width: 100%;"></div>
-                            <script>
-
-                                // center of the map
-                                var center = [10.804291919691535, 106.69527258767485];
-
-                                // Create the map
-                                var map = L.map('map').setView(center, 14);
-
-                                L.tileLayer('http://{s}.google.com/vt/lyrs=' + 'r' + '&x={x}&y={y}&z={z}', {
-                                    maxZoom: 22,
-                                    subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
-                                }).addTo(map);
-                                var baseMaps = {
-                                    "Bản đồ Google": L.tileLayer('http://{s}.google.com/vt/lyrs=' + 'r' + '&x={x}&y={y}&z={z}', {
-                                        maxZoom: 22,
-                                        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
-                                    }),
-                                    "Ảnh vệ tinh": L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
-                                        maxZoom: 22,
-                                        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-                                    }),
-                                    // "MapBox": L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoic2thZGFtYmkiLCJhIjoiY2lqdndsZGg3MGNua3U1bTVmcnRqM2xvbiJ9.9I5ggqzhUVrErEQ328syYQ#3/0.00/0.00', {
-                                    //     maxZoom: 18,
-                                    //     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-                                    //     id: 'streets-v9',
-                                    // }),
-                                    // "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                    //     attribution: '© <a href="https://www.openstreetmap.org" target="_blank">OpenStreetMap</a>',
-                                    //     maxZoom: 18
-                                    // }),
-                                };
-
-                                var layerControl = L.control.layers(baseMaps);
-                                layerControl.addTo(map);
-                                
-                                <?php if($model->geojson != null) :?>
-                                var states = [{
-                                    "type": "Feature",
-                                    "properties": {"": ""},
-                                    "geometry": <?= $model->geojson ?>
-                                }];
-
-                                // var polygon = L.geoJSON(states).addTo(map);
-                                // var bounds = polygon.getBounds();
-                                // if (bounds.isValid()) {
-                                //     console.log('1');
-                                //     map.fitBounds(bounds);
-                                //     //map.invalidateSize();
-                                // } else {
-                                //     map.setZoom(14); // Đặt zoom mặc định nếu bounds không hợp lệ
-                                // }
-
-                                // var centerpolygon = bounds.getCenter()
-                                // map.panTo(centerpolygon)
-
-                                // map.on('zoomend', function() {
-                                //     console.log('Zoom level: ' + map.getZoom());
-                                //     map.invalidateSize();
-                                // });
-
-                                try {
-                                    var polygon = L.geoJSON(states).addTo(map);
-                                    var bounds = polygon.getBounds();
-                                    if (bounds.isValid()) {
-                                        map.fitBounds(bounds, { padding: [50, 50] }); // Thêm padding để tránh zoom quá sát
-                                        map.panTo(bounds.getCenter()); // Di chuyển đến trung tâm của bounds
-
-                                        var centerpolygon = bounds.getCenter()
-                                        map.panTo(centerpolygon)
-                                    } else {
-                                        console.warn('Bounds không hợp lệ, sử dụng zoom mặc định');
-                                        map.setView(center, 14); // Đặt lại vị trí và zoom mặc định
-                                    }
-                                } catch (e) {
-                                    console.error('Lỗi khi xử lý GeoJSON: ', e);
-                                    map.setView(center, 14); // Đặt lại vị trí và zoom mặc định nếu có lỗi
+        <div class="col-xl-5 col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0"><i class="fa fa-th-list text-info me-2"></i>Thông tin chi tiết</h5>
+                </div>
+                <div class="card-body p-0">
+                    <?= DetailView::widget([
+                        'model' => $model,
+                        'options' => ['class' => 'table table-hover mb-0 detail-view'],
+                        'attributes' => [
+                            [
+                                'attribute' => 'tinhtrang_id',
+                                'label' => 'Tình trạng',
+                                'format' => 'raw',
+                                'value' => function($model) {
+                                    $ten = $model->tinhtrang_id != null ? $model->tinhtrang->ten : 'N/A';
+                                    return '<span class="badge bg-info text-white">' . $ten . '</span>';
                                 }
-                                <?php endif;?>
-
-                                map.on('zoomend', function() {
-                                    console.log('Zoom level: ' + map.getZoom());
-                                    map.invalidateSize();
-                                });
-
-                            </script>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <?= DetailView::widget([
-                                'model' => $model,
-                                'attributes' => [
-                                    [
-                                        'label' => 'Tình trạng',
-                                        'value' => function($model){
-                                            return ($model->tinhtrang_id != null) ? $model->tinhtrang->ten : '';
-                                        }
-                                    ],
-                                    'maham',
-                                    [
-                                        'label' => 'Loại hầm',
-                                        'value' => function($model){
-                                            return ($model->loaiham_id != null) ? $model->loaiham->ten : '';
-                                        }
-                                    ],
-                                    'kichthuoc',
-                                    'vatlieu',
-                                    'sonap',
-                                    'vitri',
-                                    'ngaylapdat',
-                                    'dvtk',
-                                    'dvtc',
-                                    'bvhc',
-                                    'ghichu',
-                                ],
-                            ]) ?>
-                        </div>
-                    </div>
-                    <h3>File đính kèm</h3>
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <table class="table table-striped table-bordered">
-                                <tr>
-                                    <th>STT</th>
-                                    <th>Tên file</th>
-                                    
-                                </tr>
-                                <?php if ($files != null) : ?>
-                                    <?php foreach ($files as $i => $file) : ?>
-                                        <tr>
-                                            <td><?= $i + 1 ?></td>
-                                            <td><a href="<?= Yii::$app->homeUrl . $file['url'] ?>" target="_blank"><?= $file['name'] ?></a></td>
-                                            
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </table>
-                        </div>
-                    </div>
+                            ],
+                            'maham',
+                            [
+                                'label' => 'Loại hầm',
+                                'value' => function($model){
+                                    return ($model->loaiham_id != null) ? $model->loaiham->ten : '(Chưa rõ)';
+                                }
+                            ],
+                            'kichthuoc',
+                            'vatlieu',
+                            'sonap',
+                            'vitri',
+                            'ngaylapdat',
+                            'dvtk',
+                            'dvtc',
+                            'bvhc',
+                            [
+                                'attribute' => 'ghichu',
+                                'contentOptions' => ['style' => 'font-style: italic; color: #666;']
+                            ],
+                        ],
+                    ]) ?>
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="card-title mb-0"><i class="fa fa-paperclip text-warning me-2"></i>File đính kèm</h5>
+        </div>
+        <div class="card-body">
+            <?php if (!empty($files)) : ?>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="80">STT</th>
+                                <th>Tên tài liệu</th>
+                                <th width="150" class="text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($files as $i => $file) : ?>
+                                <tr>
+                                    <td><?= $i + 1 ?></td>
+                                    <td><i class="fa fa-file-pdf text-danger me-2"></i><?= Html::encode($file['name']) ?></td>
+                                    <td class="text-center">
+                                        <a href="<?= Yii::$app->homeUrl . $file['url'] ?>" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fa fa-download"></i> Xem/Tải về
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php else : ?>
+                <p class="text-muted mb-0 italic">Không có file đính kèm nào.</p>
+            <?php endif; ?>
+        </div>
+    </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var center = [10.804291919691535, 106.69527258767485];
+        var map = L.map('map').setView(center, 14);
+
+        var googleRoads = L.tileLayer('http://{s}.google.com/vt/lyrs=r&x={x}&y={y}&z={z}', {
+            maxZoom: 22,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+        }).addTo(map);
+
+        var googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
+            maxZoom: 22,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+        });
+
+        var baseMaps = {
+            "Bản đồ Google": googleRoads,
+            "Ảnh vệ tinh": googleSat
+        };
+
+        L.control.layers(baseMaps).addTo(map);
+        
+        <?php if($model->geojson != null) :?>
+        try {
+            var states = [{
+                "type": "Feature",
+                "properties": {},
+                "geometry": <?= $model->geojson ?>
+            }];
+            var polygon = L.geoJSON(states).addTo(map);
+            var bounds = polygon.getBounds();
+            if (bounds.isValid()) {
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
+        } catch (e) {
+            console.error('Lỗi GeoJSON: ', e);
+        }
+        <?php endif;?>
+
+        // Fix map size when container changes
+        setTimeout(function() { map.invalidateSize(); }, 200);
+    });
+</script>
+
+<style>
+    /* Tinh chỉnh giao diện */
+    .detail-view th { width: 35%; background-color: #f8f9fa; color: #495057; font-weight: 600; }
+    .card { border-radius: 8px; overflow: hidden; }
+    .badge { padding: 0.5em 0.8em; }
+    .btn-group .btn { border-radius: 4px !important; margin-left: 5px; }
+</style>

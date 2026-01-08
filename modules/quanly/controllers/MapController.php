@@ -14,6 +14,11 @@ class MapController extends QuanlyBaseController
         return $this->render('ductrong');
     }
 
+    public function actionHocau()
+    {
+        return $this->render('hocau');
+    }
+
     public function actionGiadinh()
     {
         return $this->render('giadinh');

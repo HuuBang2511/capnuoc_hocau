@@ -4,7 +4,6 @@ use yii\bootstrap5\Modal;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use app\widgets\crud\CrudAsset;
-use app\modules\services\UtilityService;
 use yii\widgets\DetailView;
 use app\widgets\maps\LeafletMapAsset;
 use app\widgets\maps\plugins\leafletlocate\LeafletLocateAsset;
@@ -16,89 +15,117 @@ CrudAsset::register($this);
 $requestedAction = Yii::$app->requestedAction;
 $controller = $requestedAction->controller;
 $label = $controller->label;
-//dd($controller);
 
 $this->title = Yii::t('app', $label[$requestedAction->id].' '.$controller->title);
 $this->params['breadcrumbs'][] = ['label' => $label['index'].' '.$controller->title, 'url' => Url::to(['index'])];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 
-<!-- CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
-<!-- JS -->
-<script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+<div class="device-view-container mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h4 fw-bold mb-1 text-primary"><?= Html::encode($model->madongho) ?></h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item small"><?= $controller->title ?></li>
+                    <li class="breadcrumb-item small active">Chi tiết thiết bị</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="btn-group shadow-sm">
+            <?= Html::a('<i class="fa fa-arrow-left"></i> Quay lại', Url::to(['index']), ['class' => 'btn btn-outline-secondary']) ?>
+            <?= Html::a('<i class="fa fa-edit"></i> Cập nhật', ['update', 'id' => $model->id], ['class' => 'btn btn-warning text-white']) ?>
+        </div>
+    </div>
 
-<style>
-#map {
-    width: 100%;
-    height: 50vh;
-    border: 1px solid #0665d0
-}
-</style>
-
-<div class="row">
-    <div class="col-lg-12">
-        <div class="block block-themed">
-            <div class="block-header">
-                <h3 class="block-title"><?= $this->title ?></h3>
-                <div class="block-options">
-                    <?= Html::a('Cập nhật', ['update', 'id' => $model->id], ['class' => 'btn btn-warning']) ?>
+    <div class="row">
+        <div class="col-xl-4 col-lg-5">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0 fw-bold"><i class="fa fa-cog text-secondary me-2"></i>Thông số kỹ thuật</h5>
+                </div>
+                <div class="card-body p-0">
+                    <?= DetailView::widget([
+                        'model' => $model,
+                        'options' => ['class' => 'table table-hover mb-0 detail-view'],
+                        'attributes' => [
+                            [
+                                'attribute' => 'madongho',
+                                'captionOptions' => ['style' => 'width: 40%'],
+                                'contentOptions' => ['class' => 'fw-bold text-primary'],
+                            ],
+                            [
+                                'label' => 'Hiệu đồng hồ',
+                                'value' => $model->hieudongho ? $model->hieudongho->ten : 'N/A',
+                            ],
+                            'sothan',
+                            'co',
+                            'mavattu',
+                            [
+                                'label' => 'Tình trạng',
+                                'format' => 'raw',
+                                'value' => function($model) {
+                                    $statusClass = $model->tinhtrang_id == 1 ? 'bg-success' : 'bg-info'; // Tùy biến theo ID
+                                    return "<span class='badge $statusClass'>" . ($model->tinhtrang ? $model->tinhtrang->ten : 'N/A') . "</span>";
+                                }
+                            ],
+                        ],
+                    ]) ?>
                 </div>
             </div>
-            <div class="block-content">
-                <div class="row">
-                    <div class="col-lg-4">
-                        <?= DetailView::widget([
-                            'model' => $model,
-                            'attributes' => [
-                                'madongho',
-                                'vitri',
-                                'co',
-                                'mavattu',
-                                'sothan',
-                                'khuvuc',
-                                'ghichu',
-                                'ngaylapdat',
-                                [
-                                    'label' => 'Tình trạng',
-                                    'value' => function($model){
-                                        return ($model->tinhtrang_id != null) ? $model->tinhtrang->ten : '';
-                                    }
-                                ],
-                                [
-                                    'label' => 'Hiệu đồng hồ',
-                                    'value' => function($model){
-                                        return ($model->hieudongho_id != null) ? $model->hieudongho->ten : '';
-                                    }
-                                ],
-                            ],
-                        ]) ?>
-                        <table class="table table-striped table-bordered">
-                            <tr>
-                                <th>STT</th>
-                                <th>Tên file</th>
-                                
-                            </tr>
-                            <?php if ($files != null) : ?>
-                                <?php foreach ($files as $i => $file) : ?>
-                                    <tr>
-                                        <td><?= $i + 1 ?></td>
-                                        <td><a href="<?= Yii::$app->homeUrl . $file['url'] ?>" target="_blank"><?= $file['name'] ?></a></td>
-                                        
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </table>
-                    </div>
-                    <div class="col-lg-8">
-                        <div id="map"></div>
-                    </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0 fw-bold"><i class="fa fa-map-marker-alt text-danger me-2"></i>Thông tin lắp đặt</h5>
                 </div>
-                <div class="row px-3 py-3">
-                    <div class="col-lg-12 form-group">
-                        <a href="javascript:history.back()" class="btn btn-light float-end"><i class="fa fa-arrow-left"></i>
-                            Quay lại</a>
-                    </div>
+                <div class="card-body p-0">
+                    <?= DetailView::widget([
+                        'model' => $model,
+                        'options' => ['class' => 'table table-hover mb-0 detail-view'],
+                        'attributes' => [
+                            'vitri',
+                            'khuvuc',
+                            'ngaylapdat',
+                            'ghichu:ntext',
+                        ],
+                    ]) ?>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0 fw-bold"><i class="fa fa-paperclip text-warning me-2"></i>Hình ảnh & Tài liệu</h5>
+                </div>
+                <div class="card-body">
+                    <?php if (!empty($files)) : ?>
+                        <ul class="list-group list-group-flush">
+                            <?php foreach ($files as $i => $file) : ?>
+                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                    <div class="text-truncate" style="max-width: 80%;">
+                                        <i class="fa fa-file-alt text-muted me-2"></i>
+                                        <a href="<?= Yii::$app->homeUrl . $file['url'] ?>" target="_blank" class="text-decoration-none text-dark small">
+                                            <?= Html::encode($file['name']) ?>
+                                        </a>
+                                    </div>
+                                    <span class="badge bg-light text-muted fw-normal">#<?= $i+1 ?></span>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php else : ?>
+                        <p class="text-muted small text-center my-2 italic">Không có file đính kèm</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-8 col-lg-7">
+            <div class="card border-0 shadow-sm overflow-hidden" style="height: calc(100% - 24px);">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-bold"><i class="fa fa-globe-asia text-primary me-2"></i>Vị trí thực địa</h5>
+                    <div class="small text-muted">Tọa độ: <?= $model->lat ?>, <?= $model->long ?></div>
+                </div>
+                <div class="card-body p-0">
+                    <div id="map" style="height: 75vh; width: 100%; min-height: 600px;"></div>
                 </div>
             </div>
         </div>
@@ -108,80 +135,56 @@ $this->params['breadcrumbs'][] = $this->title;
 <?php Modal::begin([
     "id" => "ajaxCrudModal",
     "size" => Modal::SIZE_EXTRA_LARGE,
-    "footer" => "", // always need it for jquery plugin
+    "footer" => "",
 ]) ?>
 <?php Modal::end(); ?>
 
+<style>
+    .detail-view th { background-color: #f8f9fa; color: #495057; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .detail-view td { font-size: 0.95rem; }
+    .card { border-radius: 15px; }
+    .badge { font-weight: 500; padding: 0.5em 0.8em; }
+    #map { z-index: 1; }
+</style>
 
 <script type="module">
-   
-    var map = L.map('map').setView([<?= ($model->lat != null) ? $model->lat : '20.473381288809428' ?>,
-        <?= ($model->long != null) ? $model->long : '106.31907196809175' ?>
-    ], 18);
+    const lat = <?= ($model->lat != null) ? $model->lat : '20.473381288809428' ?>;
+    const lng = <?= ($model->long != null) ? $model->long : '106.31907196809175' ?>;
 
-    var layerGMapSatellite = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-        maxZoom: 20,
-        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+    const map = L.map('map', {
+        scrollWheelZoom: true
+    }).setView([lat, lng], 18);
+
+    const layerGmapStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+    }).addTo(map);
+
+    const layerGMapSatellite = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
+        maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
     });
 
-    var layerGmapStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-        maxZoom: 20,
-        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
-    });
+    L.control.layers({ "Bản đồ": layerGmapStreets, "Vệ tinh": layerGMapSatellite }).addTo(map);
 
-
-    var baseLayers = {
-        "GGMap": layerGmapStreets,
-        "Vệ tinh": layerGMapSatellite,
-    };
-
-    
-    L.control.layers(baseLayers).addTo(map);
-    map.addLayer(layerGmapStreets, true);
-
-    var icon = L.icon({
+    const icon = L.icon({
         iconUrl: '<?= Yii::$app->homeUrl ?>images/icons8-map-marker-96.png',
-        iconSize: [40, 40],
-        iconAnchor: [20, 40],
-        popupAnchor: [0, -48],
+        iconSize: [42, 42],
+        iconAnchor: [21, 42],
+        popupAnchor: [1, -34],
     });
 
     <?php if ($model->lat != null && $model->long != null) : ?>
-    var marker = L.marker([<?= $model->lat ?>, <?= $model->long ?>], {
-        'icon': icon,
-    }).addTo(map);
+        L.marker([lat, lng], { icon: icon })
+         .addTo(map)
+         .bindPopup("<b>Mã ĐH: <?= $model->madongho ?></b><br><?= $model->vitri ?>")
+         .openPopup();
     <?php endif; ?>
 
     L.control.locate({
         position: 'topleft',
         flyTo: true,
-        keepCurrentZoomLevel: true,
-        drawCircle: false,
-        showPopup: false,
-        strings: {
-            title: "Định vị vị trí của bạn"
-        },
-        icon: 'fa fa-location-arrow', // nếu bạn dùng font-awesome
-        locateOptions: {
-            enableHighAccuracy: true,
-            maxZoom: 18,
-            watch: false
-        },
-        clickBehavior: {
-            inView: 'stop', 
-            outOfView: 'setView', 
-            inViewNotFollowing: 'setView'
-        }
+        strings: { title: "Tìm vị trí của tôi" }
     }).addTo(map);
 
-    setTimeout(() => {
-        const btn = document.querySelector('.leaflet-control-locate a');
-        if (btn) {
-            btn.addEventListener('touchstart', function (e) {
-                e.preventDefault();
-                btn.click(); // kích hoạt click bằng touch
-            });
-        }
-    }, 1000);
-    
+    // Tự động resize bản đồ khi load xong
+    setTimeout(() => { map.invalidateSize(); }, 500);
 </script>

@@ -192,6 +192,10 @@ class SucoLoaiController extends \app\modules\quanly\base\QuanlyBaseController
         $model = $this->findModel($id);
         $model->status = 0;
 
+        // if(!$model->save()){
+        //    dd($model->getErrors());
+        // }
+
         if ($request->isAjax) {
             /*
             *   Process for ajax request

@@ -8,7 +8,7 @@ use kartik\form\ActiveForm;
 
     <?php $form = ActiveForm::begin(); ?>
 
-    <h4>Xóa  <?= $model->ten ?></h4>
+    <h4>Xóa danh mục "<?= $model->ten ?>"</h4>
 
     <?php ActiveForm::end(); ?>
 

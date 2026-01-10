@@ -17,7 +17,7 @@ use Yii;
  *
  * @property NetworkMoinoi[] $networkMoinois
  */
-class DmLoaimoinoi extends \yii\db\ActiveRecord
+class DmLoaimoinoi extends \app\modules\quanly\base\QuanlyBaseModel
 {
     /**
      * {@inheritdoc}
@@ -37,7 +37,7 @@ class DmLoaimoinoi extends \yii\db\ActiveRecord
             [['ghichu'], 'string'],
             [['created_at', 'updated_at', 'status'], 'safe'],
             [['ten'], 'string', 'max' => 255],
-            [['created_by', 'updated_by', 'status'], 'string', 'max' => 100],
+            [['created_by', 'updated_by'], 'string', 'max' => 100],
         ];
     }
 

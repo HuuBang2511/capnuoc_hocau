@@ -18,7 +18,7 @@ use Yii;
  * @property NetworkOngphanphoi[] $networkOngphanphois
  * @property NetworkOngtruyendan[] $networkOngtruyendans
  */
-class DmLoaiong extends \yii\db\ActiveRecord
+class DmLoaiong extends \app\modules\quanly\base\QuanlyBaseModel
 {
     /**
      * {@inheritdoc}

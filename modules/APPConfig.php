@@ -223,10 +223,10 @@ class APPConfig
                 'hasChild' => false,
             ],
             [
-                'name' => 'Loại mối nối',
+                'name' => 'Loại nhà máy',
                 'icon' => 'fa fa-list',
-                'url' => 'quanly/danhmuc/loaimoinoi',
-                'key'=>'quanly.danhmuc/loaimoinoi.index',
+                'url' => 'quanly/danhmuc/loainhamay',
+                'key'=>'quanly.danhmuc/loainhamay.index',
                 'hasChild' => false,
             ],
             [

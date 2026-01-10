@@ -27,7 +27,7 @@ use Yii;
  * @property NetworkSuco[] $networkSucos
  * @property NetworkVan[] $networkVans
  */
-class DmTinhtrang extends \yii\db\ActiveRecord
+class DmTinhtrang extends \app\modules\quanly\base\QuanlyBaseModel
 {
     /**
      * {@inheritdoc}
@@ -47,7 +47,7 @@ class DmTinhtrang extends \yii\db\ActiveRecord
             [['ghichu'], 'string'],
             [['created_at', 'updated_at', 'status'], 'safe'],
             [['ten'], 'string', 'max' => 255],
-            [['created_by', 'updated_by', 'status'], 'string', 'max' => 100],
+            [['created_by', 'updated_by'], 'string', 'max' => 100],
         ];
     }
 

@@ -14,10 +14,10 @@ use yii\helpers\Html;
 /**
  * LoaimoinoiController implements the CRUD actions for DmLoaimoinoi model.
  */
-class LoaimoinoiController extends Controller
+class LoaimoinoiController extends \app\modules\quanly\base\QuanlyBaseController
 {
 
-    public $title = "DmLoaimoinoi";
+    public $title = "Loại mối nối";
 
     /**
      * Lists all DmLoaimoinoi models.
@@ -46,7 +46,7 @@ class LoaimoinoiController extends Controller
         if($request->isAjax){
             Yii::$app->response->format = Response::FORMAT_JSON;
             return [
-                    'title'=> "DmLoaimoinoi #".$id,
+                    'title'=> "Loại mối nối #".$id,
                     'content'=>$this->renderAjax('view', [
                         'model' => $this->findModel($id),
                     ]),
@@ -78,7 +78,7 @@ class LoaimoinoiController extends Controller
             Yii::$app->response->format = Response::FORMAT_JSON;
             if($request->isGet){
                 return [
-                    'title'=> "Thêm mới DmLoaimoinoi",
+                    'title'=> "Thêm mới Loại mối nối",
                     'content'=>$this->renderAjax('create', [
                         'model' => $model,
                     ]),
@@ -88,14 +88,14 @@ class LoaimoinoiController extends Controller
             }else if($model->load($request->post()) && $model->save()){
                 return [
                     'forceReload'=>'#crud-datatable-pjax',
-                    'title'=> "Thêm mới DmLoaimoinoi",
-                    'content'=>'<span class="text-success">Thêm mới DmLoaimoinoi thành công</span>',
+                    'title'=> "Thêm mới Loại mối nối",
+                    'content'=>'<span class="text-success">Thêm mới Loại mối nối thành công</span>',
                     'footer'=> Html::button('Đóng',['class'=>'btn btn-light float-right','data-bs-dismiss'=>"modal"]).
                             Html::a('Tiếp tục thêm mới',['create'],['class'=>'btn btn-primary float-left','role'=>'modal-remote'])
                 ];
             }else{
                 return [
-                    'title'=> "Create new DmLoaimoinoi",
+                    'title'=> "Create new Loại mối nối",
                     'content'=>$this->renderAjax('create', [
                         'model' => $model,
                     ]),
@@ -138,7 +138,7 @@ class LoaimoinoiController extends Controller
             Yii::$app->response->format = Response::FORMAT_JSON;
             if($request->isGet){
                 return [
-                    'title'=> "Cập nhật DmLoaimoinoi #".$id,
+                    'title'=> "Cập nhật Loại mối nối #".$id,
                     'content'=>$this->renderAjax('update', [
                         'model' => $model,
                     ]),
@@ -148,7 +148,7 @@ class LoaimoinoiController extends Controller
             }else if($model->load($request->post()) && $model->save()){
                 return [
                     'forceReload'=>'#crud-datatable-pjax',
-                    'title'=> "DmLoaimoinoi #".$id,
+                    'title'=> "Loại mối nối #".$id,
                     'content'=>$this->renderAjax('view', [
                         'model' => $model,
                     ]),
@@ -157,7 +157,7 @@ class LoaimoinoiController extends Controller
                 ];
             }else{
                  return [
-                    'title'=> "Cập nhật DmLoaimoinoi #".$id,
+                    'title'=> "Cập nhật Loại mối nối #".$id,
                     'content'=>$this->renderAjax('update', [
                         'model' => $model,
                     ]),
@@ -192,51 +192,36 @@ class LoaimoinoiController extends Controller
         $model = $this->findModel($id);
         $model->status = 0;
 
-        if($request->isAjax){
+        if ($request->isAjax) {
             /*
             *   Process for ajax request
             */
             Yii::$app->response->format = Response::FORMAT_JSON;
-            if($request->isGet){
+            if ($request->isGet) {
                 return [
-                    'title'=> "Xóa DmLoaimoinoi #".$id,
-                    'content'=>$this->renderAjax('delete', [
+                    'title' => "Xóa danh mục #" . $id,
+                    'content' => $this->renderAjax('delete', [
                         'model' => $model,
                     ]),
-                    'footer'=> Html::button('Đóng',['class'=>'btn btn-light float-right','data-bs-dismiss'=>"modal"]).
-                        Html::button('Xóa',['class'=>'btn btn-danger float-left','type'=>"submit"])
+                    'footer' => Html::button('Đóng', ['class' => 'btn btn-light float-right', 'data-bs-dismiss' => "modal"]) .
+                        Html::button('Xóa', ['class' => 'btn btn-danger float-left', 'type' => "submit"])
                 ];
-            }else if($request->isPost && $model->save()){
+            } else if ($request->isPost && $model->save()) {
                 return [
-                    'forceReload'=>'#crud-datatable-pjax',
-                    'title'=> "DmLoaimoinoi #".$id,
-                    'content'=>$this->renderAjax('view', [
-                        'model' => $model,
-                    ]),
-                    'footer'=> Html::button('Close',['class'=>'btn btn-light float-right','data-bs-dismiss'=>"modal"]).
-                        Html::a('Edit',['update','id'=>$id],['class'=>'btn btn-primary','role'=>'modal-remote'])
+                    'forceReload' => '#crud-datatable-pjax',
+                    'title' => "Xóa danh mục thành công #" . $id,
+                    'content' => '<span class="text-success">Xóa thành công</span>',
+                    'footer' => Html::button('Close', ['class' => 'btn btn-light float-right', 'data-bs-dismiss' => "modal"])
                 ];
-            }else{
-                return [
-                    'title'=> "Update DmLoaimoinoi #".$id,
-                    'content'=>$this->renderAjax('delete', [
-                        'model' => $model,
-                    ]),
-                    'footer'=> Html::button('Close',['class'=>'btn btn-light float-right','data-bs-dismiss'=>"modal"]).
-                        Html::button('Save',['class'=>'btn btn-primary','type'=>"submit"])
-                ];
-            }
-        }else{
-            /*
-            *   Process for non-ajax request
-            */
-            if ($model->load($request->post()) && $model->save()) {
-                return $this->redirect(['view', 'id' => $model->id]);
             } else {
-                return $this->render('delete', [
-                    'model' => $model,
-                    'const' => $this->const,
-                ]);
+                return [
+                    'title' => "Update #" . $id,
+                    'content' => $this->renderAjax('delete', [
+                        'model' => $model,
+                    ]),
+                    'footer' => Html::button('Close', ['class' => 'btn btn-light float-right', 'data-bs-dismiss' => "modal"]) .
+                        Html::button('Save', ['class' => 'btn btn-primary', 'type' => "submit"])
+                ];
             }
         }
     }

@@ -41,7 +41,7 @@ class DmHieudonghoSearch extends DmHieudongho
      */
     public function search($params)
     {
-        $query = DmHieudongho::find();
+        $query = DmHieudongho::find()->where(['status' => 1]);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,

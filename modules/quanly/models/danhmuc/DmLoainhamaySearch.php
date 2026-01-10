@@ -41,7 +41,7 @@ class DmLoainhamaySearch extends DmLoainhamay
      */
     public function search($params)
     {
-        $query = DmLoainhamay::find();
+        $query = DmLoainhamay::find()->where(['status' => 1]);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,

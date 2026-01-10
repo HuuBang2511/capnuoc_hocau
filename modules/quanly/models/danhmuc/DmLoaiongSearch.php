@@ -41,7 +41,7 @@ class DmLoaiongSearch extends DmLoaiong
      */
     public function search($params)
     {
-        $query = DmLoaiong::find();
+        $query = DmLoaiong::find()->where(['status' => 1]);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,

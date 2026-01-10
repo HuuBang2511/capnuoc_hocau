@@ -41,7 +41,7 @@ class DmLoaimoinoiSearch extends DmLoaimoinoi
      */
     public function search($params)
     {
-        $query = DmLoaimoinoi::find();
+        $query = DmLoaimoinoi::find()->where(['status' => 1]);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,

@@ -41,7 +41,7 @@ class DmSucoTinhtrangSearch extends DmSucoTinhtrang
      */
     public function search($params)
     {
-        $query = DmSucoTinhtrang::find();
+        $query = DmSucoTinhtrang::find()->where(['status' => 1]);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,

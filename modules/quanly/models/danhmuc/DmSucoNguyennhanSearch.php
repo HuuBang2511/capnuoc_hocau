@@ -41,7 +41,7 @@ class DmSucoNguyennhanSearch extends DmSucoNguyennhan
      */
     public function search($params)
     {
-        $query = DmSucoNguyennhan::find();
+        $query = DmSucoNguyennhan::find()->where(['status' => 1]);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,

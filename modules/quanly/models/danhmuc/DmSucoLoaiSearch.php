@@ -41,7 +41,7 @@ class DmSucoLoaiSearch extends DmSucoLoai
      */
     public function search($params)
     {
-        $query = DmSucoLoai::find();
+        $query = DmSucoLoai::find()->where(['status' => 1]);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,

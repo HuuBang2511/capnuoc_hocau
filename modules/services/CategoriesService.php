@@ -22,16 +22,16 @@ class CategoriesService
     public static function getCategories()
     {
         $categories = [];
-        $categories['hieudongho'] = DmHieudongho::find()->orderBy('ten')->asArray()->all();
-        $categories['loaiham'] = DmLoaiham::find()->orderBy('ten')->asArray()->all();
-        $categories['loaimoinoi'] = DmLoaimoinoi::find()->orderBy('ten')->asArray()->all();
-        $categories['loainhamay'] = DmLoainhamay::find()->orderBy('ten')->asArray()->all();
-        $categories['loaiong'] = DmLoaiong::find()->orderBy('ten')->asArray()->all();
-        $categories['loaivan'] = DmLoaivan::find()->orderBy('ten')->asArray()->all();
-        $categories['loaisuco'] = DmSucoLoai::find()->orderBy('ten')->asArray()->all();
-        $categories['nguyennhansuco'] = DmSucoNguyennhan::find()->orderBy('ten')->asArray()->all();
-        $categories['tinhtrangsuco'] = DmSucoTinhtrang::find()->orderBy('ten')->asArray()->all();
-        $categories['tinhtrang'] = DmTinhtrang::find()->orderBy('ten')->asArray()->all();
+        $categories['hieudongho'] = DmHieudongho::find()->where(['status'=>1])->orderBy('ten')->asArray()->all();
+        $categories['loaiham'] = DmLoaiham::find()->where(['status'=>1])->orderBy('ten')->asArray()->all();
+        $categories['loaimoinoi'] = DmLoaimoinoi::find()->where(['status'=>1])->orderBy('ten')->asArray()->all();
+        $categories['loainhamay'] = DmLoainhamay::find()->where(['status'=>1])->orderBy('ten')->asArray()->all();
+        $categories['loaiong'] = DmLoaiong::find()->where(['status'=>1])->orderBy('ten')->asArray()->all();
+        $categories['loaivan'] = DmLoaivan::find()->where(['status'=>1])->orderBy('ten')->asArray()->all();
+        $categories['loaisuco'] = DmSucoLoai::find()->where(['status'=>1])->orderBy('ten')->asArray()->all();
+        $categories['nguyennhansuco'] = DmSucoNguyennhan::find()->where(['status'=>1])->orderBy('ten')->asArray()->all();
+        $categories['tinhtrangsuco'] = DmSucoTinhtrang::find()->where(['status'=>1])->orderBy('ten')->asArray()->all();
+        $categories['tinhtrang'] = DmTinhtrang::find()->where(['status'=>1])->orderBy('ten')->asArray()->all();
 
         return $categories;
     }

@@ -3,8 +3,8 @@
 namespace app\modules\quanly\controllers\danhmuc;
 
 use Yii;
-use app\modules\quanly\models\danhmuc\DmLoaiham;
-use app\modules\quanly\models\danhmuc\DmLoaihamSearch;
+use app\modules\quanly\models\danhmuc\DmLoaiHam;
+use app\modules\quanly\models\danhmuc\DmLoaiHamSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -12,20 +12,20 @@ use \yii\web\Response;
 use yii\helpers\Html;
 
 /**
- * LoaihamController implements the CRUD actions for DmLoaiham model.
+ * LoaihamController implements the CRUD actions for Loại hầm model.
  */
-class LoaihamController extends Controller
+class LoaihamController extends \app\modules\quanly\base\QuanlyBaseController
 {
 
-    public $title = "DmLoaiham";
+    public $title = "Loại hầm";
 
     /**
-     * Lists all DmLoaiham models.
+     * Lists all Loại hầm models.
      * @return mixed
      */
     public function actionIndex()
     {
-        $searchModel = new DmLoaihamSearch();
+        $searchModel = new DmLoaiHamSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
@@ -36,7 +36,7 @@ class LoaihamController extends Controller
 
 
     /**
-     * Displays a single DmLoaiham model.
+     * Displays a single Loại hầm model.
      * @param integer $id
      * @return mixed
      */
@@ -46,7 +46,7 @@ class LoaihamController extends Controller
         if($request->isAjax){
             Yii::$app->response->format = Response::FORMAT_JSON;
             return [
-                    'title'=> "DmLoaiham #".$id,
+                    'title'=> "Loại hầm #".$id,
                     'content'=>$this->renderAjax('view', [
                         'model' => $this->findModel($id),
                     ]),
@@ -61,7 +61,7 @@ class LoaihamController extends Controller
     }
 
     /**
-     * Creates a new DmLoaiham model.
+     * Creates a new Loại hầm model.
      * For ajax request will return json object
      * and for non-ajax request if creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
@@ -69,7 +69,7 @@ class LoaihamController extends Controller
     public function actionCreate()
     {
         $request = Yii::$app->request;
-        $model = new DmLoaiham();
+        $model = new DmLoaiHam();
 
         if($request->isAjax){
             /*
@@ -78,7 +78,7 @@ class LoaihamController extends Controller
             Yii::$app->response->format = Response::FORMAT_JSON;
             if($request->isGet){
                 return [
-                    'title'=> "Thêm mới DmLoaiham",
+                    'title'=> "Thêm mới Loại hầm",
                     'content'=>$this->renderAjax('create', [
                         'model' => $model,
                     ]),
@@ -88,14 +88,14 @@ class LoaihamController extends Controller
             }else if($model->load($request->post()) && $model->save()){
                 return [
                     'forceReload'=>'#crud-datatable-pjax',
-                    'title'=> "Thêm mới DmLoaiham",
-                    'content'=>'<span class="text-success">Thêm mới DmLoaiham thành công</span>',
+                    'title'=> "Thêm mới Loại hầm",
+                    'content'=>'<span class="text-success">Thêm mới Loại hầm thành công</span>',
                     'footer'=> Html::button('Đóng',['class'=>'btn btn-light float-right','data-bs-dismiss'=>"modal"]).
                             Html::a('Tiếp tục thêm mới',['create'],['class'=>'btn btn-primary float-left','role'=>'modal-remote'])
                 ];
             }else{
                 return [
-                    'title'=> "Create new DmLoaiham",
+                    'title'=> "Create new Loại hầm",
                     'content'=>$this->renderAjax('create', [
                         'model' => $model,
                     ]),
@@ -120,7 +120,7 @@ class LoaihamController extends Controller
     }
 
     /**
-     * Updates an existing DmLoaiham model.
+     * Updates an existing Loại hầm model.
      * For ajax request will return json object
      * and for non-ajax request if update is successful, the browser will be redirected to the 'view' page.
      * @param integer $id
@@ -138,7 +138,7 @@ class LoaihamController extends Controller
             Yii::$app->response->format = Response::FORMAT_JSON;
             if($request->isGet){
                 return [
-                    'title'=> "Cập nhật DmLoaiham #".$id,
+                    'title'=> "Cập nhật Loại hầm #".$id,
                     'content'=>$this->renderAjax('update', [
                         'model' => $model,
                     ]),
@@ -148,7 +148,7 @@ class LoaihamController extends Controller
             }else if($model->load($request->post()) && $model->save()){
                 return [
                     'forceReload'=>'#crud-datatable-pjax',
-                    'title'=> "DmLoaiham #".$id,
+                    'title'=> "Loại hầm #".$id,
                     'content'=>$this->renderAjax('view', [
                         'model' => $model,
                     ]),
@@ -157,7 +157,7 @@ class LoaihamController extends Controller
                 ];
             }else{
                  return [
-                    'title'=> "Cập nhật DmLoaiham #".$id,
+                    'title'=> "Cập nhật Loại hầm #".$id,
                     'content'=>$this->renderAjax('update', [
                         'model' => $model,
                     ]),
@@ -180,7 +180,7 @@ class LoaihamController extends Controller
     }
 
     /**
-     * Delete an existing DmLoaiham model.
+     * Delete an existing Loại hầm model.
      * For ajax request will return json object
      * and for non-ajax request if deletion is successful, the browser will be redirected to the 'index' page.
      * @param integer $id
@@ -192,66 +192,51 @@ class LoaihamController extends Controller
         $model = $this->findModel($id);
         $model->status = 0;
 
-        if($request->isAjax){
+        if ($request->isAjax) {
             /*
             *   Process for ajax request
             */
             Yii::$app->response->format = Response::FORMAT_JSON;
-            if($request->isGet){
+            if ($request->isGet) {
                 return [
-                    'title'=> "Xóa DmLoaiham #".$id,
-                    'content'=>$this->renderAjax('delete', [
+                    'title' => "Xóa danh mục #" . $id,
+                    'content' => $this->renderAjax('delete', [
                         'model' => $model,
                     ]),
-                    'footer'=> Html::button('Đóng',['class'=>'btn btn-light float-right','data-bs-dismiss'=>"modal"]).
-                        Html::button('Xóa',['class'=>'btn btn-danger float-left','type'=>"submit"])
+                    'footer' => Html::button('Đóng', ['class' => 'btn btn-light float-right', 'data-bs-dismiss' => "modal"]) .
+                        Html::button('Xóa', ['class' => 'btn btn-danger float-left', 'type' => "submit"])
                 ];
-            }else if($request->isPost && $model->save()){
+            } else if ($request->isPost && $model->save()) {
                 return [
-                    'forceReload'=>'#crud-datatable-pjax',
-                    'title'=> "DmLoaiham #".$id,
-                    'content'=>$this->renderAjax('view', [
-                        'model' => $model,
-                    ]),
-                    'footer'=> Html::button('Close',['class'=>'btn btn-light float-right','data-bs-dismiss'=>"modal"]).
-                        Html::a('Edit',['update','id'=>$id],['class'=>'btn btn-primary','role'=>'modal-remote'])
+                    'forceReload' => '#crud-datatable-pjax',
+                    'title' => "Xóa danh mục thành công #" . $id,
+                    'content' => '<span class="text-success">Xóa thành công</span>',
+                    'footer' => Html::button('Close', ['class' => 'btn btn-light float-right', 'data-bs-dismiss' => "modal"])
                 ];
-            }else{
-                return [
-                    'title'=> "Update DmLoaiham #".$id,
-                    'content'=>$this->renderAjax('delete', [
-                        'model' => $model,
-                    ]),
-                    'footer'=> Html::button('Close',['class'=>'btn btn-light float-right','data-bs-dismiss'=>"modal"]).
-                        Html::button('Save',['class'=>'btn btn-primary','type'=>"submit"])
-                ];
-            }
-        }else{
-            /*
-            *   Process for non-ajax request
-            */
-            if ($model->load($request->post()) && $model->save()) {
-                return $this->redirect(['view', 'id' => $model->id]);
             } else {
-                return $this->render('delete', [
-                    'model' => $model,
-                    'const' => $this->const,
-                ]);
+                return [
+                    'title' => "Update #" . $id,
+                    'content' => $this->renderAjax('delete', [
+                        'model' => $model,
+                    ]),
+                    'footer' => Html::button('Close', ['class' => 'btn btn-light float-right', 'data-bs-dismiss' => "modal"]) .
+                        Html::button('Save', ['class' => 'btn btn-primary', 'type' => "submit"])
+                ];
             }
         }
     }
 
     
     /**
-     * Finds the DmLoaiham model based on its primary key value.
+     * Finds the Loại hầm model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param integer $id
-     * @return DmLoaiham the loaded model
+     * @return Loại hầm the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id)
     {
-        if (($model = DmLoaiham::findOne($id)) !== null) {
+        if (($model = DmLoaiHam::findOne($id)) !== null) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');

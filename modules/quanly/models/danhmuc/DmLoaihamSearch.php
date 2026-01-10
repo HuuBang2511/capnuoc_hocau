@@ -41,7 +41,7 @@ class DmLoaihamSearch extends DmLoaiham
      */
     public function search($params)
     {
-        $query = DmLoaiham::find();
+        $query = DmLoaiham::find()->where(['status' => 1]);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,

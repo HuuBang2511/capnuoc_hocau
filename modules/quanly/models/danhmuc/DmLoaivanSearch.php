@@ -41,7 +41,7 @@ class DmLoaivanSearch extends DmLoaivan
      */
     public function search($params)
     {
-        $query = DmLoaivan::find();
+        $query = DmLoaivan::find()->where(['status' => 1]);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,

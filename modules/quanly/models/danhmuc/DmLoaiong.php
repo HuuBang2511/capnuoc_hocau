@@ -48,7 +48,7 @@ class DmLoaiong extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'ten' => 'Ten',
+            'ten' => 'Tên',
             'status' => 'Status',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',

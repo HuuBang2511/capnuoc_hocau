@@ -1,7 +1,7 @@
 <?php
 
 namespace app\modules\quanly\models\danhmuc;
-
+use app\modules\quanly\base\QuanlyBaseModel;
 use Yii;
 
 /**
@@ -17,7 +17,7 @@ use Yii;
  *
  * @property NetworkDonghonhamay[] $networkDonghonhamays
  */
-class DmHieudongho extends \yii\db\ActiveRecord
+class DmHieudongho extends QuanlyBaseModel
 {
     /**
      * {@inheritdoc}
@@ -35,9 +35,9 @@ class DmHieudongho extends \yii\db\ActiveRecord
         return [
             [['ten'], 'required'],
             [['ghichu'], 'string'],
-            [['created_at', 'updated_at'], 'safe'],
+            [['created_at', 'updated_at', 'status'], 'safe'],
             [['ten'], 'string', 'max' => 255],
-            [['created_by', 'updated_by'], 'string', 'max' => 100],
+            [['created_by', 'updated_by', 'status'], 'string', 'max' => 100],
         ];
     }
 
@@ -48,8 +48,9 @@ class DmHieudongho extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'ten' => 'Ten',
-            'ghichu' => 'Ghichu',
+            'ten' => 'Tên',
+            'ghichu' => 'Ghi chú',
+            'status' => 'Status',
             'created_at' => 'Created At',
             'created_by' => 'Created By',
             'updated_at' => 'Updated At',

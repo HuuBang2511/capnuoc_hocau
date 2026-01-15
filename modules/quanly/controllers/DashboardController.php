@@ -1,116 +1,88 @@
 <?php
 
-
 namespace app\modules\quanly\controllers;
 
-
 use app\modules\quanly\base\QuanlyBaseController;
-use app\modules\quanly\models\aphu\DonghoKh;
-use app\modules\quanly\models\aphu\NhamayNuoc;
-use app\modules\quanly\models\aphu\VanMangluoi;
-use app\modules\quanly\models\capnuocgd\GdDonghoKhGd;
-use app\modules\quanly\models\capnuocgd\GdDonghoTongGd;
-use app\modules\quanly\models\capnuocgd\GdOngcai;
-use app\modules\quanly\models\capnuocgd\GdVanphanphoi;
-use app\modules\quanly\models\Ktvhxh;
-use app\modules\quanly\models\aphu\OngPhanphoi;
-use app\modules\quanly\models\capnuocgd\GdSuco;
-use app\modules\quanly\models\capnuocgd\GdTrambom;
-use app\modules\quanly\models\capnuocgd\GdTramcuuhoa;
-use app\modules\quanly\models\capnuocgd\GdHamkythuat;
-use app\modules\quanly\models\capnuocgd\DMA;
+use app\modules\quanly\models\hocau\Donghonhamay;
+use app\modules\quanly\models\hocau\Donghotong;
+use app\modules\quanly\models\hocau\Nhamaynuoc;
+use app\modules\quanly\models\hocau\Ongphanphoi;
+use app\modules\quanly\models\hocau\Ongtruyendan;
+use app\modules\quanly\models\hocau\Suco;
+use app\modules\quanly\models\hocau\Van;
 use Yii;
+use yii\db\Expression;
 
 class DashboardController extends QuanlyBaseController
 {
     public function actionIndex()
     {
-        // $thongke['dongho_kh'] = GdDonghoKhGd::find()->count();
-        // $thongke['nhamay_nuoc'] = GdDonghoTongGd::find()->count();
-        // $thongke['van_mangluoi'] = GdVanphanphoi::find()->count();
-        // $thongke['ong_phanphoi'] = GdOngcai::find()->select('shape_leng')->sum('shape_leng');
-        // $thongke['ong_phanphoi'] = round($thongke['ong_phanphoi']/1000);
-        // $thongke['suco'] = GdSuco::find()->count();
-        // $thongke['pccc'] = GdTramcuuhoa::find()->count();
-        // $thongke['trambom'] = GdTrambom::find()->count();
-        // $thongke['ham'] = GdHamkythuat::find()->count();
+        // 1. THỐNG KÊ TỔNG QUAN (CARDS)
+        
+        // Tổng chiều dài mạng lưới (km) - Giả sử shape_leng đơn vị là mét
+        $lenTruyenDan = Ongtruyendan::find()->sum('shape_leng') ?? 0;
+        $lenPhanPhoi = Ongphanphoi::find()->sum('shape_leng') ?? 0;
+        $totalLengthKm = round(($lenTruyenDan + $lenPhanPhoi) / 1000, 2);
 
-        // $dataMap = [];
+        // Số lượng khách hàng (Đồng hồ nhà máy)
+        $totalCustomers = Donghonhamay::find()->count();
 
-        // $geojsonDma = DMA::find()->select(['st_asgeojson(ST_Transform(geom, 4326))', 'madma'])->orderBy('geom')->asArray()->all();
+        // Sự cố chưa xử lý (Status = 0 hoặc null - tùy quy định logic của bạn)
+        $activeIncidents = Suco::find()
+            ->where(['or', ['status' => 0], ['status' => null]])
+            ->count();
 
-        // //dd($geojsonDma);
-        // foreach($geojsonDma as $i => $item){
-        //     $geojson = json_decode($item['st_asgeojson']);
-        //     //dd($geojson->coordinates[0][0]);
-        //     $dataMap[] = [
-        //         "coordinates" => json_encode($geojson->coordinates[0][0]),
-        //         "name" => $item['madma'],
-        //         "id" => $item['madma'],
-        //     ];
-        // }
+        // Tổng số Van
+        $totalValves = Van::find()->count();
 
-        // $sovanDma = Yii::$app->db
-        // ->createCommand('
-        // SELECT id, madma as name, sovan as value  FROM "v2_4326_DMA"  order by madma
-        // ')
-        // ->queryAll();
-
-
-        //dd(($sovanDma));
-
-
-
-        return $this->render('index1', [
-            // 'thongke' => $thongke,
-            // 'dataMap' => $dataMap,
-            // 'sovanDma' => $sovanDma,
-        ]);
-    }
-
-    public function actionGeojson(){
-        $dmas = Yii::$app->db->createCommand('SELECT st_asgeojson(geom) as geometry, madma as ten, id  FROM "v2_4326_DMA" order by madma')->queryAll();
-
-        $g  = [];
-
-        foreach ($dmas as $i => $dma) {
-            $geometry = json_decode($dma['geometry'], true);
-            $g[$i] = [
-                'type' => 'Feature',
-                'id' => $dma['id'],
-                'properties' => [
-                    'name' => $dma['ten'],
-                ],
-                'geometry' => [
-                    'type' => $geometry['type'],
-                    'coordinates' => $geometry['coordinates'],
-                ]
-            ];
+        // 2. BIỂU ĐỒ TRÒN: TỈ LỆ CÁC LOẠI SỰ CỐ (Dựa trên bảng Suco và loaisuco_id)
+        // Lưu ý: Cần join sang bảng DmSucoLoai để lấy tên, ở đây tôi demo lấy ID và count
+        $incidentStats = Suco::find()
+            ->select(['loaisuco_id', 'COUNT(*) AS cnt'])
+            ->groupBy(['loaisuco_id'])
+            ->asArray()
+            ->all();
+        
+        // Chuẩn bị data cho ChartJS
+        $incidentLabels = []; 
+        $incidentData = [];
+        foreach ($incidentStats as $item) {
+            // Thực tế bạn nên query lấy tên loại sự cố, ở đây tôi dùng ID tạm
+            $incidentLabels[] = "Loại SC " . ($item['loaisuco_id'] ?? 'Khác'); 
+            $incidentData[] = $item['cnt'];
         }
 
-        $e = [
-            'type' => 'FeatureCollection',
-            'features' => $g
-        ];
+        // 3. BIỂU ĐỒ CỘT: TÌNH TRẠNG VAN (Tốt, Hỏng, Cần bảo trì...)
+        // Giả sử tinhtrang_id: 1=Tốt, 2=Hỏng...
+        $valveStats = Van::find()
+            ->select(['tinhtrang_id', 'COUNT(*) AS cnt'])
+            ->groupBy(['tinhtrang_id'])
+            ->asArray()
+            ->all();
 
-        //dd($e);
-        return json_encode($e, JSON_UNESCAPED_UNICODE);
+        $valveLabels = [];
+        $valveData = [];
+        foreach ($valveStats as $item) {
+            $valveLabels[] = "Tình trạng " . ($item['tinhtrang_id'] ?? 'N/A');
+            $valveData[] = $item['cnt'];
+        }
 
-        //dd($results);
+        // 4. DANH SÁCH SỰ CỐ MỚI NHẤT (Top 5)
+        $recentIncidents = Suco::find()
+            ->orderBy(['created_at' => SORT_DESC])
+            ->limit(5)
+            ->all();
+
+        return $this->render('index1', [
+            'totalLengthKm' => $totalLengthKm,
+            'totalCustomers' => $totalCustomers,
+            'activeIncidents' => $activeIncidents,
+            'totalValves' => $totalValves,
+            'incidentLabels' => json_encode($incidentLabels),
+            'incidentData' => json_encode($incidentData),
+            'valveLabels' => json_encode($valveLabels),
+            'valveData' => json_encode($valveData),
+            'recentIncidents' => $recentIncidents
+        ]);
     }
-
-    public function actionChitietdma($id){
-
-        
-
-      
-       
-
-       return $this->renderAjax('chitietdma', [
-           'id'=>$id,
-           
-       ]); 
-   }
-
-
 }

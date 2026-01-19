@@ -92,7 +92,7 @@ $statusClass = (strpos(mb_strtolower($statusLabel), 'hỏng') !== false) ? 'dang
                         'attributes' => [
                             [
                                 'label' => 'Loại van',
-                                'value' => $model->loaivan0 ? $model->loaivan0->ten : '',
+                                'value' => $model->loaivan ? $model->loaivan->ten : '',
                             ],
                             'ngaylapdat',
                             'ghichu:ntext',

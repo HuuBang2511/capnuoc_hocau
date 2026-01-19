@@ -61,7 +61,7 @@ class Van extends QuanlyBaseModel
             [['ngaylapdat', 'created_at', 'updated_at'], 'safe'],
             [['tinh_trang'], 'string', 'max' => 10],
             [['mavan'], 'string', 'max' => 25],
-            [['vitri', 'loaivan'], 'string', 'max' => 50],
+            [['vitri', 'loai_van'], 'string', 'max' => 50],
             [['chieudong', 'dongmo'], 'string', 'max' => 1],
             [['ghichu'], 'string', 'max' => 200],
             [['loaivan_id'], 'exist', 'skipOnError' => true, 'targetClass' => DmLoaivan::className(), 'targetAttribute' => ['loaivan_id' => 'id']],
@@ -83,7 +83,7 @@ class Van extends QuanlyBaseModel
             'mavan' => 'Mã van',
             'vitri' => 'Vị trí',
             'covan' => 'Cỡ van',
-            'loaivan' => 'Loaivan',
+            'loai_van' => 'Loaivan',
             'cochiakhoa' => 'Cỡ chìa khóa',
             'sovong' => 'Số vòng',
             'chieudong' => 'Chiều đóng',
@@ -109,7 +109,7 @@ class Van extends QuanlyBaseModel
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getLoaivan0()
+    public function getLoaivan()
     {
         return $this->hasOne(DmLoaivan::className(), ['id' => 'loaivan_id']);
     }

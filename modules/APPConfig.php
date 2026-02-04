@@ -162,6 +162,13 @@ class APPConfig
                 'hasChild' => false,
             ],
             [
+                'name' => 'Ống dân sinh',
+                'icon' => 'fa fa-list',
+                'url' => 'quanly/hocau/ongdansinh',
+                'key'=>'quanly.hocau/ongdansinh.index',
+                'hasChild' => false,
+            ],
+            [
                 'name' => 'Van phân phối',
                 'icon' => 'fa fa-list',
                 'url' => 'quanly/hocau/van',

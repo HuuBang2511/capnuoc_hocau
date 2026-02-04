@@ -178,7 +178,7 @@ const baseLayers = {
 };
 
 const overlayers = {
-    "Nhà máy nước": L.tileLayer.wms('http://103.9.77.141:8080/geoserver/capnuoc_hocau/wms', {
+    "Nhà máy nước": L.tileLayer.wms('http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
     layers: 'capnuoc_hocau:network_nhamaynuoc',
     format: 'image/png',
     transparent: true,

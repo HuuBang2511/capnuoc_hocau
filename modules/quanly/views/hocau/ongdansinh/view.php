@@ -123,7 +123,7 @@ $this->params['breadcrumbs'][] = $this->title;
         };
 
         var overlayers = {
-            "Ống dân sinh": L.tileLayer.wms('http://103.9.77.141:8080/geoserver/capnuoc_hocau/wms', {
+            "Ống dân sinh": L.tileLayer.wms('http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
                 layers: 'capnuoc_hocau:network_ongdansinh',
                 format: 'image/png',
                 transparent: true,

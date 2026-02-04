@@ -222,7 +222,7 @@ const baseLayers = {
 };
 
 const overlayers = {
-    "Hầm kỹ thuật": L.tileLayer.wms('http://103.9.77.141:8080/geoserver/capnuoc_hocau/wms', {
+    "Hầm kỹ thuật": L.tileLayer.wms('http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
     layers: 'capnuoc_hocau:network_hamkythuat',
     format: 'image/png',
     transparent: true,

@@ -135,7 +135,7 @@ $this->params['breadcrumbs'][] = $this->title;
         };
 
         var overlayers = {
-            "Ống phân phối": L.tileLayer.wms('http://103.9.77.141:8080/geoserver/capnuoc_hocau/wms', {
+            "Ống phân phối": L.tileLayer.wms('http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
                 layers: 'capnuoc_hocau:network_ongphanphoi',
                 format: 'image/png',
                 transparent: true,

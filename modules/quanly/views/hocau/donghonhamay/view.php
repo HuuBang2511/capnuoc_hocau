@@ -164,7 +164,14 @@ $this->params['breadcrumbs'][] = $this->title;
         maxZoom: 22, subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
     });
 
-    L.control.layers({ "Bản đồ Google": googleRoads, "Vệ tinh": googleSatellite }).addTo(map);
+    const donghonhamay = L.tileLayer.wms('http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
+        layers: 'capnuoc_hocau:network_donghonhamay',
+        format: 'image/png',
+        transparent: true,
+        maxZoom: 22
+    });
+
+    L.control.layers({ "Bản đồ Google": googleRoads, "Vệ tinh": googleSatellite }, { "Đồng hồ nhà máy" : donghonhamay }).addTo(map);
 
     // Marker
     const customIcon = L.icon({

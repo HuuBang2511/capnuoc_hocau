@@ -145,7 +145,16 @@ $this->params['breadcrumbs'][] = $this->title;
             "Ảnh vệ tinh": googleSat
         };
 
-        L.control.layers(baseMaps).addTo(map);
+        var overlayers = {
+            "hầm kỹ thuật": L.tileLayer.wms('http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
+                layers: 'capnuoc_hocau:network_hamkythuat',
+                format: 'image/png',
+                transparent: true,
+                maxZoom: 22
+            })
+        };
+
+        L.control.layers(baseMaps, overlayers).addTo(map);
         
         <?php if($model->geojson != null) :?>
         try {

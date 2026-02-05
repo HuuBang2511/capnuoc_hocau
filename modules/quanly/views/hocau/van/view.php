@@ -157,7 +157,14 @@ $statusClass = (strpos(mb_strtolower($statusLabel), 'hỏng') !== false) ? 'dang
         maxZoom: 22, subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
     });
 
-    L.control.layers({ "Vệ tinh (Lai)": layerGMapSatellite, "Bản đồ đường": layerGmapStreets }).addTo(map);
+    const van = L.tileLayer.wms('http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
+        layers: 'capnuoc_hocau:network_van',
+        format: 'image/png',
+        transparent: true,
+        maxZoom: 22
+    });
+
+    L.control.layers({ "Vệ tinh (Lai)": layerGMapSatellite, "Bản đồ đường": layerGmapStreets }, { "Van" : van }).addTo(map);
 
     var icon = L.icon({
         iconUrl: '<?= Yii::$app->homeUrl ?>images/icons8-map-marker-96.png',

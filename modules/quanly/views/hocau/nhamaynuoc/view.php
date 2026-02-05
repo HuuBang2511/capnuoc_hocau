@@ -134,7 +134,16 @@ $this->params['breadcrumbs'][] = $this->title;
             })
         };
 
-        L.control.layers(baseMaps).addTo(map);
+        var overlayers = {
+            "Nhà máy nước": L.tileLayer.wms('http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
+                layers: 'capnuoc_hocau:network_nhamaynuoc',
+                format: 'image/png',
+                transparent: true,
+                maxZoom: 22
+            })
+        };
+
+        L.control.layers(baseMaps, overlayers).addTo(map);
 
         <?php if($model->geojson != null) :?>
             try {

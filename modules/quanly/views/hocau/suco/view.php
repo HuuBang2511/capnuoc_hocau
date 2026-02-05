@@ -154,7 +154,14 @@ if ($model->tinhtrangsuco_id == 3) $statusClass = 'success'; // Đã hoàn thàn
         subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
     });
 
-    L.control.layers({ "Vệ tinh": layerGMapSatellite, "Địa giới": layerGmapStreets }).addTo(map);
+    const suco = L.tileLayer.wms('http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
+        layers: 'capnuoc_hocau:network_suco',
+        format: 'image/png',
+        transparent: true,
+        maxZoom: 22
+    });
+
+    L.control.layers({ "Vệ tinh": layerGMapSatellite, "Địa giới": layerGmapStreets }, , { "Sự cố" : suco }).addTo(map);
 
     var icon = L.icon({
         iconUrl: '<?= Yii::$app->homeUrl ?>images/icons8-map-marker-96.png',

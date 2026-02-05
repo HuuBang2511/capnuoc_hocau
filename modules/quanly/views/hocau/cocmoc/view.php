@@ -146,7 +146,14 @@ $this->params['breadcrumbs'][] = $this->title;
         maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
     });
 
-    L.control.layers({ "Bản đồ": streets, "Vệ tinh": satellite }).addTo(map);
+    const cocmoc = L.tileLayer.wms('http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
+        layers: 'capnuoc_hocau:network_cocmoc',
+        format: 'image/png',
+        transparent: true,
+        maxZoom: 22
+    });
+
+    L.control.layers({ "Bản đồ": streets, "Vệ tinh": satellite }, { "Cọc mốc" : cocmoc }).addTo(map);
 
     // Marker
     const icon = L.icon({

@@ -163,7 +163,14 @@ $this->params['breadcrumbs'][] = $this->title;
         maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
     });
 
-    L.control.layers({ "Bản đồ": layerGmapStreets, "Vệ tinh": layerGMapSatellite }).addTo(map);
+    const donghotong = L.tileLayer.wms('http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
+        layers: 'capnuoc_hocau:network_donghotong',
+        format: 'image/png',
+        transparent: true,
+        maxZoom: 22
+    });
+
+    L.control.layers({ "Bản đồ": layerGmapStreets, "Vệ tinh": layerGMapSatellite } , { "Đồng hồ tổng" : donghotong }).addTo(map);
 
     const icon = L.icon({
         iconUrl: '<?= Yii::$app->homeUrl ?>images/icons8-map-marker-96.png',

@@ -15,13 +15,11 @@ LeafletMeasureAsset::register($this);
 LeafletLocateAsset::register($this);
 
 // Endpoint
-$geoserverWmsUrl = 'http://103.9.77.141:8080/geoserver/capnuoc_hocau/wms';
-$geoserverWfsUrl = 'http://103.9.77.141:8080/geoserver/capnuoc_hocau/wfs';
-$geoserverWmtsUrl = 'http://103.9.77.141:8080/geoserver/gwc/service/wmts'; 
-// ... (Các cấu hình GeoServer cũ)
+$geoserverWmsUrl = 'http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms';
+$geoserverWfsUrl = 'http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wfs';
+$geoserverWmtsUrl = 'http://gis.capnuochocaumoi.vn/geoserver/gwc/service/wmts'; 
 
-// CẤU HÌNH LIÊN KẾT TRANG CHI TIẾT (Mapping GeoServer Layer -> Yii2 Route)
-// Key là phần định danh lớp (thường là tên bảng trong GeoServer bỏ phần prefix namespace)
+// CẤU HÌNH LIÊN KẾT TRANG CHI TIẾT
 $detailLinks = [
     'network_cocmoc'        => Url::to(['/quanly/hocau/cocmoc/view']),
     'network_donghonhamay'  => Url::to(['/quanly/hocau/donghonhamay/view']),
@@ -35,8 +33,6 @@ $detailLinks = [
     'network_hanglangantoan'=> Url::to(['/quanly/hocau/hanglangantoan/view']),
     'network_nhamaynuoc'    => Url::to(['/quanly/hocau/nhamaynuoc/view']),
 ];
-
-// Chuyển mảng này sang JSON để Javascript sử dụng
 $jsonDetailLinks = json_encode($detailLinks);
 
 $this->title = 'Hệ thống GIS Cấp nước Hồ Cầu';
@@ -52,17 +48,20 @@ $this->beginPage();
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
+    
     <style>
-        /* GIỮ NGUYÊN CSS CŨ CỦA BẠN, KHÔNG THAY ĐỔI */
+        /* CORE STYLES */
         :root { --primary-color: #0d6efd; --sidebar-width: 400px; }
         body { margin: 0; padding: 0; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; background: #f8f9fa; }
         #app-container { display: flex; height: 100vh; width: 100vw; position: relative; }
+        
+        /* SIDEBAR */
         #sidebar { width: var(--sidebar-width); background: #fff; display: flex; flex-direction: column; box-shadow: 4px 0 24px rgba(0,0,0,0.08); z-index: 1000; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: absolute; top: 0; left: 0; bottom: 0; }
         #sidebar.collapsed { transform: translateX(calc(var(--sidebar-width) * -1)); }
         .sidebar-header { height: 60px; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
         .brand-link { color: white; text-decoration: none; font-weight: 700; font-size: 1.1rem; }
+        
+        /* TABS */
         .nav-tabs-custom { display: flex; background: #f8f9fa; border-bottom: 1px solid #dee2e6; margin: 0; padding: 0; list-style: none; }
         .nav-tabs-custom li { flex: 1; text-align: center; }
         .nav-tabs-custom button { width: 100%; border: none; background: transparent; padding: 12px 0; color: #6c757d; font-weight: 600; border-bottom: 3px solid transparent; cursor: pointer; transition: all 0.2s; font-size: 0.95rem; }
@@ -71,17 +70,23 @@ $this->beginPage();
         .sidebar-content { flex: 1; overflow-y: auto; position: relative; }
         .tab-panel { display: none; padding: 20px; }
         .tab-panel.active { display: block; }
+
+        /* LAYER ITEMS */
         .layer-group { border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
         .layer-group-header { background: #f8f9fa; padding: 12px 15px; cursor: pointer; font-weight: 600; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: center; user-select: none; }
         .layer-group-body { padding: 10px 15px; border-top: 1px solid #e2e8f0; display: block; }
         .form-check-custom { display: flex; align-items: center; margin-bottom: 8px; }
         .form-check-input { cursor: pointer; margin-right: 10px; width: 1.1em; height: 1.1em; }
+        
+        /* MAP CONTROLS */
         #map-wrapper { flex: 1; position: relative; height: 100%; width: 100%; z-index: 1; }
         #map { width: 100%; height: 100%; outline: none; }
         #sidebar-toggle { position: absolute; top: 20px; left: 420px; z-index: 1001; width: 44px; height: 44px; border-radius: 50%; background: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: var(--primary-color); font-size: 1.2rem; }
         .floating-toolbar { position: absolute; top: 20px; right: 20px; z-index: 999; display: flex; flex-direction: column; gap: 10px; }
         .tool-btn { width: 44px; height: 44px; border-radius: 8px; background: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); color: #495057; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .tool-btn:hover { background: #f8f9fa; color: var(--primary-color); }
+        
+        /* LEGEND & POPUP */
         #legend-panel { position: absolute; bottom: 30px; left: 420px; z-index: 999; background: rgba(255, 255, 255, 0.95); padding: 15px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); width: 260px; max-height: 350px; overflow-y: auto; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: none; }
         .leaflet-popup-content-wrapper { padding: 0; border-radius: 8px; }
         .leaflet-popup-content { margin: 0; width: 320px !important; }
@@ -91,12 +96,6 @@ $this->beginPage();
         #loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.7); z-index: 9999; display: none; align-items: center; justify-content: center; }
         .search-item { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
         .search-item:hover { background: #f1f8ff; }
-        /* STATS CSS */
-        .stat-card { background: #fff; border: 1px solid #eeffff; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; align-items: center; }
-        .stat-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-right: 15px; background: #f1f8ff; color: var(--primary-color); }
-        .stat-info h4 { margin: 0; font-size: 1.2rem; font-weight: 700; color: #333; }
-        .stat-info p { margin: 0; font-size: 0.85rem; color: #777; }
-        .chart-container { position: relative; height: 200px; width: 100%; margin-top: 20px; }
     </style>
     
     <?php $this->head() ?>
@@ -112,7 +111,7 @@ $this->beginPage();
         <ul class="nav-tabs-custom">
             <li><button class="active" onclick="switchTab(event, 'tab-layers')"><i class="fa-solid fa-layer-group me-1"></i> Lớp</button></li>
             <li><button onclick="switchTab(event, 'tab-filter')"><i class="fa-solid fa-filter me-1"></i> Lọc</button></li>
-            <li><button onclick="switchTab(event, 'tab-stats')"><i class="fa-solid fa-chart-pie me-1"></i> T.Kê</button></li>
+            <li><button onclick="switchTab(event, 'tab-download')"><i class="fa-solid fa-cloud-arrow-down me-1"></i> Tải về</button></li>
             <li><button onclick="switchTab(event, 'tab-search')"><i class="fa-solid fa-search me-1"></i> Tìm</button></li>
         </ul>
 
@@ -129,23 +128,23 @@ $this->beginPage();
                     </select>
                 </div>
                 <?php 
-                // Cấu trúc lớp giữ nguyên
                 $layerGroups = [
                     'Mạng Lưới Đường Ống' => [
-                        ['id' => 'truyendan', 'layer' => 'capnuoc_hocau:network_ongtruyendan', 'label' => 'Ống truyền dẫn', 'checked' => true],
-                        ['id' => 'phanphoi', 'layer' => 'capnuoc_hocau:network_ongphanphoi', 'label' => 'Ống phân phối', 'checked' => true],
-                        ['id' => 'moinoi', 'layer' => 'capnuoc_hocau:network_moinoi', 'label' => 'Mối nối', 'checked' => false],
+                        ['id' => 'truyendan', 'layer' => 'capnuoc_hocau:network_ongtruyendan', 'label' => 'Ống truyền dẫn', 'checked' => true, 'zIndex' => 20],
+                        ['id' => 'phanphoi', 'layer' => 'capnuoc_hocau:network_ongphanphoi', 'label' => 'Ống phân phối', 'checked' => true, 'zIndex' => 20],
+                        ['id' => 'moinoi', 'layer' => 'capnuoc_hocau:network_moinoi', 'label' => 'Mối nối', 'checked' => false, 'zIndex' => 30],
                     ],
                     'Thiết Bị & Đồng Hồ' => [
-                        ['id' => 'van', 'layer' => 'capnuoc_hocau:network_van', 'label' => 'Van mạng lưới', 'checked' => true],
-                        ['id' => 'dhtong', 'layer' => 'capnuoc_hocau:network_donghotong', 'label' => 'Đồng hồ tổng', 'checked' => true],
-                        ['id' => 'dhnhamay', 'layer' => 'capnuoc_hocau:network_donghonhamay', 'label' => 'Đồng hồ nhà máy', 'checked' => false],
+                        ['id' => 'van', 'layer' => 'capnuoc_hocau:network_van', 'label' => 'Van mạng lưới', 'checked' => true, 'zIndex' => 30],
+                        ['id' => 'dhtong', 'layer' => 'capnuoc_hocau:network_donghotong', 'label' => 'Đồng hồ tổng', 'checked' => true, 'zIndex' => 30],
+                        ['id' => 'dhnhamay', 'layer' => 'capnuoc_hocau:network_donghonhamay', 'label' => 'Đồng hồ nhà máy', 'checked' => false, 'zIndex' => 30],
                     ],
                     'Công Trình & Khác' => [
-                        ['id' => 'nhamay', 'layer' => 'capnuoc_hocau:network_nhamaynuoc', 'label' => 'Nhà máy nước', 'checked' => true],
-                        ['id' => 'ham', 'layer' => 'capnuoc_hocau:network_hamkythuat', 'label' => 'Hầm kỹ thuật', 'checked' => false],
-                        ['id' => 'cocmoc', 'layer' => 'capnuoc_hocau:network_cocmoc', 'label' => 'Cọc mốc', 'checked' => false],
-                        ['id' => 'suco', 'layer' => 'capnuoc_hocau:network_suco', 'label' => 'Điểm sự cố', 'checked' => true],
+                        ['id' => 'nhamay', 'layer' => 'capnuoc_hocau:network_nhamaynuoc', 'label' => 'Nhà máy nước', 'checked' => true, 'zIndex' => 10],
+                        ['id' => 'ham', 'layer' => 'capnuoc_hocau:network_hamkythuat', 'label' => 'Hầm kỹ thuật', 'checked' => false, 'zIndex' => 10],
+                        ['id' => 'hanhlang', 'layer' => 'capnuoc_hocau:network_hanglangantoan', 'label' => 'Hành lang an toàn', 'checked' => false, 'zIndex' => 10],
+                        ['id' => 'cocmoc', 'layer' => 'capnuoc_hocau:network_cocmoc', 'label' => 'Cọc mốc', 'checked' => false, 'zIndex' => 30],
+                        ['id' => 'suco', 'layer' => 'capnuoc_hocau:network_suco', 'label' => 'Điểm sự cố', 'checked' => true, 'zIndex' => 40],
                     ]
                 ];
                 foreach ($layerGroups as $groupName => $layers): 
@@ -163,6 +162,7 @@ $this->beginPage();
                                    id="<?= $layer['id'] ?>" 
                                    data-layer="<?= $layer['layer'] ?>"
                                    data-label="<?= $layer['label'] ?>"
+                                   data-zindex="<?= $layer['zIndex'] ?>" 
                                    <?= $layer['checked'] ? 'checked' : '' ?>>
                             <label class="form-check-label" for="<?= $layer['id'] ?>"><?= $layer['label'] ?></label>
                         </div>
@@ -181,55 +181,54 @@ $this->beginPage();
                         <label class="form-label fw-bold small text-muted">Lớp dữ liệu</label>
                         <select class="form-select" id="filter-layer-select" onchange="onFilterLayerChange()">
                             <option value="">-- Chọn đối tượng --</option>
-                            </select>
+                        </select>
                     </div>
-
                     <div id="dynamic-filter-container" style="display:none;">
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-muted" id="dynamic-filter-label">Tiêu chí</label>
-                            <select class="form-select" id="dynamic-filter-value">
-                                </select>
+                            <select class="form-select" id="dynamic-filter-value"></select>
                         </div>
                     </div>
-
                     <div class="d-grid gap-2 mt-4">
-                        <button type="button" class="btn btn-primary" onclick="applySmartFilter()">
-                            <i class="fa-solid fa-check me-1"></i> Áp dụng
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" onclick="clearSmartFilter()">
-                            <i class="fa-solid fa-rotate-left me-1"></i> Xóa lọc
-                        </button>
+                        <button type="button" class="btn btn-primary" onclick="applySmartFilter()"><i class="fa-solid fa-check me-1"></i> Áp dụng</button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="clearSmartFilter()"><i class="fa-solid fa-rotate-left me-1"></i> Xóa lọc</button>
                     </div>
                 </form>
             </div>
 
-            <div id="tab-stats" class="tab-panel">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0 text-dark">Thống kê sơ bộ</h5>
-                    <button class="btn btn-sm btn-light border" onclick="loadStats()" title="Cập nhật"><i class="fa-solid fa-sync text-primary"></i></button>
+            <div id="tab-download" class="tab-panel">
+                <div class="alert alert-light border shadow-sm mb-3 text-muted small">
+                    <i class="fa-solid fa-download me-1"></i> Tải xuống dữ liệu GIS gốc từ Server.
                 </div>
-                <div id="stats-content">
-                    <div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></div>
-                </div>
-                <div id="stats-template" style="display:none;">
-                    <div class="stat-card border-start border-4 border-primary">
-                        <div class="stat-icon"><i class="fa-solid fa-code-branch"></i></div>
-                        <div class="stat-info"><h4 id="stat-ong">0 km</h4><p>Tổng chiều dài ống</p></div>
+                
+                <form id="download-form">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">1. Chọn lớp dữ liệu</label>
+                        <select class="form-select" id="download-layer-select">
+                            <option value="">-- Chọn lớp --</option>
+                            </select>
                     </div>
-                    <div class="stat-card border-start border-4 border-warning">
-                        <div class="stat-icon text-warning bg-light-warning"><i class="fa-solid fa-faucet"></i></div>
-                        <div class="stat-info"><h4 id="stat-van">0</h4><p>Van mạng lưới</p></div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">2. Định dạng file</label>
+                        <select class="form-select" id="download-format-select">
+                            <option value="shape-zip">Esri Shapefile (.zip)</option>
+                            <option value="application/vnd.google-earth.kml+xml">Google Earth (.kml)</option>
+                            <option value="application/json">GeoJSON (.json)</option>
+                            <option value="csv">Excel / CSV (.csv)</option>
+                        </select>
                     </div>
-                    <div class="stat-card border-start border-4 border-danger">
-                        <div class="stat-icon text-danger bg-light-danger"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                        <div class="stat-info"><h4 id="stat-suco">0</h4><p>Sự cố chưa xử lý</p></div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="button" class="btn btn-success" onclick="executeDownload()">
+                            <i class="fa-solid fa-cloud-arrow-down me-2"></i> Tải xuống ngay
+                        </button>
                     </div>
-                    <div class="card shadow-sm border-0">
-                        <div class="card-body">
-                            <h6 class="card-title fw-bold small text-muted text-uppercase">Tình trạng Van</h6>
-                            <div class="chart-container" style="height: 180px;"><canvas id="miniChart"></canvas></div>
-                        </div>
-                    </div>
+                </form>
+
+                <div class="mt-4 p-3 bg-light rounded small text-muted">
+                    <i class="fa-solid fa-circle-info me-1"></i> <strong>Lưu ý:</strong><br>
+                    Dữ liệu tải về là dữ liệu mới nhất từ máy chủ GeoServer. File Shapefile cần phần mềm chuyên dụng (ArcGIS, QGIS) để mở.
                 </div>
             </div>
 
@@ -242,6 +241,7 @@ $this->beginPage();
                     <select class="form-select form-select-sm" id="search-layer">
                         <option value="capnuoc_hocau:network_donghonhamay">Đồng hồ nhà máy</option>
                         <option value="capnuoc_hocau:network_van">Van mạng lưới</option>
+                        <option value="capnuoc_hocau:network_suco">Sự cố</option>
                     </select>
                 </div>
                 <div id="search-results" class="border rounded bg-light mt-3" style="min-height: 150px; overflow-y: auto;">
@@ -282,46 +282,27 @@ $this->beginPage();
 <script>
     let map;
     let wmsLayers = {};
-    let statsChart = null;
-    
     const geoserverWms = '<?= $geoserverWmsUrl ?>';
     const geoserverWfs = '<?= $geoserverWfsUrl ?>';
     const geoserverWmts = '<?= $geoserverWmtsUrl ?>';
-    const statsApiUrl = '<?= Url::to(['map/thongke-api']) ?>';
+    const DETAIL_LINKS = <?= $jsonDetailLinks ?>;
 
-    // --- CẤU HÌNH BỘ LỌC ĐỘNG (KEYWORD: FILTER CONFIG) ---
-    // Mapping giữa Tên lớp GeoServer và Trường dữ liệu cần lọc + Danh sách giá trị (Inject từ PHP)
+    // --- CẤU HÌNH BỘ LỌC ĐỘNG ---
     const FILTER_CONFIG = {
-        'capnuoc_hocau:network_ongphanphoi': {
-            field: 'loaiong_id', 
-            label: 'Chất liệu ống',
-            options: <?= Json::encode($filterData['loaiong'] ?? []) ?>
-        },
-        'capnuoc_hocau:network_donghonhamay': {
-            field: 'hieudongho_id',
-            label: 'Hiệu đồng hồ',
-            options: <?= Json::encode($filterData['hieudongho'] ?? []) ?>
-        },
-        'capnuoc_hocau:network_van': {
-            field: 'tinhtrang_id',
-            label: 'Trạng thái hoạt động',
-            options: <?= Json::encode($filterData['tinhtrang'] ?? []) ?>
-        },
-        'capnuoc_hocau:network_suco': {
-            field: 'nguyennhansuco_id',
-            label: 'Nguyên nhân sự cố',
-            options: <?= Json::encode($filterData['nguyennhan'] ?? []) ?>
-        },
-        'capnuoc_hocau:network_hamkythuat': {
-            field: 'loaiham_id',
-            label: 'Loại hầm',
-            options: <?= Json::encode($filterData['loaiham'] ?? []) ?>
-        },
-        'capnuoc_hocau:network_moinoi': {
-            field: 'loaimoinoi_id',
-            label: 'Kiểu mối nối',
-            options: <?= Json::encode($filterData['loaimoinoi'] ?? []) ?>
-        }
+        'capnuoc_hocau:network_ongphanphoi': { field: 'loaiong_id', label: 'Chất liệu ống', options: <?= Json::encode($filterData['loaiong'] ?? []) ?> },
+        'capnuoc_hocau:network_donghonhamay': { field: 'hieudongho_id', label: 'Hiệu đồng hồ', options: <?= Json::encode($filterData['hieudongho'] ?? []) ?> },
+        'capnuoc_hocau:network_van': { field: 'tinhtrang_id', label: 'Trạng thái hoạt động', options: <?= Json::encode($filterData['tinhtrang'] ?? []) ?> },
+        'capnuoc_hocau:network_suco': { field: 'nguyennhansuco_id', label: 'Nguyên nhân sự cố', options: <?= Json::encode($filterData['nguyennhan'] ?? []) ?> },
+        'capnuoc_hocau:network_hamkythuat': { field: 'loaiham_id', label: 'Loại hầm', options: <?= Json::encode($filterData['loaiham'] ?? []) ?> },
+        'capnuoc_hocau:network_moinoi': { field: 'loaimoinoi_id', label: 'Kiểu mối nối', options: <?= Json::encode($filterData['loaimoinoi'] ?? []) ?> }
+    };
+    
+    // --- CẤU HÌNH TÌM KIẾM ---
+    const SEARCH_CONFIG = {
+        'capnuoc_hocau:network_donghonhamay': { fields: ['objectid', 'shd', 'ten_khach_hang', 'dia_chi'], display: (p) => `<b>${p.ten_khach_hang || 'Chưa cập nhật'}</b><br><small>${p.dia_chi || ''}</small>` },
+        'capnuoc_hocau:network_van': { fields: ['objectid', 'vitri', 'lydoghi'], display: (p) => `<b>Van: ${p.objectid}</b><br><small>${p.vitri || 'Không có vị trí'}</small>` },
+        'capnuoc_hocau:network_suco': { fields: ['masuco', 'vitri', 'nguyennhan', 'ghichu'], display: (p) => `<b>SC: ${p.masuco || p.id}</b><br><small>${p.vitri || ''}</small>` },
+        'default': { fields: ['objectid'], display: (p) => `<b>${p.objectid || 'Đối tượng'}</b>` }
     };
 
     const defaultCenter = [10.737202, 106.915000];
@@ -330,7 +311,8 @@ $this->beginPage();
     document.addEventListener('DOMContentLoaded', function() {
         initMap();
         initLayers();
-        populateFilterLayerList(); // Hàm mới để tạo list lớp
+        populateFilterLayerList(); // Nạp cho Tab Lọc
+        populateDownloadOptions(); // Nạp cho Tab Tải xuống (MỚI)
         
         if (typeof bootstrap !== 'undefined') {
             [].slice.call(document.querySelectorAll('[title]')).map(function (el) { return new bootstrap.Tooltip(el) });
@@ -372,8 +354,9 @@ $this->beginPage();
     function initLayers() {
         document.querySelectorAll('.wms-layer').forEach(chk => {
             const name = chk.dataset.layer;
+            const zIndexVal = parseInt(chk.dataset.zindex) || 10;
             const layer = L.tileLayer.wms(geoserverWms, {
-                layers: name, format: 'image/png', transparent: true, version: '1.1.0', tiled: true, maxZoom: 22
+                layers: name, format: 'image/png', transparent: true, version: '1.1.0', tiled: true, maxZoom: 22, zIndex: zIndexVal
             });
             wmsLayers[name] = layer;
             if (chk.checked) toggleLayer(name, true);
@@ -396,7 +379,6 @@ $this->beginPage();
         for (let i = 0; i < buttons.length; i++) buttons[i].className = "";
         document.getElementById(tabId).className += " active";
         evt.currentTarget.className += " active";
-        if(tabId === 'tab-stats') loadStats();
     }
     
     function toggleSidebar() {
@@ -415,156 +397,106 @@ $this->beginPage();
         icon.classList.toggle('fa-chevron-up'); icon.classList.toggle('fa-chevron-down');
     }
 
-    // --- LOGIC LỌC THÔNG MINH (SMART FILTER) ---
-    
-    // 1. Chỉ hiển thị các lớp có trong FILTER_CONFIG vào dropdown
+    // --- FILTER LOGIC ---
     function populateFilterLayerList() {
         const select = document.getElementById('filter-layer-select');
         select.innerHTML = '<option value="">-- Chọn đối tượng --</option>';
-        
         document.querySelectorAll('.wms-layer').forEach(chk => {
             const layerName = chk.dataset.layer;
-            const layerLabel = chk.dataset.label;
-            
-            // Chỉ thêm vào nếu lớp này có cấu hình lọc
             if (FILTER_CONFIG[layerName]) {
                 const opt = document.createElement('option');
-                opt.value = layerName;
-                opt.text = layerLabel;
+                opt.value = layerName; opt.text = chk.dataset.label;
                 select.appendChild(opt);
             }
         });
     }
 
-    // 2. Sự kiện khi chọn lớp -> Hiển thị dropdown giá trị tương ứng
     function onFilterLayerChange() {
-        const layerSelect = document.getElementById('filter-layer-select');
-        const layerName = layerSelect.value;
+        const layerName = document.getElementById('filter-layer-select').value;
         const container = document.getElementById('dynamic-filter-container');
         const valueSelect = document.getElementById('dynamic-filter-value');
         const label = document.getElementById('dynamic-filter-label');
-
-        valueSelect.innerHTML = ''; // Clear cũ
+        valueSelect.innerHTML = ''; 
 
         if (!layerName || !FILTER_CONFIG[layerName]) {
-            container.style.display = 'none';
-            return;
+            container.style.display = 'none'; return;
         }
 
         const config = FILTER_CONFIG[layerName];
         container.style.display = 'block';
-        label.innerText = config.label; // Ví dụ: "Chất liệu ống"
+        label.innerText = config.label; 
+        const defOpt = document.createElement('option'); defOpt.value = ""; defOpt.text = "-- Tất cả --"; valueSelect.appendChild(defOpt);
 
-        // Add default option
-        const defOpt = document.createElement('option');
-        defOpt.value = "";
-        defOpt.text = "-- Tất cả --";
-        valueSelect.appendChild(defOpt);
-
-        // Add options from config
         if (config.options && config.options.length > 0) {
             config.options.forEach(item => {
-                const opt = document.createElement('option');
-                opt.value = item.id;
-                opt.text = item.ten; // Model trả về 'ten'
-                valueSelect.appendChild(opt);
+                const opt = document.createElement('option'); opt.value = item.id; opt.text = item.ten; valueSelect.appendChild(opt);
             });
-        } else {
-            const opt = document.createElement('option');
-            opt.text = "Không có dữ liệu danh mục";
-            valueSelect.appendChild(opt);
         }
     }
 
-    // 3. Áp dụng bộ lọc CQL
     function applySmartFilter() {
         const layerName = document.getElementById('filter-layer-select').value;
         const value = document.getElementById('dynamic-filter-value').value;
-        
         if (!layerName) { alert('Vui lòng chọn lớp dữ liệu!'); return; }
-
         showLoading(true);
-
         const fieldName = FILTER_CONFIG[layerName].field;
         const layer = wmsLayers[layerName];
 
         if (layer) {
             if (value) {
-                // Có giá trị -> Áp dụng lọc
                 const cql = `${fieldName} = ${value}`;
                 layer.setParams({ cql_filter: cql });
             } else {
-                // Nếu value rỗng (chọn -- Tất cả --) -> Xóa lọc giống hệt hàm clearSmartFilter
-                if (layer.wmsParams.cql_filter) {
-                    delete layer.wmsParams.cql_filter;
-                    layer.redraw();
-                }
+                if (layer.wmsParams.cql_filter) { delete layer.wmsParams.cql_filter; layer.redraw(); }
             }
-            
-            // Tự bật lớp nếu đang tắt để người dùng thấy kết quả
             const chk = document.querySelector(`.wms-layer[data-layer="${layerName}"]`);
-            if(chk && !chk.checked) {
-                chk.checked = true;
-                toggleLayer(layerName, true);
-            }
+            if(chk && !chk.checked) { chk.checked = true; toggleLayer(layerName, true); }
         }
         setTimeout(() => { showLoading(false); }, 500);
     }
 
-function clearSmartFilter() {
-        // 1. Reset giao diện về mặc định
+    function clearSmartFilter() {
         document.getElementById('filter-layer-select').value = "";
         document.getElementById('dynamic-filter-container').style.display = 'none';
-        
-        // 2. Xóa tham số cql_filter khỏi tất cả các lớp
         for (let key in wmsLayers) {
             let layer = wmsLayers[key];
-            
-            // Kiểm tra xem lớp này có đang bị gán bộ lọc không
-            if (layer.wmsParams && layer.wmsParams.cql_filter) {
-                // Cách cũ: layer.setParams({ cql_filter: null }); -> Gây lỗi
-                
-                // CÁCH KHẮC PHỤC: Xóa cứng tham số khỏi object wmsParams
-                delete layer.wmsParams.cql_filter; 
-                
-                // Yêu cầu Leaflet vẽ lại lớp đó (sẽ tạo URL mới không có cql_filter)
-                layer.redraw();
-            }
+            if (layer.wmsParams && layer.wmsParams.cql_filter) { delete layer.wmsParams.cql_filter; layer.redraw(); }
         }
-        alert('Đã xóa bộ lọc, hiển thị lại toàn bộ dữ liệu.');
+        alert('Đã xóa bộ lọc.');
     }
 
-    // --- OTHER UTILS ---
-    function loadStats() {
-        const content = document.getElementById('stats-content');
-        content.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></div>';
-        fetch(statsApiUrl).then(res => res.json()).then(data => {
-            if(data.success) {
-                const tpl = document.getElementById('stats-template').cloneNode(true);
-                tpl.style.display = 'block'; tpl.id = '';
-                tpl.querySelector('#stat-ong').innerText = (data.stats.truyendan + data.stats.phanphoi).toFixed(1) + ' km';
-                tpl.querySelector('#stat-van').innerText = data.stats.van;
-                tpl.querySelector('#stat-suco').innerText = data.stats.suco;
-                content.innerHTML = ''; content.appendChild(tpl);
-                renderMiniChart(data.chart_van);
-            }
-        }).catch(err => content.innerHTML = '<div class="alert alert-danger">Lỗi tải dữ liệu.</div>');
-    }
-
-    function renderMiniChart(chartData) {
-        const ctx = document.getElementById('miniChart');
-        if(!ctx) return;
-        if(statsChart) statsChart.destroy();
-        statsChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: chartData.labels,
-                datasets: [{ data: chartData.data, backgroundColor: ['#0d6efd', '#dc3545'], borderWidth: 0 }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, usePointStyle: true, font: {size: 11} } } } }
+    // --- DOWNLOAD LOGIC (NEW) ---
+    function populateDownloadOptions() {
+        const select = document.getElementById('download-layer-select');
+        select.innerHTML = '<option value="">-- Chọn lớp dữ liệu --</option>';
+        // Lấy tất cả các lớp có trong bản đồ để cho phép tải về
+        document.querySelectorAll('.wms-layer').forEach(chk => {
+            const opt = document.createElement('option');
+            opt.value = chk.dataset.layer; 
+            opt.text = chk.dataset.label;
+            select.appendChild(opt);
         });
     }
 
+    function executeDownload() {
+        const layer = document.getElementById('download-layer-select').value;
+        const format = document.getElementById('download-format-select').value;
+
+        if (!layer) {
+            alert('Vui lòng chọn lớp dữ liệu cần tải!');
+            return;
+        }
+
+        // Tạo URL WFS GetFeature để tải về
+        // service=WFS & request=GetFeature & typeName=... & outputFormat=...
+        const url = `${geoserverWfs}?service=WFS&version=1.0.0&request=GetFeature` +
+                    `&typeName=${layer}&outputFormat=${format}`;
+        
+        // Mở tab mới để tải
+        window.open(url, '_blank');
+    }
+
+    // --- OTHER UTILS ---
     function updateLegend() {
         const box = document.getElementById('legend-panel');
         const content = document.getElementById('legend-content');
@@ -583,15 +515,10 @@ function clearSmartFilter() {
         box.style.display = hasLayer ? 'block' : 'none';
     }
 
-    // Biến global chứa danh sách link (được inject từ PHP)
-    const DETAIL_LINKS = <?= $jsonDetailLinks ?>;
-
     function getFeatureInfo(e) {
         const activeLayers = Array.from(document.querySelectorAll('.wms-layer:checked')).map(c => c.dataset.layer);
         if (activeLayers.length === 0) return;
-        
         document.body.style.cursor = 'wait';
-        
         const params = {
             request: 'GetFeatureInfo', service: 'WMS', srs: 'EPSG:4326', version: '1.1.0', 
             format: 'image/png', bbox: map.getBounds().toBBoxString(), 
@@ -600,189 +527,68 @@ function clearSmartFilter() {
             info_format: 'application/json', feature_count: 5,
             x: Math.round(e.containerPoint.x), y: Math.round(e.containerPoint.y)
         };
-
-        fetch(geoserverWms + L.Util.getParamString(params, geoserverWms, true))
-            .then(r => r.json())
-            .then(data => {
-                document.body.style.cursor = 'default';
-                if (data.features && data.features.length > 0) {
-                    // Lấy đối tượng đầu tiên tìm thấy
-                    const feature = data.features[0]; 
-                    const props = feature.properties;
-                    
-                    // --- 1. XỬ LÝ NỘI DUNG POPUP ---
-                    let html = '<table class="info-table" width="100%">';
-                    
-                    // Danh sách các từ khóa cần loại bỏ (Geometry/GeoJSON)
-                    const ignoredKeys = ['geom', 'geojson', 'geometry', 'bbox', 'shape_leng', 'shape_area', 'st_area', 'st_length'];
-
-                    for (let k in props) {
-                        // Kiểm tra: Có giá trị VÀ không nằm trong danh sách loại bỏ
-                        if (props[k] !== null && props[k] !== undefined && !ignoredKeys.includes(k.toLowerCase())) {
-                            html += `<tr><td style="font-weight:bold;color:#666;white-space:nowrap;padding-right:10px;">${k}</td><td>${props[k]}</td></tr>`;
+        fetch(geoserverWms + L.Util.getParamString(params, geoserverWms, true)).then(r => r.json()).then(data => {
+            document.body.style.cursor = 'default';
+            if (data.features && data.features.length > 0) {
+                const feature = data.features[0]; 
+                const props = feature.properties;
+                let html = '<table class="info-table" width="100%">';
+                const ignoredKeys = ['geom', 'the_geom', 'geometry', 'geojson', 'bbox', 'coordinates', 'type', 'shape_leng', 'shape_area', 'st_area', 'st_length', 'len', 'shape_length', 'lat', 'long', 'lng', 'x', 'y', 'objectid_1', 'gid', 'id_0', 'status'];
+                for (let k in props) {
+                    if (props[k] !== null && props[k] !== undefined && props[k] !== '') {
+                        if (!ignoredKeys.includes(k.toLowerCase())) {
+                            let label = k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, ' ');
+                            html += `<tr><td style="font-weight:bold;color:#666;white-space:nowrap;padding-right:10px;vertical-align:top;">${label}</td><td>${props[k]}</td></tr>`;
                         }
                     }
-                    html += '</table>';
-
-                    // --- 2. XỬ LÝ NÚT "XEM CHI TIẾT" ---
-                    // Feature ID của GeoServer thường có dạng: "network_van.123"
-                    // Ta tách lấy phần tên lớp (network_van) và ID (123)
-                    let btnHtml = '';
-                    if (feature.id && feature.id.includes('.')) {
-                        const parts = feature.id.split('.');
-                        const layerKey = parts[0]; // VD: network_van
-                        const objId = props.id || props.objectid || parts[1]; // Ưu tiên lấy ID từ thuộc tính, nếu không lấy từ FID
-
-                        // Kiểm tra xem lớp này có link cấu hình không
-                        if (DETAIL_LINKS[layerKey] && objId) {
-                            // Tạo URL: /web/quanly/hocau/van/view?id=123
-                            const url = `${DETAIL_LINKS[layerKey]}?id=${objId}`;
-                            btnHtml = `
-                                <div class="mt-2 text-end border-top pt-2">
-                                    <a href="${url}" target="_blank" class="btn btn-sm btn-primary text-white">
-                                        <i class="fa-solid fa-circle-info me-1"></i> Xem chi tiết
-                                    </a>
-                                </div>`;
-                        }
-                    }
-
-                    // --- 3. HIỂN THỊ ---
-                    L.popup({ maxWidth: 320 })
-                     .setLatLng(e.latlng)
-                     .setContent(`<div class="popup-header">Thông tin đối tượng</div><div class="popup-body">${html}${btnHtml}</div>`)
-                     .openOn(map);
                 }
-            })
-            .catch((err) => {
-                console.error(err);
-                document.body.style.cursor = 'default';
-            });
+                html += '</table>';
+                let btnHtml = '';
+                if (feature.id && feature.id.includes('.')) {
+                    const parts = feature.id.split('.'); const layerKey = parts[0]; const objId = props.id || props.objectid || parts[1]; 
+                    if (DETAIL_LINKS[layerKey] && objId) {
+                        const url = `${DETAIL_LINKS[layerKey]}?id=${objId}`;
+                        btnHtml = `<div class="mt-2 text-end border-top pt-2"><a href="${url}" target="_blank" class="btn btn-sm btn-primary text-white" style="text-decoration:none;"><i class="fa-solid fa-circle-info me-1"></i> Xem chi tiết</a></div>`;
+                    }
+                }
+                L.popup({ maxWidth: 320 }).setLatLng(e.latlng).setContent(`<div class="popup-header">Thông tin đối tượng</div><div class="popup-body">${html}${btnHtml}</div>`).openOn(map);
+            }
+        }).catch((err) => { console.error(err); document.body.style.cursor = 'default'; });
     }
 
-    /* --- CẤU HÌNH TÌM KIẾM NÂNG CAO (SEARCH CONFIG) --- */
-    // Định nghĩa các trường cần tìm cho từng lớp
-    const SEARCH_CONFIG = {
-        'capnuoc_hocau:network_donghonhamay': {
-            fields: ['objectid', 'shd', 'ten_khach_hang', 'dia_chi'], // Tìm cả Mã, Số HĐ, Tên, Địa chỉ
-            display: (p) => `<b>${p.ten_khach_hang || 'Chưa cập nhật'}</b><br><small>${p.dia_chi || ''}</small>`
-        },
-        'capnuoc_hocau:network_van': {
-            fields: ['objectid', 'vitri', 'lydoghi'], // Tìm Mã, Vị trí lắp, Ghi chú
-            display: (p) => `<b>Van: ${p.objectid}</b><br><small>${p.vitri || 'Không có vị trí'}</small>`
-        },
-        'capnuoc_hocau:network_suco': {
-            fields: ['masuco', 'vitri', 'nguyennhan', 'ghichu'],
-            display: (p) => `<b>SC: ${p.masuco || p.id}</b><br><small>${p.vitri || ''}</small>`
-        },
-        // Mặc định cho các lớp khác nếu chưa cấu hình
-        'default': {
-            fields: ['objectid'],
-            display: (p) => `<b>${p.objectid || 'Đối tượng'}</b>`
-        }
-    };
-
-    /**
-     * HÀM TÌM KIẾM "XỊN" (MULTI-FIELD + CASE INSENSITIVE)
-     */
     function searchObject() {
         const keyword = document.getElementById('search-keyword').value.trim();
         const layer = document.getElementById('search-layer').value;
-        
-        if (!keyword) {
-            alert('Vui lòng nhập từ khóa!');
-            return;
-        }
-
+        if (!keyword) { alert('Vui lòng nhập từ khóa!'); return; }
         showLoading(true);
-        const container = document.getElementById('search-results');
-        container.innerHTML = '';
-
-        // 1. Xác định các trường cần tìm dựa trên Config
+        const container = document.getElementById('search-results'); container.innerHTML = '';
         const config = SEARCH_CONFIG[layer] || SEARCH_CONFIG['default'];
         const fields = config.fields;
-
-        // 2. Xây dựng bộ lọc XML chuẩn OGC với logic OR (Hoặc)
-        // Cấu trúc: <Filter><Or> <PropertyIsLike>Col1</PropertyIsLike> <PropertyIsLike>Col2</PropertyIsLike> </Or></Filter>
         let filterInner = '';
-        
         fields.forEach(field => {
-            // matchCase="false" để tìm không phân biệt hoa thường
-            // wildCard="*" : đại diện cho chuỗi bất kỳ
-            filterInner += `
-                <PropertyIsLike wildCard="*" singleChar="." escapeChar="!" matchCase="false">
-                    <PropertyName>${field}</PropertyName>
-                    <Literal>*${keyword}*</Literal>
-                </PropertyIsLike>
-            `;
+            filterInner += `<PropertyIsLike wildCard="*" singleChar="." escapeChar="!" matchCase="false"><PropertyName>${field}</PropertyName><Literal>*${keyword}*</Literal></PropertyIsLike>`;
         });
+        const filterXml = fields.length > 1 ? `<Filter xmlns="http://www.opengis.net/ogc"><Or>${filterInner}</Or></Filter>` : `<Filter xmlns="http://www.opengis.net/ogc">${filterInner}</Filter>`;
+        const url = `${geoserverWfs}?service=WFS&version=1.1.0&request=GetFeature&typeName=${layer}&outputFormat=application/json&filter=${encodeURIComponent(filterXml)}&maxFeatures=10`;
 
-        // Nếu có nhiều trường thì bọc trong thẻ <Or>, nếu 1 trường thì không cần
-        const filterXml = fields.length > 1 
-            ? `<Filter xmlns="http://www.opengis.net/ogc"><Or>${filterInner}</Or></Filter>`
-            : `<Filter xmlns="http://www.opengis.net/ogc">${filterInner}</Filter>`;
-
-        // 3. Gọi WFS Service
-        const url = `${geoserverWfs}?service=WFS` + 
-                    `&version=1.1.0` + 
-                    `&request=GetFeature` + 
-                    `&typeName=${layer}` + 
-                    `&outputFormat=application/json` + 
-                    `&filter=${encodeURIComponent(filterXml)}` + 
-                    `&maxFeatures=10`; // Lấy tối đa 10 kết quả
-
-        fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                showLoading(false);
-                if (data.features && data.features.length > 0) {
-                    data.features.forEach(f => {
-                        // Render kết quả ra HTML đẹp mắt
-                        const div = document.createElement('div');
-                        div.className = 'search-item d-flex align-items-start';
-                        div.style.padding = '10px';
-                        div.style.borderBottom = '1px solid #eee';
-                        div.style.cursor = 'pointer';
-                        
-                        // Icon dựa theo lớp (trang trí)
-                        let icon = '<i class="fa-solid fa-location-dot text-primary mt-1 me-2"></i>';
-                        
-                        // Nội dung hiển thị lấy từ hàm display trong Config
-                        const contentHtml = config.display(f.properties);
-
-                        div.innerHTML = `${icon}<div>${contentHtml}</div>`;
-                        
-                        // Sự kiện Click vào kết quả
-                        div.onclick = () => {
-                            // Highlight đối tượng trên bản đồ
-                            const l = L.geoJSON(f, {
-                                pointToLayer: function (feature, latlng) {
-                                    // Tạo Marker tròn đỏ nổi bật
-                                    return L.circleMarker(latlng, {
-                                        radius: 8, fillColor: "#ff0000", color: "#fff", weight: 2, opacity: 1, fillOpacity: 0.8
-                                    });
-                                },
-                                style: { color: "#ff0000", weight: 5, opacity: 0.6 } // Style cho đường ống nếu tìm đường
-                            });
-                            
-                            // Zoom và Popup
-                            map.fitBounds(l.getBounds(), { maxZoom: 19 });
-                            l.addTo(map).bindPopup(contentHtml).openPopup();
-                            
-                            // Xóa highlight sau 5 giây
-                            setTimeout(() => map.removeLayer(l), 5000);
-                        };
-                        
-                        container.appendChild(div);
-                    });
-                } else {
-                    container.innerHTML = '<div class="text-center text-muted p-3"><i class="fa-solid fa-circle-xmark mb-2"></i><br>Không tìm thấy kết quả nào.</div>';
-                }
-            })
-            .catch(err => {
-                showLoading(false);
-                console.error(err);
-                container.innerHTML = '<div class="text-center text-danger p-3">Lỗi kết nối Server!</div>';
-            });
+        fetch(url).then(res => res.json()).then(data => {
+            showLoading(false);
+            if (data.features && data.features.length > 0) {
+                data.features.forEach(f => {
+                    const div = document.createElement('div'); div.className = 'search-item d-flex align-items-start'; div.style.padding = '10px'; div.style.borderBottom = '1px solid #eee'; div.style.cursor = 'pointer';
+                    let icon = '<i class="fa-solid fa-location-dot text-primary mt-1 me-2"></i>';
+                    const contentHtml = config.display(f.properties);
+                    div.innerHTML = `${icon}<div>${contentHtml}</div>`;
+                    div.onclick = () => {
+                        const l = L.geoJSON(f, { pointToLayer: function (feature, latlng) { return L.circleMarker(latlng, { radius: 8, fillColor: "#ff0000", color: "#fff", weight: 2, opacity: 1, fillOpacity: 0.8 }); }, style: { color: "#ff0000", weight: 5, opacity: 0.6 } });
+                        map.fitBounds(l.getBounds(), { maxZoom: 19 });
+                        l.addTo(map).bindPopup(contentHtml).openPopup();
+                        setTimeout(() => map.removeLayer(l), 5000);
+                    };
+                    container.appendChild(div);
+                });
+            } else { container.innerHTML = '<div class="text-center text-muted p-3"><i class="fa-solid fa-circle-xmark mb-2"></i><br>Không tìm thấy kết quả nào.</div>'; }
+        }).catch(err => { showLoading(false); console.error(err); container.innerHTML = '<div class="text-center text-danger p-3">Lỗi kết nối Server!</div>'; });
     }
 
     function locateUser() { map.locate({setView: true, maxZoom: 16}); }

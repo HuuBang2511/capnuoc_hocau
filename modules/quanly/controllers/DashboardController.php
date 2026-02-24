@@ -45,7 +45,7 @@ class DashboardController extends QuanlyBaseController
         $urlPhanPhoi   = Url::to(['hocau/ongphanphoi/index']);
 
         $cntDHTong     = Donghotong::find()->where(['status' => 1])->count();
-        $urlDHTong     = Url::to(['hocau/donghotong/index']);
+        $urlDHTong     = Url::to(['hocau/dongho-tong/index']);
 
         $cntDHKhuVuc   = Donghonhamay::find()->where(['status' => 1])->count();
         $urlDHKhuVuc   = Url::to(['hocau/donghonhamay/index']);

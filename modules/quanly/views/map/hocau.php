@@ -633,8 +633,11 @@ $this->beginPage();
         "ma_tram_3": [10.745000, 106.910000]  // Ví dụ
     };
     
+    // SỬA ĐOẠN FETCH NÀY
     function fetchIotDataRealtime() {
-        fetch('/iot/get')
+        fetch('/iot_api.php?action=get', {
+            headers: { 'Authorization': 'Bearer SCADA_HOCAU_2024_SECRET_KEY' }
+        })
             .then(res => res.json())
             .then(data => {
                 for (let ma_tram in data) {

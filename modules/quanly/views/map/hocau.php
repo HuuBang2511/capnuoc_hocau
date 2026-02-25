@@ -173,6 +173,18 @@ $this->beginPage();
                     </div>
                 </div>
                 <?php endforeach; ?>
+                <div class="layer-group">
+                    <div class="layer-group-header" onclick="toggleGroup('group-scada-iot')">
+                        <span class="text-success fw-bold"><i class="fa-solid fa-satellite-dish"></i> Dữ Liệu SCADA (Realtime)</span>
+                        <i class="fa-solid fa-chevron-down icon-group-scada-iot"></i>
+                    </div>
+                    <div class="layer-group-body" id="group-scada-iot" style="display: none;">
+                        <div class="form-check-custom">
+                            <input class="form-check-input" type="checkbox" id="layer_iot_toggle">
+                            <label class="form-check-label fw-bold" for="layer_iot_toggle">Hiển thị thông số IoT</label>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="tab-filter" class="tab-panel">
@@ -601,73 +613,68 @@ $this->beginPage();
     // ==========================================
     // MODULE TÍCH HỢP SCADA IOT REALTIME
     // ==========================================
-    let iotMarkers = {}; // Lưu trữ các marker IOT để cập nhật tránh vẽ đè nhiều lần
+    let iotMarkers = {}; 
+    let iotLayerGroup = L.layerGroup(); // KHÔNG addTo(map) ngay từ đầu để nó ẩn
+
+    // Sự kiện bật/tắt lớp IoT
+    document.getElementById('layer_iot_toggle').addEventListener('change', function() {
+        if (this.checked) {
+            map.addLayer(iotLayerGroup);
+        } else {
+            map.removeLayer(iotLayerGroup);
+        }
+    });
+
+    // Bản đồ map mã trạm SCADA sang Tọa độ (Lat, Lng)
+    // MÀY CẦN BỔ SUNG TỌA ĐỘ CÁC TRẠM KHÁC VÀO ĐÂY KHI TÌM ĐƯỢC MÃ CỦA CHÚNG
+    const TOA_DO_TRAM_SCADA = {
+        "vilog_94e686709b90": [10.737202, 106.915000],
+        "ma_tram_2": [10.740000, 106.920000], // Ví dụ
+        "ma_tram_3": [10.745000, 106.910000]  // Ví dụ
+    };
     
-    // Hàm này sẽ chạy ngầm định kỳ
     function fetchIotDataRealtime() {
-        // Gọi API lấy data IOT mới nhất
         fetch('<?= Url::to(['/quanly/map/get-iot']) ?>')
             .then(res => res.json())
             .then(data => {
                 for (let ma_tram in data) {
-                    let iotData = data[ma_tram];
-                    hienThiThongSoIotLenMap(ma_tram, iotData);
+                    hienThiThongSoIotLenMap(ma_tram, data[ma_tram]);
                 }
             })
             .catch(err => console.log("Lỗi lấy data IOT:", err));
     }
 
     function hienThiThongSoIotLenMap(ma_tram, iotData) {
-        // TẠM THỜI: Mày phải nhập tọa độ tĩnh của cái trạm SCADA vào đây 
-        // (Vì data SCADA bắn về không có tọa độ Lat/Long)
-        // Ví dụ tọa độ của cái trạm "vilog_94e686709b90":
-        let toa_do_tram = null;
-        
-        if (ma_tram === "vilog_94e686709b90") {
-            toa_do_tram = [10.737202, 106.915000]; // Mày SỬA LẠI TỌA ĐỘ THỰC TẾ của trạm này nhé
-        }
-        
-        if (!toa_do_tram) return; // Nếu không có tọa độ thì không vẽ được
+        let toa_do_tram = TOA_DO_TRAM_SCADA[ma_tram];
+        if (!toa_do_tram) return; // Bỏ qua nếu chưa khai báo tọa độ
 
-        // Format cái bảng thông số
         let tooltipContent = `
-            <div style="background:#000; color:#0f0; padding:8px; border-radius:5px; font-family:monospace; min-width:140px; border: 1px solid #0f0;">
+            <div style="background:rgba(0,0,0,0.8); color:#0f0; padding:8px; border-radius:5px; font-family:monospace; min-width:140px; border: 1px solid #0f0;">
                 <div style="font-weight:bold; border-bottom:1px dashed #0f0; margin-bottom:5px; padding-bottom:3px;">
                     <i class="fa-solid fa-satellite-dish me-1"></i> Trạm: ${ma_tram}
                 </div>
-                <div>Áp lực: <b style="color:#fff">${iotData.ap_luc}</b> bar</div>
+                <div>Áp lực: <b style="color:#fff">${iotData.ap_luc}</b> m</div>
                 <div>Lưu lượng: <b style="color:#fff">${iotData.luu_luong}</b> m3/h</div>
                 <div style="font-size:0.8em; color:#888; margin-top:5px;">Cập nhật: ${iotData.timestamp}</div>
             </div>
         `;
 
-        // Nếu marker trạm này đã có trên map -> Chỉ update nội dung
         if (iotMarkers[ma_tram]) {
             iotMarkers[ma_tram].setTooltipContent(tooltipContent);
         } else {
-            // Nếu chưa có -> Tạo marker mới
             let marker = L.circleMarker(toa_do_tram, {
-                radius: 8,
-                fillColor: "#00ff00", // Màu xanh lá cây
-                color: "#000",
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.8
-            }).addTo(map);
-            
-            // Gắn tooltip hiển thị vĩnh viễn (permanent: true)
-            marker.bindTooltip(tooltipContent, {
-                permanent: true, 
-                direction: 'right',
-                className: 'iot-tooltip',
-                offset: [10, 0]
+                radius: 6, fillColor: "#00ff00", color: "#000", weight: 2, opacity: 1, fillOpacity: 0.8
             });
+            // THAY ĐỔI QUAN TRỌNG: Thêm vào iotLayerGroup thay vì map
+            marker.addTo(iotLayerGroup); 
             
+            marker.bindTooltip(tooltipContent, {
+                permanent: true, direction: 'right', className: 'iot-tooltip', offset: [10, 0]
+            });
             iotMarkers[ma_tram] = marker;
         }
     }
 
-    // Khởi động vòng lặp gọi API mỗi 5 giây (5000 ms) sau khi bản đồ load xong
     setTimeout(() => {
         fetchIotDataRealtime();
         setInterval(fetchIotDataRealtime, 5000); 

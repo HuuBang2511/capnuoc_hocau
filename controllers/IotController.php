@@ -1,24 +1,22 @@
 <?php
-namespace app\modules\quanly\controllers;
+namespace app\controllers; // ĐÃ ĐỔI: Chạy ra ngoài cùng của dự án
 
-use yii\web\Controller; // Kế thừa trực tiếp từ Core của Yii2, KHÔNG dùng hcmgis nữa
+use yii\web\Controller;
 use yii\web\Response;
 
 class IotController extends Controller
 {
-    // Tắt kiểm tra CSRF cho toàn bộ Controller API này
     public $enableCsrfValidation = false;
 
-    // API HỨNG DATA TỪ SCADA (Link: /quanly/iot/update)
+    // Link gọi: http://gis.capnuochocaumoi.vn/iot/update
     public function actionUpdate()
     {
         \Yii::$app->response->format = Response::FORMAT_JSON;
         $request = \Yii::$app->request;
         
-        // BẢO MẬT BẰNG API KEY
         $authHeader = $request->getHeaders()->get('Authorization');
         if ($authHeader !== 'Bearer SCADA_HOCAU_2024_SECRET_KEY') {
-            return ['status' => 'error', 'message' => 'Sai API Key! Từ chối truy cập.'];
+            return ['status' => 'error', 'message' => 'Sai API Key!'];
         }
         
         if ($request->isPost) {
@@ -27,10 +25,7 @@ class IotController extends Controller
             if ($data && isset($data['ma_tram'])) {
                 $file = \Yii::getAlias('@runtime/iot_realtime.json');
                 
-                $currentData = [];
-                if (file_exists($file)) {
-                    $currentData = json_decode(file_get_contents($file), true) ?: [];
-                }
+                $currentData = file_exists($file) ? json_decode(file_get_contents($file), true) : [];
                 
                 $data['last_update'] = date('Y-m-d H:i:s');
                 $currentData[$data['ma_tram']] = $data;
@@ -42,7 +37,7 @@ class IotController extends Controller
         return ['status' => 'error', 'message' => 'Lỗi định dạng dữ liệu'];
     }
 
-    // API NHẢ DATA RA BẢN ĐỒ (Link: /quanly/iot/get)
+    // Link gọi: http://gis.capnuochocaumoi.vn/iot/get
     public function actionGet()
     {
         \Yii::$app->response->format = Response::FORMAT_JSON;
@@ -51,6 +46,6 @@ class IotController extends Controller
         if (file_exists($file)) {
             return json_decode(file_get_contents($file), true);
         }
-        return []; // Trả về mảng rỗng nếu chưa có file
+        return []; 
     }
 }

@@ -15,26 +15,50 @@ use yii\web\Response;
 
 class MapController extends QuanlyBaseController
 {
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        
+        // Thêm ngoại lệ: Cho phép khách (chưa đăng nhập) chọc vào 2 API này
+        if (isset($behaviors['access']['rules'])) {
+            array_unshift($behaviors['access']['rules'], [
+                'actions' => ['update-iot', 'get-iot'],
+                'allow' => true,
+                'roles' => ['?', '@'], // '?' là khách, '@' là user đã login
+            ]);
+        }
+        return $behaviors;
+    }
+
+    // ========================================================
+    // [THÊM MỚI 2] - TẮT BẢO MẬT CSRF CỦA YII2 CHO API
+    // ========================================================
     public function beforeAction($action)
     {
-        if ($action->id == 'update-iot') {
+        if ($action->id == 'update-iot' || $action->id == 'get-iot') {
             $this->enableCsrfValidation = false;
         }
         return parent::beforeAction($action);
     }
 
-    // --- THÊM MỚI: API hứng dữ liệu từ Tool Python SCADA ---
+    // ========================================================
+    // [THÊM MỚI 3] - API HỨNG DỮ LIỆU TỪ SCADA
+    // ========================================================
     public function actionUpdateIot()
     {
         \Yii::$app->response->format = Response::FORMAT_JSON;
         $request = \Yii::$app->request;
         
+        // BẢO MẬT: Kiểm tra mã API KEY. Tránh bị người ngoài phá dữ liệu.
+        $authHeader = $request->getHeaders()->get('Authorization');
+        if ($authHeader !== 'Bearer SCADA_HOCAU_2024_SECRET_KEY') {
+            throw new \yii\web\ForbiddenHttpException('Sai API Key! Từ chối truy cập.');
+        }
+        
         if ($request->isPost) {
-            // Lấy raw data JSON từ tool Python bắn sang
             $data = json_decode(file_get_contents('php://input'), true);
             
             if ($data && isset($data['ma_tram'])) {
-                // Lưu data vào file tạm trong thư mục runtime của Yii2
                 $file = \Yii::getAlias('@runtime/iot_realtime.json');
                 
                 $currentData = [];
@@ -42,18 +66,19 @@ class MapController extends QuanlyBaseController
                     $currentData = json_decode(file_get_contents($file), true) ?: [];
                 }
                 
-                // Cập nhật trạm mới nhất, gán thêm thời gian server nhận được
                 $data['last_update'] = date('Y-m-d H:i:s');
                 $currentData[$data['ma_tram']] = $data;
                 
                 file_put_contents($file, json_encode($currentData));
-                return ['status' => 'success', 'message' => 'Đã cập nhật data IOT'];
+                return ['status' => 'success', 'message' => 'Đã lưu data IOT'];
             }
         }
-        return ['status' => 'error', 'message' => 'Dữ liệu không hợp lệ'];
+        return ['status' => 'error', 'message' => 'Lỗi dữ liệu'];
     }
 
-    // --- THÊM MỚI: API cho Frontend (bản đồ) gọi để lấy data vẽ lên ---
+    // ========================================================
+    // [THÊM MỚI 4] - API NHẢ DỮ LIỆU RA TRANG BẢN ĐỒ
+    // ========================================================
     public function actionGetIot()
     {
         \Yii::$app->response->format = Response::FORMAT_JSON;

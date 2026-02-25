@@ -634,7 +634,7 @@ $this->beginPage();
     };
     
     function fetchIotDataRealtime() {
-        fetch('<?= Url::to(['/quanly/map/get-iot']) ?>')
+        fetch('<?= Url::to(['/quanly/iot/get']) ?>')
             .then(res => res.json())
             .then(data => {
                 for (let ma_tram in data) {

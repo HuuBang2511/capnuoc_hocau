@@ -648,13 +648,17 @@ $this->beginPage();
     }
 
     function hienThiThongSoIotLenMap(ma_tram, iotData) {
-        let toa_do_tram = TOA_DO_TRAM_SCADA[ma_tram];
-        if (!toa_do_tram) return; // Bỏ qua nếu chưa khai báo tọa độ
+        // Móc tọa độ trực tiếp từ Database SCADA bắn lên
+        let toa_do_tram = [iotData.lat, iotData.lng];
+        if (!iotData.lat || !iotData.lng) return; 
+
+        // Lấy tên trạm đẹp, nếu không có thì xài mã trạm
+        let ten_tram = iotData.ten_tram || ma_tram;
 
         let tooltipContent = `
             <div style="background:rgba(0,0,0,0.8); color:#0f0; padding:8px; border-radius:5px; font-family:monospace; min-width:140px; border: 1px solid #0f0;">
                 <div style="font-weight:bold; border-bottom:1px dashed #0f0; margin-bottom:5px; padding-bottom:3px;">
-                    <i class="fa-solid fa-satellite-dish me-1"></i> Trạm: ${ma_tram}
+                    <i class="fa-solid fa-satellite-dish me-1"></i> ${ten_tram}
                 </div>
                 <div>Áp lực: <b style="color:#fff">${iotData.ap_luc}</b> m</div>
                 <div>Lưu lượng: <b style="color:#fff">${iotData.luu_luong}</b> m3/h</div>
@@ -662,13 +666,15 @@ $this->beginPage();
             </div>
         `;
 
+        // Nếu marker đã tồn tại -> Chỉ cập nhật data và nhích tọa độ nếu có thay đổi
         if (iotMarkers[ma_tram]) {
+            iotMarkers[ma_tram].setLatLng(toa_do_tram);
             iotMarkers[ma_tram].setTooltipContent(tooltipContent);
         } else {
+            // Marker mới thì vẽ thêm vào Layer Group
             let marker = L.circleMarker(toa_do_tram, {
                 radius: 6, fillColor: "#00ff00", color: "#000", weight: 2, opacity: 1, fillOpacity: 0.8
             });
-            // THAY ĐỔI QUAN TRỌNG: Thêm vào iotLayerGroup thay vì map
             marker.addTo(iotLayerGroup); 
             
             marker.bindTooltip(tooltipContent, {

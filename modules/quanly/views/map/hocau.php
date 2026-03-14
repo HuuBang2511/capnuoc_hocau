@@ -28,6 +28,7 @@ $detailLinks = [
     'network_moinoi'        => Url::to(['/quanly/hocau/moinoi/view']),
     'network_ongphanphoi'   => Url::to(['/quanly/hocau/ongphanphoi/view']),
     'network_ongtruyendan'  => Url::to(['/quanly/hocau/ongtruyendan/view']),
+    'network_ongdansinh' => Url::to(['/quanly/hocau/ongdansinh/view']),
     'network_van'           => Url::to(['/quanly/hocau/van/view']),
     'network_suco'          => Url::to(['/quanly/hocau/suco/view']),
     'network_hanglangantoan'=> Url::to(['/quanly/hocau/hanglangantoan/view']),
@@ -135,6 +136,7 @@ $this->beginPage();
                     'Mạng Lưới Đường Ống' => [
                         ['id' => 'truyendan', 'layer' => 'capnuoc_hocau:network_ongtruyendan', 'label' => 'Ống truyền dẫn', 'checked' => true, 'zIndex' => 20],
                         ['id' => 'phanphoi', 'layer' => 'capnuoc_hocau:network_ongphanphoi', 'label' => 'Ống phân phối', 'checked' => true, 'zIndex' => 20],
+                        ['id' => 'dansinh', 'layer' => 'capnuoc_hocau:network_ongdansinh', 'label' => 'Ống dân sinh', 'checked' => true, 'zIndex' => 20],
                         ['id' => 'moinoi', 'layer' => 'capnuoc_hocau:network_moinoi', 'label' => 'Mối nối', 'checked' => false, 'zIndex' => 30],
                     ],
                     'Thiết Bị & Đồng Hồ' => [
@@ -143,6 +145,7 @@ $this->beginPage();
                         ['id' => 'dhnhamay', 'layer' => 'capnuoc_hocau:network_donghonhamay', 'label' => 'Đồng hồ nhà máy', 'checked' => false, 'zIndex' => 30],
                     ],
                     'Công Trình & Khác' => [
+                        ['id' => 'ranhnhamay', 'layer' => 'capnuoc_hocau:base_ranhnhamay', 'label' => 'Ranh nhà máy', 'checked' => false, 'zIndex' => 5],
                         ['id' => 'nhamay', 'layer' => 'capnuoc_hocau:network_nhamaynuoc', 'label' => 'Nhà máy nước', 'checked' => true, 'zIndex' => 10],
                         ['id' => 'ham', 'layer' => 'capnuoc_hocau:network_hamkythuat', 'label' => 'Hầm kỹ thuật', 'checked' => false, 'zIndex' => 10],
                         ['id' => 'hanhlang', 'layer' => 'capnuoc_hocau:network_hanglangantoan', 'label' => 'Hành lang an toàn', 'checked' => false, 'zIndex' => 10],

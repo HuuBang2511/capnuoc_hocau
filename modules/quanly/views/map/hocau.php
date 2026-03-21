@@ -711,7 +711,7 @@ function createIcon(d) {
 // IOT FETCH & RENDER
 // ================================================================
 function fetchIot() {
-    fetch(IOT_BASE+'?action=get', { headers:{ 'Authorization':'Bearer '+IOT_KEY } })
+    fetch(IOT_BASE+'?action=get&key='+IOT_KEY, { headers:{ 'Authorization':'Bearer '+IOT_KEY } })
         .then(r => r.json())
         .then(data => {
             const keys = Object.keys(data);
@@ -864,7 +864,7 @@ function loadChart() {
     document.getElementById('cp-loading').classList.add('show');
     if (chartInst) { chartInst.destroy(); chartInst = null; }
 
-    const url = `${IOT_BASE}?action=history&channel_id=${encodeURIComponent(curChartCid)}&range=${curChartRange}`;
+    const url = `${IOT_BASE}?action=history&channel_id=${encodeURIComponent(curChartCid)}&range=${curChartRange}&key=${IOT_KEY}`;
     fetch(url, { headers:{ 'Authorization':'Bearer '+IOT_KEY } })
         .then(r => r.json())
         .then(data => {

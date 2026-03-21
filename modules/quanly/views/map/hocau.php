@@ -255,15 +255,19 @@ $this->beginPage();
        CHART PANEL
     ===================================================================== */
     #chart-panel {
-        position:absolute; bottom:0; left:0; right:0;
+        position:absolute;
+        bottom:0; left:0; right:0;
         height:var(--chart-h);
         background:linear-gradient(0deg,rgba(5,10,22,.99),rgba(8,14,32,.98));
         border-top:1px solid var(--border);
-        z-index:1003; display:flex; flex-direction:column;
-        transform:translateY(100%); transition:transform .3s ease;
+        z-index:1001;
+        display:flex; flex-direction:column;
+        transform:translateY(100%);
+        transition:transform .3s ease, right .3s ease;
         box-shadow:0 -6px 36px rgba(0,0,0,.5);
     }
     #chart-panel.open { transform:translateY(0); }
+    #chart-panel.panel-open { right:var(--panel-w); }
     .cp-head {
         display:flex; align-items:center; justify-content:space-between;
         padding:10px 16px 8px; border-bottom:1px solid rgba(77,157,224,.15); flex-shrink:0;
@@ -277,13 +281,14 @@ $this->beginPage();
     .rng-btn.active, .rng-btn:hover { background:rgba(26,86,219,.3); border-color:var(--primary); color:#7ab8ff; }
     .cp-close { background:transparent; border:none; color:#3d5870; cursor:pointer; font-size:.95rem; }
     .cp-close:hover { color:#ef4444; }
-    .cp-canvas { flex:1; padding:6px 12px 10px; position:relative; }
+    .cp-canvas { flex:1; padding:6px 12px 10px; position:relative; min-height:0; overflow:hidden; }
     .cp-loading {
-        position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-        color:var(--muted); font-size:.82rem; gap:8px; display:none;
+        position:absolute; inset:0; display:none;
+        align-items:center; justify-content:center;
+        color:var(--muted); font-size:.82rem; gap:8px;
     }
     .cp-loading.show { display:flex; }
-    #iotChart { width:100% !important; height:100% !important; }
+    #iotChart { display:block; width:100% !important; height:100% !important; }
 
     /* =====================================================================
        SCADA MAP LEGEND
@@ -826,10 +831,12 @@ function openPanel(sid, d) {
     if (!html) html = `<div style="color:var(--muted);text-align:center;padding:24px;font-size:.82rem;">Chưa có dữ liệu chi tiết</div>`;
     document.getElementById('ip-body').innerHTML = html;
     document.getElementById('iot-panel').classList.add('open');
+    document.getElementById('chart-panel').classList.add('panel-open');
 }
 
 function closePanel() {
     document.getElementById('iot-panel').classList.remove('open');
+    document.getElementById('chart-panel').classList.remove('panel-open');
     closeChart();
 }
 

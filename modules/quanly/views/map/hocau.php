@@ -538,6 +538,9 @@ $this->beginPage();
                     <button class="rng-btn" onclick="setRange('24h',this)">24H</button>
                     <button class="rng-btn" onclick="setRange('7d',this)">7N</button>
                     <button class="rng-btn" onclick="setRange('30d',this)">30N</button>
+                    <button class="rng-btn" onclick="downloadChartExcel()" id="btn-dl-excel" title="Tải xuống Excel" style="border-color:rgba(34,197,94,.3);color:#22c55e;">
+                        <i class="fa-solid fa-file-excel me-1"></i>Excel
+                    </button>
                     <button class="cp-close" onclick="closeChart()"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             </div>
@@ -669,9 +672,17 @@ function setBasemap(t) {
 }
 
 function initWmsLayers() {
+    // Van, moi noi, coc moc chi hien tu zoom 15+ de tranh ban do bi roi
+    const LAYER_MIN_ZOOM = {
+        'capnuoc_hocau:network_van':          15,
+        'capnuoc_hocau:network_moinoi':       15,
+        'capnuoc_hocau:network_cocmoc':       16,
+        'capnuoc_hocau:network_hamkythuat':   15,
+    };
     document.querySelectorAll('.wms-chk').forEach(chk => {
         const name = chk.dataset.layer, z = parseInt(chk.dataset.z)||10;
-        const layer = L.tileLayer.wms(GEO_WMS,{layers:name,format:'image/png',transparent:true,version:'1.1.0',tiled:true,maxZoom:22,zIndex:z});
+        const minZ = LAYER_MIN_ZOOM[name] || 1;
+        const layer = L.tileLayer.wms(GEO_WMS,{layers:name,format:'image/png',transparent:true,version:'1.1.0',tiled:true,maxZoom:22,minZoom:minZ,zIndex:z});
         wmsLayers[name] = layer;
         if (chk.checked) layer.addTo(map);
         chk.addEventListener('change', function(){ this.checked ? layer.addTo(map) : map.removeLayer(layer); updateLegend(); });
@@ -944,10 +955,54 @@ function onMapClick(e) {
             if (!data.features?.length) return;
             const f = data.features[0], props = f.properties;
             const skip = new Set(['geom','the_geom','geometry','geojson','bbox','coordinates','type','shape_leng','shape_area','st_area','st_length','shape_length','lat','long','lng','x','y','objectid_1','gid','id_0','status']);
+            // Mapping ten cot -> nhan tieng Viet
+            const FIELD_LABELS = {
+                // Chung
+                'id':'Mã số','objectid':'Mã đối tượng','objectid_1':'Mã đối tượng',
+                'masuco':'Mã sự cố','mavattu':'Mã vật tư','ten':'Tên',
+                'vitri':'Vị trí','ghichu':'Ghi chú','mota':'Mô tả',
+                'created_at':'Ngày tạo','updated_at':'Ngày cập nhật',
+                'ngaylapdat':'Ngày lắp đặt','ngayghinhan':'Ngày ghi nhận',
+                // Ong
+                'vatlieu':'Vật liệu','coong':'Cỡ ống (mm)','shape_leng':'Chiều dài (m)',
+                'shape_length':'Chiều dài (m)','chieudai':'Chiều dài',
+                'congtrinh':'Công trình','dvtk':'Đơn vị thiết kế',
+                'dvtc':'Đơn vị thi công','bvhc':'Bản vẽ hoàn công',
+                'loaiong':'Loại ống','loaiong_id':'Loại ống',
+                'tinhtrang':'Tình trạng','tinhtrang_id':'Tình trạng',
+                // Dong ho
+                'shd':'Số hiệu đồng hồ','ten_khach_hang':'Tên khách hàng',
+                'dia_chi':'Địa chỉ','hieudongho':'Hiệu đồng hồ','hieudongho_id':'Hiệu đồng hồ',
+                'chiso':'Chỉ số','ngaydoc':'Ngày đọc',
+                // Van
+                'loaivan':'Loại van','loaivan_id':'Loại van',
+                'dongmo':'Trạng thái đóng/mở','lydoghi':'Lý do ghi nhận',
+                // Su co
+                'nguyennhan':'Nguyên nhân','nguyennhansuco_id':'Nguyên nhân sự cố',
+                'loaisuco':'Loại sự cố','loaisuco_id':'Loại sự cố',
+                'mucdo':'Mức độ','trangthai':'Trạng thái',
+                // Ham
+                'loaiham':'Loại hầm','loaiham_id':'Loại hầm','kichthuoc':'Kích thước',
+                // Moi noi
+                'loaimoinoi':'Loại mối nối','loaimoinoi_id':'Loại mối nối',
+                // Nha may
+                'tendonvi':'Tên đơn vị','diachi':'Địa chỉ','congsuattkm':'Công suất TKM',
+                'congsuatthietke':'Công suất thiết kế','namxaydung':'Năm xây dựng',
+                // Hang lang an toan
+                'chieurong':'Chiều rộng (m)',
+                // Coc moc
+                'loaimoc':'Loại mốc','ky_hieu':'Ký hiệu',
+                // Chung
+                'status':'Trạng thái','pipesize':'Cỡ ống','dma_in':'DMA In','dma_out':'DMA Out',
+            };
+            function getLabel(k) {
+                const kl = k.toLowerCase();
+                return FIELD_LABELS[kl] || (k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g,' '));
+            }
             let rows = '';
             for (const k in props) {
                 if (props[k]!=null && props[k]!=='' && !skip.has(k.toLowerCase())) {
-                    rows += `<tr><td style="font-weight:bold;color:#555;white-space:nowrap;padding-right:8px;">${k.charAt(0).toUpperCase()+k.slice(1).replace(/_/g,' ')}</td><td>${props[k]}</td></tr>`;
+                    rows += `<tr><td style="font-weight:bold;color:#555;white-space:nowrap;padding-right:8px;">${getLabel(k)}</td><td>${props[k]}</td></tr>`;
                 }
             }
             let btn = '';
@@ -1105,6 +1160,50 @@ function doSearch() {
         .catch(()=>{ showLoading(false); rs.innerHTML='<div style="padding:14px;text-align:center;color:red;font-size:.82rem;">Lỗi kết nối!</div>'; });
 }
 
+
+// ================================================================
+// DOWNLOAD CHART DATA AS EXCEL (CSV)
+// ================================================================
+function downloadChartExcel() {
+    if (!chartInst || !curChartCid) return;
+
+    const labels = chartInst.data.labels || [];
+    const values = chartInst.data.datasets[0]?.data || [];
+
+    if (!labels.length) {
+        alert('Chưa có dữ liệu để tải xuống');
+        return;
+    }
+
+    // Tao CSV content
+    const tenTram   = document.getElementById('ip-name')?.textContent || 'tram';
+    const tenKenh   = curChartLabel || 'du_lieu';
+    const donVi     = curChartUnit  || '';
+    const range     = curChartRange || '24h';
+
+    let csv = '﻿'; // BOM UTF-8 de Excel doc dung tieng Viet
+    csv += 'Thời gian,Giá trị (' + donVi + ')
+';
+    labels.forEach((lbl, i) => {
+        const val = values[i] !== undefined && values[i] !== null ? values[i] : '';
+        csv += '"' + lbl + '",' + val + '
+';
+    });
+
+    // Tao file blob va download
+    const blob     = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url      = URL.createObjectURL(blob);
+    const a        = document.createElement('a');
+    const filename = [tenTram, tenKenh, range].join('_').replace(/[^a-zA-Z0-9_À-ɏ]/g, '_') + '.csv';
+
+    a.href     = url;
+    a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
 // ================================================================
 // UTILITIES
 // ================================================================

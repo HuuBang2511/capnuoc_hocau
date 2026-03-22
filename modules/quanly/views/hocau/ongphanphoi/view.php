@@ -67,9 +67,9 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'label' => 'Loại ống / Tình trạng',
                                 'format' => 'raw',
                                 'value' => function($model) {
-                                    $loaiong = $model->loaiong ? $model->loaiong->ten : 'N/A';
-                                    $tinhtrang = $model->tinhtrang ? $model->tinhtrang->ten : 'N/A';
-                                    return Html::tag('span', $loaiong, ['class' => 'badge bg-info me-2']) . 
+                                    $loaiong   = (isset($model->loaiong)   && $model->loaiong   !== null && isset($model->loaiong->ten))   ? $model->loaiong->ten   : 'N/A';
+                                    $tinhtrang = (isset($model->tinhtrang) && $model->tinhtrang !== null && isset($model->tinhtrang->ten)) ? $model->tinhtrang->ten : 'N/A';
+                                    return Html::tag('span', $loaiong,   ['class' => 'badge bg-info me-2']) .
                                            Html::tag('span', $tinhtrang, ['class' => 'badge bg-success']);
                                 }
                             ],

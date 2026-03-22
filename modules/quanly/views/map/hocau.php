@@ -1181,20 +1181,18 @@ function downloadChartExcel() {
     const donVi     = curChartUnit  || '';
     const range     = curChartRange || '24h';
 
-    let csv = '﻿'; // BOM UTF-8 de Excel doc dung tieng Viet
-    csv += 'Thời gian,Giá trị (' + donVi + ')
-';
+    let csv = '\uFEFF'; // BOM UTF-8 de Excel doc dung tieng Viet
+    csv += 'Th\u1EDDi gian,Gi\u00E1 tr\u1ECB (' + donVi + ')\n';
     labels.forEach((lbl, i) => {
         const val = values[i] !== undefined && values[i] !== null ? values[i] : '';
-        csv += '"' + lbl + '",' + val + '
-';
+        csv += '"' + lbl + '",' + val + '\n';
     });
 
     // Tao file blob va download
     const blob     = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url      = URL.createObjectURL(blob);
     const a        = document.createElement('a');
-    const filename = [tenTram, tenKenh, range].join('_').replace(/[^a-zA-Z0-9_À-ɏ]/g, '_') + '.csv';
+    const filename = [tenTram, tenKenh, range].join('_').replace(/[^a-zA-Z0-9_\u00C0-\u024F]/g, '_') + '.csv';
 
     a.href     = url;
     a.download = filename;

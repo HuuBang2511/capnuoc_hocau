@@ -359,6 +359,7 @@ $this->beginPage();
                     ],
                     'Công Trình & Khác' => [
                         ['id'=>'nhamay',   'layer'=>'capnuoc_hocau:network_nhamaynuoc',    'label'=>'Nhà máy nước',      'checked'=>true, 'z'=>10],
+                        ['id'=>'base_ranhnhamay',   'layer'=>'capnuoc_hocau:base_ranhnhamay',    'label'=>'Ranh giới nhà máy nước',      'checked'=>true, 'z'=>5],
                         ['id'=>'ham',      'layer'=>'capnuoc_hocau:network_hamkythuat',    'label'=>'Hầm kỹ thuật',      'checked'=>false,'z'=>10],
                         ['id'=>'hanhlang', 'layer'=>'capnuoc_hocau:network_hanglangantoan','label'=>'Hành lang an toàn', 'checked'=>false,'z'=>10],
                         ['id'=>'cocmoc',   'layer'=>'capnuoc_hocau:network_cocmoc',        'label'=>'Cọc mốc',           'checked'=>false,'z'=>30],

@@ -48,11 +48,6 @@ class Ongphanphoi extends QuanlyBaseModel
     {
         return 'network_ongphanphoi';
     }
-    public static function primaryKey()
-    {
-        return ['fid'];
-    }
-
 
     /**
      * {@inheritdoc}

@@ -22,7 +22,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <i class="fa fa-project-diagram me-2"></i><?= Html::encode($this->title) ?>
         </h2>
         <div class="btn-group shadow-sm">
-            <?= Html::a('<i class="fa fa-edit me-1"></i> Cập nhật', ['update', 'id' => \$model->fid], ['class' => 'btn btn-warning']) ?>
+            <?= Html::a('<i class="fa fa-edit me-1"></i> Cập nhật', ['update', 'id' => $model->id], ['class' => 'btn btn-warning']) ?>
             <?= Html::a('<i class="fa fa-list me-1"></i> Danh sách', ['index'], ['class' => 'btn btn-light']) ?>
             <button class="btn btn-secondary" onclick="history.back()"><i class="fa fa-arrow-left"></i></button>
         </div>

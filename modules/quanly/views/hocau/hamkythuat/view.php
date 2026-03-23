@@ -25,7 +25,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <a class="btn btn-outline-primary shadow-sm" href="<?= Url::to(['index']) ?>">
                 <i class="fa fa-list me-1"></i> Danh sách
             </a>
-            <a class="btn btn-warning shadow-sm" href="<?= Url::to(['update', 'id' => \$model->fid]) ?>">
+            <a class="btn btn-warning shadow-sm" href="<?= Url::to(['update', 'id' => $model->id]) ?>">
                 <i class="fa fa-edit me-1"></i> Cập nhật
             </a>
         </div>

@@ -49,11 +49,6 @@ class Hamkythuat extends QuanlyBaseModel
     {
         return 'network_hamkythuat';
     }
-    public static function primaryKey()
-    {
-        return ['fid'];
-    }
-
 
     /**
      * {@inheritdoc}

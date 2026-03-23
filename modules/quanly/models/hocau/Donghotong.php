@@ -46,11 +46,6 @@ class Donghotong extends QuanlyBaseModel
     {
         return 'network_donghotong';
     }
-    public static function primaryKey()
-    {
-        return ['fid'];
-    }
-
 
     /**
      * {@inheritdoc}

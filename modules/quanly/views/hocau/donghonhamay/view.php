@@ -31,7 +31,7 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
         <div class="btn-group shadow-sm">
             <?= Html::a('<i class="fa fa-arrow-left"></i> Quay lại', Url::to(['index']), ['class' => 'btn btn-outline-secondary']) ?>
-            <?= Html::a('<i class="fa fa-edit"></i> Cập nhật', ['update', 'id' => \$model->fid], ['class' => 'btn btn-warning text-white']) ?>
+            <?= Html::a('<i class="fa fa-edit"></i> Cập nhật', ['update', 'id' => $model->id], ['class' => 'btn btn-warning text-white']) ?>
         </div>
     </div>
 

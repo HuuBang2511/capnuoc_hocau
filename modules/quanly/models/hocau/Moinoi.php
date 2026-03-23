@@ -46,11 +46,6 @@ class Moinoi extends QuanlyBaseModel
     {
         return 'network_moinoi';
     }
-    public static function primaryKey()
-    {
-        return ['fid'];
-    }
-
 
     /**
      * {@inheritdoc}

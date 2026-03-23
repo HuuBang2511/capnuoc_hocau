@@ -47,11 +47,6 @@ class Ongtruyendan extends QuanlyBaseModel
     {
         return 'network_ongtruyendan';
     }
-    public static function primaryKey()
-    {
-        return ['fid'];
-    }
-
 
     /**
      * {@inheritdoc}

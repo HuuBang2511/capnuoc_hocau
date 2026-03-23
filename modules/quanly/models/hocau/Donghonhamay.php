@@ -46,6 +46,11 @@ class Donghonhamay extends QuanlyBaseModel
     {
         return 'network_donghonhamay';
     }
+    public static function primaryKey()
+    {
+        return ['fid'];
+    }
+
 
     /**
      * {@inheritdoc}

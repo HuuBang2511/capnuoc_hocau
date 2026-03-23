@@ -38,6 +38,11 @@ class Nhamaynuoc extends QuanlyBaseModel
     {
         return 'network_nhamaynuoc';
     }
+    public static function primaryKey()
+    {
+        return ['fid'];
+    }
+
 
     /**
      * {@inheritdoc}

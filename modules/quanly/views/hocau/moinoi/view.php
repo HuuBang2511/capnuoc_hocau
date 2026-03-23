@@ -26,7 +26,7 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="h4 fw-bold mb-0 text-primary"><i class="fa fa-info-circle me-2"></i><?= $this->title ?></h2>
             <div class="btn-group">
-                <?= Html::a('<i class="fa fa-edit"></i> Cập nhật', ['update', 'id' => $model->id], ['class' => 'btn btn-warning shadow-sm']) ?>
+                <?= Html::a('<i class="fa fa-edit"></i> Cập nhật', ['update', 'id' => \$model->fid], ['class' => 'btn btn-warning shadow-sm']) ?>
                 <?= Html::a('<i class="fa fa-arrow-left"></i> Quay lại', 'javascript:history.back()', ['class' => 'btn btn-light shadow-sm']) ?>
             </div>
         </div>

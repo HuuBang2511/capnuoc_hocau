@@ -33,6 +33,11 @@ class Ongdansinh extends QuanlyBaseModel
     {
         return 'network_ongdansinh';
     }
+    public static function primaryKey()
+    {
+        return ['fid'];
+    }
+
 
     /**
      * {@inheritdoc}

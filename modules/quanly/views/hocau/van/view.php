@@ -35,7 +35,7 @@ $statusClass = (strpos(mb_strtolower($statusLabel), 'hỏng') !== false) ? 'dang
             </div>
         </div>
         <div class="btn-group shadow-sm">
-            <?= Html::a('<i class="fa fa-edit me-1"></i> Cập nhật', ['update', 'id' => $model->id], ['class' => 'btn btn-warning']) ?>
+            <?= Html::a('<i class="fa fa-edit me-1"></i> Cập nhật', ['update', 'id' => \$model->fid], ['class' => 'btn btn-warning']) ?>
             <button class="btn btn-light border" onclick="history.back()"><i class="fa fa-arrow-left"></i> Quay lại</button>
         </div>
     </div>

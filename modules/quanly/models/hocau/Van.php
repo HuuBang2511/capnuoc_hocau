@@ -48,6 +48,11 @@ class Van extends QuanlyBaseModel
     {
         return 'network_van';
     }
+    public static function primaryKey()
+    {
+        return ['fid'];
+    }
+
 
     /**
      * {@inheritdoc}

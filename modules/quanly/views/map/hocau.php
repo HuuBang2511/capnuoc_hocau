@@ -941,82 +941,219 @@ function renderChart(labels, values) {
 // ================================================================
 // WMS FEATURE INFO
 // ================================================================
+
+// Mapping ten cot -> nhan tieng Viet (dung chung cho popup)
+const FIELD_LABELS = {
+    'id':'Mã số','objectid':'Mã đối tượng','objectid_1':'Mã đối tượng',
+    'masuco':'Mã sự cố','mavattu':'Mã vật tư','ten':'Tên',
+    'vitri':'Vị trí','ghichu':'Ghi chú','mota':'Mô tả',
+    'created_at':'Ngày tạo','updated_at':'Ngày cập nhật',
+    'ngaylapdat':'Ngày lắp đặt','ngayghinhan':'Ngày ghi nhận',
+    'vatlieu':'Vật liệu','coong':'Cỡ ống (mm)','shape_leng':'Chiều dài (m)',
+    'shape_length':'Chiều dài (m)','chieudai':'Chiều dài',
+    'congtrinh':'Công trình','dvtk':'Đơn vị thiết kế',
+    'dvtc':'Đơn vị thi công','bvhc':'Bản vẽ hoàn công',
+    'loaiong':'Loại ống','loaiong_id':'Loại ống',
+    'tinhtrang':'Tình trạng','tinhtrang_id':'Tình trạng',
+    'shd':'Số hiệu đồng hồ','ten_khach_hang':'Tên khách hàng',
+    'dia_chi':'Địa chỉ','hieudongho':'Hiệu đồng hồ','hieudongho_id':'Hiệu đồng hồ',
+    'chiso':'Chỉ số','ngaydoc':'Ngày đọc',
+    'loaivan':'Loại van','loaivan_id':'Loại van',
+    'dongmo':'Trạng thái đóng/mở','lydoghi':'Lý do ghi nhận',
+    'nguyennhan':'Nguyên nhân','nguyennhansuco_id':'Nguyên nhân sự cố',
+    'loaisuco':'Loại sự cố','loaisuco_id':'Loại sự cố',
+    'mucdo':'Mức độ','trangthai':'Trạng thái',
+    'loaiham':'Loại hầm','loaiham_id':'Loại hầm','kichthuoc':'Kích thước',
+    'loaimoinoi':'Loại mối nối','loaimoinoi_id':'Loại mối nối',
+    'tendonvi':'Tên đơn vị','diachi':'Địa chỉ','congsuattkm':'Công suất TKM',
+    'congsuatthietke':'Công suất thiết kế','namxaydung':'Năm xây dựng',
+    'chieurong':'Chiều rộng (m)','loaimoc':'Loại mốc','ky_hieu':'Ký hiệu',
+    'status':'Trạng thái','pipesize':'Cỡ ống','dma_in':'DMA In','dma_out':'DMA Out',
+};
+function getFieldLabel(k) {
+    return FIELD_LABELS[k.toLowerCase()] || (k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g,' '));
+}
+
+// Build rows HTML cho 1 feature
+const SKIP_FIELDS = new Set(['geom','the_geom','geometry','geojson','bbox','coordinates',
+    'type','shape_leng','shape_area','st_area','st_length','shape_length',
+    'lat','long','lng','x','y','objectid_1','objectid','gid','id_0','id','status',
+    'created_by','updated_by','file_dinhkem','tinh_trang']);
+    // Ghi chu: an 'id' va 'objectid' khoi bang vi GeoServer FID moi la PK dung
+    // Cac field nay hien trong badge "ID: X" o tieu de popup thay vi trong bang
+
+function buildFeatureRows(props) {
+    let rows = '';
+    for (const k in props) {
+        const v = props[k];
+        if (v != null && v !== '' && !SKIP_FIELDS.has(k.toLowerCase())) {
+            rows += `<tr>
+                <td style="font-weight:600;color:#555;white-space:nowrap;padding:5px 10px 5px 12px;font-size:.82rem;background:#fafafa;border-right:1px solid #f0f0f0;">${getFieldLabel(k)}</td>
+                <td style="padding:5px 12px;font-size:.85rem;">${v}</td>
+            </tr>`;
+        }
+    }
+    return rows;
+}
+
+// Lay ID dung de link den trang chi tiet
+// GeoServer FID suffix = PostgreSQL primary key (xac nhan thuc te)
+// Vi du: fid="network_ongphanphoi.38" -> PK=38, con props.id=18 la field khac
+function getFeatureId(props, fid) {
+    // Uu tien GeoServer FID suffix
+    if (fid && fid.includes('.')) {
+        const fidNum = parseInt(fid.split('.').pop());
+        if (fidNum && fidNum > 0) return fidNum;
+    }
+    // Fallback: props.objectid > props.id (tranh dung props.id vi co the la field khac)
+    if (props.objectid && props.objectid != 0) return props.objectid;
+    if (props.id       && props.id       != 0) return props.id;
+    return null;
+}
+
 function onMapClick(e) {
     const active = Array.from(document.querySelectorAll('.wms-chk:checked')).map(c => c.dataset.layer);
     if (!active.length) return;
     document.body.style.cursor = 'wait';
-    const p = { request:'GetFeatureInfo',service:'WMS',srs:'EPSG:4326',version:'1.1.0',format:'image/png',
-                bbox:map.getBounds().toBBoxString(),height:map.getSize().y,width:map.getSize().x,
-                layers:active.join(','),query_layers:active.join(','),info_format:'application/json',feature_count:5,
-                x:Math.round(e.containerPoint.x),y:Math.round(e.containerPoint.y) };
+
+    // Dung buffer_pixel lon hon de bat duoc features gan vung click
+    const p = {
+        request:'GetFeatureInfo', service:'WMS', srs:'EPSG:4326', version:'1.1.0',
+        format:'image/png',
+        bbox:map.getBounds().toBBoxString(),
+        height:map.getSize().y, width:map.getSize().x,
+        layers:active.join(','), query_layers:active.join(','),
+        info_format:'application/json',
+        feature_count: 10,   // Lay nhieu hon de hien danh sach
+        x:Math.round(e.containerPoint.x),
+        y:Math.round(e.containerPoint.y),
+        BUFFER: 8,           // Buffer pixel de bat diem/line de hon
+    };
+
     fetch(GEO_WMS + L.Util.getParamString(p, GEO_WMS, true))
         .then(r => r.json())
         .then(data => {
             document.body.style.cursor = 'default';
             if (!data.features?.length) return;
-            const f = data.features[0], props = f.properties;
-            const skip = new Set(['geom','the_geom','geometry','geojson','bbox','coordinates','type','shape_leng','shape_area','st_area','st_length','shape_length','lat','long','lng','x','y','objectid_1','gid','id_0','status']);
-            // Mapping ten cot -> nhan tieng Viet
-            const FIELD_LABELS = {
-                // Chung
-                'id':'Mã số','objectid':'Mã đối tượng','objectid_1':'Mã đối tượng',
-                'masuco':'Mã sự cố','mavattu':'Mã vật tư','ten':'Tên',
-                'vitri':'Vị trí','ghichu':'Ghi chú','mota':'Mô tả',
-                'created_at':'Ngày tạo','updated_at':'Ngày cập nhật',
-                'ngaylapdat':'Ngày lắp đặt','ngayghinhan':'Ngày ghi nhận',
-                // Ong
-                'vatlieu':'Vật liệu','coong':'Cỡ ống (mm)','shape_leng':'Chiều dài (m)',
-                'shape_length':'Chiều dài (m)','chieudai':'Chiều dài',
-                'congtrinh':'Công trình','dvtk':'Đơn vị thiết kế',
-                'dvtc':'Đơn vị thi công','bvhc':'Bản vẽ hoàn công',
-                'loaiong':'Loại ống','loaiong_id':'Loại ống',
-                'tinhtrang':'Tình trạng','tinhtrang_id':'Tình trạng',
-                // Dong ho
-                'shd':'Số hiệu đồng hồ','ten_khach_hang':'Tên khách hàng',
-                'dia_chi':'Địa chỉ','hieudongho':'Hiệu đồng hồ','hieudongho_id':'Hiệu đồng hồ',
-                'chiso':'Chỉ số','ngaydoc':'Ngày đọc',
-                // Van
-                'loaivan':'Loại van','loaivan_id':'Loại van',
-                'dongmo':'Trạng thái đóng/mở','lydoghi':'Lý do ghi nhận',
-                // Su co
-                'nguyennhan':'Nguyên nhân','nguyennhansuco_id':'Nguyên nhân sự cố',
-                'loaisuco':'Loại sự cố','loaisuco_id':'Loại sự cố',
-                'mucdo':'Mức độ','trangthai':'Trạng thái',
-                // Ham
-                'loaiham':'Loại hầm','loaiham_id':'Loại hầm','kichthuoc':'Kích thước',
-                // Moi noi
-                'loaimoinoi':'Loại mối nối','loaimoinoi_id':'Loại mối nối',
-                // Nha may
-                'tendonvi':'Tên đơn vị','diachi':'Địa chỉ','congsuattkm':'Công suất TKM',
-                'congsuatthietke':'Công suất thiết kế','namxaydung':'Năm xây dựng',
-                // Hang lang an toan
-                'chieurong':'Chiều rộng (m)',
-                // Coc moc
-                'loaimoc':'Loại mốc','ky_hieu':'Ký hiệu',
-                // Chung
-                'status':'Trạng thái','pipesize':'Cỡ ống','dma_in':'DMA In','dma_out':'DMA Out',
-            };
-            function getLabel(k) {
-                const kl = k.toLowerCase();
-                return FIELD_LABELS[kl] || (k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g,' '));
+
+            const features = data.features;
+
+            if (features.length === 1) {
+                // Chi co 1 doi tuong: hien luon
+                showFeaturePopup(e.latlng, features[0]);
+            } else {
+                // Nhieu doi tuong: hien danh sach de user chon
+                showFeatureListPopup(e.latlng, features);
             }
-            let rows = '';
-            for (const k in props) {
-                if (props[k]!=null && props[k]!=='' && !skip.has(k.toLowerCase())) {
-                    rows += `<tr><td style="font-weight:bold;color:#555;white-space:nowrap;padding-right:8px;">${getLabel(k)}</td><td>${props[k]}</td></tr>`;
-                }
-            }
-            let btn = '';
-            if (f.id?.includes('.')) {
-                const [lk, oid] = [f.id.split('.')[0], props.id||props.objectid||f.id.split('.')[1]];
-                if (DET_LINKS[lk] && oid) btn = `<div style="padding:8px 12px;border-top:1px solid #eee;text-align:right;"><a href="${DET_LINKS[lk]}?id=${oid}" target="_blank" class="btn btn-sm btn-primary" style="font-size:.8rem;"><i class="fa-solid fa-circle-info me-1"></i>Xem chi tiết</a></div>`;
-            }
-            L.popup({maxWidth:300}).setLatLng(e.latlng)
-             .setContent(`<div class="pp-head">Thông tin đối tượng</div><div class="pp-body"><table style="width:100%">${rows}</table>${btn}</div>`)
-             .openOn(map);
         })
-        .catch(() => { document.body.style.cursor='default'; });
+        .catch(() => { document.body.style.cursor = 'default'; });
 }
+
+// Popup chi tiet 1 doi tuong
+function showFeaturePopup(latlng, f) {
+    const props = f.properties;
+    const rows  = buildFeatureRows(props);
+
+    // Lay layer key tu feature id (vi du: "network_ongphanphoi.58" -> "network_ongphanphoi")
+    let btn = '';
+    if (f.id && f.id.includes('.')) {
+        const layerKey = f.id.split('.')[0];
+        const oid      = getFeatureId(props, f.id);  // GeoServer FID suffix = PostgreSQL PK
+        if (DET_LINKS[layerKey] && oid) {
+            btn = `<div style="padding:8px 12px;border-top:1px solid #eee;text-align:right;">
+                <a href="${DET_LINKS[layerKey]}?id=${oid}" target="_blank"
+                   class="btn btn-sm btn-primary" style="font-size:.8rem;">
+                    <i class="fa-solid fa-circle-info me-1"></i>Xem chi tiết
+                </a>
+            </div>`;
+        }
+    }
+
+    // Tieu de: lay ten layer dep hon
+    const layerName = f.id ? f.id.split('.')[0].replace('network_','').replace(/_/g,' ') : 'Đối tượng';
+    const title = layerName.charAt(0).toUpperCase() + layerName.slice(1);
+
+    L.popup({ maxWidth:320, maxHeight:400 })
+     .setLatLng(latlng)
+     .setContent(`
+        <div class="pp-head" style="display:flex;justify-content:space-between;align-items:center;">
+            <span>${title}</span>
+            ${getFeatureId(props, f.id) ? `<small style="opacity:.7;font-size:.72rem;">ID: ${getFeatureId(props, f.id)}</small>` : ''}
+        </div>
+        <div class="pp-body">
+            <table style="width:100%;border-collapse:collapse;">${rows}</table>
+            ${btn}
+        </div>`)
+     .openOn(map);
+}
+
+// Popup danh sach nhieu doi tuong de user chon
+function showFeatureListPopup(latlng, features) {
+    // Nhom theo layer
+    const byLayer = {};
+    features.forEach(f => {
+        const lk = f.id ? f.id.split('.')[0] : 'unknown';
+        if (!byLayer[lk]) byLayer[lk] = [];
+        byLayer[lk].push(f);
+    });
+
+    let listHtml = '';
+    for (const lk in byLayer) {
+        const layerLabel = lk.replace('network_','').replace(/_/g,' ');
+        const label = layerLabel.charAt(0).toUpperCase() + layerLabel.slice(1);
+        listHtml += `<div style="font-size:.72rem;font-weight:700;color:#999;text-transform:uppercase;
+                                 letter-spacing:.5px;padding:8px 12px 4px;">${label}</div>`;
+        byLayer[lk].forEach((f, idx) => {
+            const props = f.properties;
+            const oid   = getFeatureId(props, f.id);
+            // Tim truong mo ta chinh
+            const desc  = props.vatlieu || props.ten_khach_hang || props.vitri
+                        || props.mavattu || props.masuco || props.tendonvi
+                        || (oid ? 'ID: ' + oid : 'Đối tượng ' + (idx+1));
+            const sub   = props.coong ? props.coong + ' mm' :
+                          props.shd   ? 'SHĐ: ' + props.shd  :
+                          props.ngaylapdat || '';
+
+            listHtml += `
+                <div onclick="selectFeatureFromList(${JSON.stringify(latlng)}, ${idx}, '${lk}')"
+                     data-layer="${lk}" data-idx="${idx}"
+                     style="padding:8px 12px;border-bottom:1px solid #f5f5f5;cursor:pointer;
+                            display:flex;align-items:center;gap:8px;transition:background .15s;"
+                     onmouseover="this.style.background='#f0f7ff'"
+                     onmouseout="this.style.background=''">
+                    <i class="fa-solid fa-circle-dot text-primary" style="font-size:.65rem;flex-shrink:0;"></i>
+                    <div>
+                        <div style="font-size:.85rem;font-weight:600;color:#333;">${desc}</div>
+                        ${sub ? `<div style="font-size:.75rem;color:#999;">${sub}</div>` : ''}
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-muted ms-auto" style="font-size:.65rem;"></i>
+                </div>`;
+        });
+    }
+
+    // Cache features cho selection
+    window._pendingFeatures = { latlng, byLayer };
+
+    L.popup({ maxWidth:300 })
+     .setLatLng(latlng)
+     .setContent(`
+        <div class="pp-head" style="display:flex;align-items:center;gap:6px;">
+            <i class="fa-solid fa-layer-group" style="font-size:.85rem;"></i>
+            ${features.length} đối tượng tại vị trí này
+        </div>
+        <div class="pp-body" style="max-height:300px;overflow-y:auto;padding:0;">
+            ${listHtml}
+        </div>`)
+     .openOn(map);
+}
+
+// Khi user chon 1 doi tuong tu danh sach
+window.selectFeatureFromList = function(latlng, idx, layerKey) {
+    const f = window._pendingFeatures?.byLayer?.[layerKey]?.[idx];
+    if (!f) return;
+    const ll = L.latLng(latlng.lat, latlng.lng);
+    showFeaturePopup(ll, f);
+};
 
 // ================================================================
 // SIDEBAR / UI

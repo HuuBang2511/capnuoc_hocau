@@ -57,7 +57,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                     'label' => 'Tình trạng',
                                     'format' => 'raw',
                                     'value' => function($model) {
-                                        $status = $model->tinhtrang ? $model->tinhtrang->ten : 'N/A';
+                                        $status = (isset($model->tinhtrang) && $model->tinhtrang !== null && isset($model->tinhtrang->ten)) ? $model->tinhtrang->ten : 'N/A';
                                         return Html::tag('span', $status, ['class' => 'badge bg-info text-white px-3']);
                                     }
                                 ],

@@ -56,7 +56,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             ],
                             [
                                 'label' => 'Hiệu đồng hồ',
-                                'value' => $model->hieudongho ? $model->hieudongho->ten : 'N/A',
+                                'value' => (isset($model->hieudongho) && $model->hieudongho !== null && isset($model->hieudongho->ten)) ? $model->hieudongho->ten : 'N/A',
                             ],
                             'sothan',
                             'co',
@@ -66,7 +66,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'format' => 'raw',
                                 'value' => function($model) {
                                     $statusClass = $model->tinhtrang_id == 1 ? 'bg-success' : 'bg-info'; // Tùy biến theo ID
-                                    return "<span class='badge $statusClass'>" . ($model->tinhtrang ? $model->tinhtrang->ten : 'N/A') . "</span>";
+                                    return "<span class='badge $statusClass'>" . ((isset($model->tinhtrang) && $model->tinhtrang !== null && isset($model->tinhtrang->ten)) ? $model->tinhtrang->ten : 'N/A') . "</span>";
                                 }
                             ],
                         ],

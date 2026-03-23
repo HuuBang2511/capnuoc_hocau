@@ -74,7 +74,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'label' => 'Loại hầm/nhà máy',
                                 'format' => 'raw',
                                 'value' => function($model) {
-                                    $text = $model->loainhamay ? $model->loainhamay->ten : 'N/A';
+                                    $text = (isset($model->loainhamay) && $model->loainhamay !== null && isset($model->loainhamay->ten)) ? $model->loainhamay->ten : 'N/A';
                                     return '<span class="badge bg-soft-primary text-primary border border-primary px-3">' . $text . '</span>';
                                 }
                             ],

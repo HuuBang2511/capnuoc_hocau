@@ -1089,71 +1089,78 @@ function showFeaturePopup(latlng, f) {
 
 // Popup danh sach nhieu doi tuong de user chon
 function showFeatureListPopup(latlng, features) {
-    // Nhom theo layer
+    // Luu cache toan bo features theo index tuyen tinh
+    window._pendingFeatures  = features;
+    window._pendingLatlng    = latlng;
+
+    // Nhom theo layer de hien thi dep hon
     const byLayer = {};
-    features.forEach(f => {
+    features.forEach((f, globalIdx) => {
         const lk = f.id ? f.id.split('.')[0] : 'unknown';
         if (!byLayer[lk]) byLayer[lk] = [];
-        byLayer[lk].push(f);
+        byLayer[lk].push({ f, globalIdx });
     });
 
     let listHtml = '';
     for (const lk in byLayer) {
         const layerLabel = lk.replace('network_','').replace(/_/g,' ');
         const label = layerLabel.charAt(0).toUpperCase() + layerLabel.slice(1);
-        listHtml += `<div style="font-size:.72rem;font-weight:700;color:#999;text-transform:uppercase;
-                                 letter-spacing:.5px;padding:8px 12px 4px;">${label}</div>`;
-        byLayer[lk].forEach((f, idx) => {
+        listHtml += `<div style="font-size:.7rem;font-weight:700;color:#aaa;text-transform:uppercase;
+                                 letter-spacing:.6px;padding:8px 12px 3px;background:#fafafa;">${label}</div>`;
+
+        byLayer[lk].forEach(({ f, globalIdx }) => {
             const props = f.properties;
             const oid   = getFeatureId(props, f.id);
-            // Tim truong mo ta chinh
-            const desc  = props.vatlieu || props.ten_khach_hang || props.vitri
-                        || props.mavattu || props.masuco || props.tendonvi
-                        || (oid ? 'ID: ' + oid : 'Đối tượng ' + (idx+1));
-            const sub   = props.coong ? props.coong + ' mm' :
-                          props.shd   ? 'SHĐ: ' + props.shd  :
-                          props.ngaylapdat || '';
+            const desc  = props.vatlieu     || props.ten_khach_hang || props.vitri
+                        || props.mavattu    || props.masuco          || props.tendonvi
+                        || props.loaivan    || props.loaiham
+                        || (oid ? 'ID: ' + oid : 'Đối tượng');
+            const sub   = props.coong      ? props.coong + ' mm'
+                        : props.shd        ? 'SHĐ: ' + props.shd
+                        : props.ngaylapdat ? props.ngaylapdat
+                        : oid              ? 'ID: ' + oid : '';
 
-            listHtml += `
-                <div onclick="selectFeatureFromList(${JSON.stringify(latlng)}, ${idx}, '${lk}')"
-                     data-layer="${lk}" data-idx="${idx}"
-                     style="padding:8px 12px;border-bottom:1px solid #f5f5f5;cursor:pointer;
-                            display:flex;align-items:center;gap:8px;transition:background .15s;"
-                     onmouseover="this.style.background='#f0f7ff'"
-                     onmouseout="this.style.background=''">
-                    <i class="fa-solid fa-circle-dot text-primary" style="font-size:.65rem;flex-shrink:0;"></i>
-                    <div>
-                        <div style="font-size:.85rem;font-weight:600;color:#333;">${desc}</div>
-                        ${sub ? `<div style="font-size:.75rem;color:#999;">${sub}</div>` : ''}
+            // Dung data-gidx thay vi onclick voi latlng de tranh HTML attribute escaping
+            listHtml += `<div class="pp-feature-item" data-gidx="${globalIdx}"
+                     style="padding:9px 12px;border-bottom:1px solid #f3f3f3;cursor:pointer;
+                            display:flex;align-items:center;gap:9px;">
+                    <i class="fa-solid fa-circle-dot" style="color:#3699ff;font-size:.65rem;flex-shrink:0;"></i>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:.85rem;font-weight:600;color:#222;
+                                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${desc}</div>
+                        ${sub ? `<div style="font-size:.73rem;color:#aaa;">${sub}</div>` : ''}
                     </div>
-                    <i class="fa-solid fa-chevron-right text-muted ms-auto" style="font-size:.65rem;"></i>
+                    <i class="fa-solid fa-chevron-right" style="color:#ccc;font-size:.65rem;flex-shrink:0;"></i>
                 </div>`;
         });
     }
 
-    // Cache features cho selection
-    window._pendingFeatures = { latlng, byLayer };
+    const popup = L.popup({ maxWidth:300, className:'pp-list-popup' })
+        .setLatLng(latlng)
+        .setContent(`
+            <div class="pp-head" style="display:flex;align-items:center;gap:7px;">
+                <i class="fa-solid fa-layer-group" style="font-size:.85rem;opacity:.8;"></i>
+                ${features.length} đối tượng tại vị trí này
+            </div>
+            <div class="pp-body" style="max-height:320px;overflow-y:auto;padding:0;">
+                ${listHtml}
+            </div>`)
+        .openOn(map);
 
-    L.popup({ maxWidth:300 })
-     .setLatLng(latlng)
-     .setContent(`
-        <div class="pp-head" style="display:flex;align-items:center;gap:6px;">
-            <i class="fa-solid fa-layer-group" style="font-size:.85rem;"></i>
-            ${features.length} đối tượng tại vị trí này
-        </div>
-        <div class="pp-body" style="max-height:300px;overflow-y:auto;padding:0;">
-            ${listHtml}
-        </div>`)
-     .openOn(map);
+    // Gan event sau khi popup duoc them vao DOM
+    // Dung MutationObserver hoac setTimeout ngan de dam bao DOM da render
+    setTimeout(() => {
+        document.querySelectorAll('.pp-feature-item').forEach(el => {
+            el.addEventListener('mouseenter', () => el.style.background = '#f0f7ff');
+            el.addEventListener('mouseleave', () => el.style.background = '');
+            el.addEventListener('click', () => {
+                const gidx = parseInt(el.dataset.gidx);
+                const feat = window._pendingFeatures?.[gidx];
+                if (feat) showFeaturePopup(window._pendingLatlng, feat);
+            });
+        });
+    }, 80);
 }
-
-// Khi user chon 1 doi tuong tu danh sach
-window.selectFeatureFromList = function(latlng, idx, layerKey) {
-    const f = window._pendingFeatures?.byLayer?.[layerKey]?.[idx];
-    if (!f) return;
-    const ll = L.latLng(latlng.lat, latlng.lng);
-    showFeaturePopup(ll, f);
-};
 
 // ================================================================
 // SIDEBAR / UI

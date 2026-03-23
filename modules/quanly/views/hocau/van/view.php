@@ -21,7 +21,7 @@ $this->params['breadcrumbs'][] = ['label' => $label['index'].' '.$controller->ti
 $this->params['breadcrumbs'][] = $this->title;
 
 // Badge trạng thái van
-$statusLabel = $model->tinhtrang ? $model->tinhtrang->ten : 'N/A';
+$statusLabel = (isset($model->tinhtrang) && $model->tinhtrang !== null && isset($model->tinhtrang->ten)) ? $model->tinhtrang->ten : 'N/A';
 $statusClass = (strpos(mb_strtolower($statusLabel), 'hỏng') !== false) ? 'danger' : 'success';
 ?>
 
@@ -92,7 +92,7 @@ $statusClass = (strpos(mb_strtolower($statusLabel), 'hỏng') !== false) ? 'dang
                         'attributes' => [
                             [
                                 'label' => 'Loại van',
-                                'value' => $model->loaivan ? $model->loaivan->ten : '',
+                                'value' => (isset($model->loaivan) && $model->loaivan !== null && isset($model->loaivan->ten)) ? $model->loaivan->ten : '',
                             ],
                             'ngaylapdat',
                             'ghichu:ntext',

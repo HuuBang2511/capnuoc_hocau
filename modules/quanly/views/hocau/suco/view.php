@@ -35,7 +35,7 @@ if ($model->tinhtrangsuco_id == 3) $statusClass = 'success'; // Đã hoàn thàn
             </h2>
             <div class="d-flex align-items-center">
                 <span class="badge bg-<?= $statusClass ?> me-2">
-                    <?= $model->tinhtrangsuco ? $model->tinhtrangsuco->ten : 'N/A' ?>
+                    <?= (isset($model->tinhtrangsuco) && $model->tinhtrangsuco !== null && isset($model->tinhtrangsuco->ten)) ? $model->tinhtrangsuco->ten : 'N/A' ?>
                 </span>
                 <small class="text-muted"><i class="fa fa-clock me-1"></i>Phát hiện: <?= $model->n_phathien ?></small>
             </div>
@@ -62,7 +62,7 @@ if ($model->tinhtrangsuco_id == 3) $statusClass = 'success'; // Đã hoàn thàn
                             [
                                 'attribute' => 'loaisuco_id',
                                 'label' => 'Loại sự cố',
-                                'value' => $model->loaisuco ? $model->loaisuco->ten : '',
+                                'value' => (isset($model->loaisuco) && $model->loaisuco !== null && isset($model->loaisuco->ten)) ? $model->loaisuco->ten : '',
                             ],
                             'vitri',
                             [

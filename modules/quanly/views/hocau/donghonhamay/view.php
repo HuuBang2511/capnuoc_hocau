@@ -53,7 +53,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             ],
                             [
                                 'label' => 'Hiệu đồng hồ',
-                                'value' => $model->hieudongho ? $model->hieudongho->ten : 'Chưa xác định',
+                                'value' => (isset($model->hieudongho) && $model->hieudongho !== null && isset($model->hieudongho->ten)) ? $model->hieudongho->ten : 'Chưa xác định',
                             ],
                             'sothan',
                             'co',
@@ -62,7 +62,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'label' => 'Tình trạng',
                                 'format' => 'raw',
                                 'value' => function($model) {
-                                    $statusText = $model->tinhtrang ? $model->tinhtrang->ten : 'N/A';
+                                    $statusText = (isset($model->tinhtrang) && $model->tinhtrang !== null && isset($model->tinhtrang->ten)) ? $model->tinhtrang->ten : 'N/A';
                                     return '<span class="badge rounded-pill bg-soft-success text-success border border-success px-3">' . $statusText . '</span>';
                                 }
                             ],

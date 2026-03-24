@@ -83,23 +83,25 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
         box-shadow:0 20px 60px rgba(0,0,0,.25);
     }
     .sl-section-header {
-        display:flex; justify-content:space-between; align-items:center;
+        display:flex; flex-wrap:wrap; gap:10px;
+        justify-content:space-between; align-items:flex-start;
         margin-bottom:1.5rem; padding-bottom:1rem;
         border-bottom:1px solid rgba(54,153,255,.15);
     }
     .sl-section-title {
-        font-size:1.1rem; font-weight:700; color:#fff;
+        font-size:1rem; font-weight:700; color:#fff;
         display:flex; align-items:center; gap:10px; margin:0;
+        flex-shrink:0;
     }
     .sl-section-title .icon-badge {
-        width:36px; height:36px; border-radius:9px;
+        width:32px; height:32px; border-radius:8px;
         background:linear-gradient(135deg,#3699ff,#00d4ff);
         display:flex; align-items:center; justify-content:center;
-        font-size:.95rem; color:#fff; flex-shrink:0;
+        font-size:.85rem; color:#fff; flex-shrink:0;
     }
 
-    /* Tab switcher */
-    .sl-tabs { display:flex; gap:6px; }
+    /* Tab switcher - wrap tren mobile */
+    .sl-tabs { display:flex; flex-wrap:wrap; gap:5px; }
     .sl-tab {
         padding:6px 14px; border-radius:8px; border:1px solid rgba(54,153,255,.25);
         background:transparent; color:#5a82a8; font-size:.78rem; font-weight:600;
@@ -189,6 +191,42 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
     @media (max-width:992px)  { .sl-chart-grid,.sl-chart-grid-3 { grid-template-columns:1fr; } }
     @media (max-width:768px)  { .kpi-row { grid-template-columns:repeat(2,1fr); } .sl-kpi-grid { grid-template-columns:repeat(2,1fr); } }
     @media (max-width:576px)  { .kpi-row { grid-template-columns:1fr; } }
+
+    /* ── MOBILE (< 576px) ───────────────────────────────── */
+    @media (max-width:575px) {
+        .sl-section { padding:1.25rem 1rem; }
+        .tt-section  { padding:1.25rem 1rem; }
+        .sl-section-title { font-size:.9rem; }
+        .tt-title         { font-size:.9rem; }
+
+        /* Tabs: nho hon de vua hang */
+        .sl-tab {
+            padding:4px 10px;
+            font-size:.72rem;
+        }
+        .tt-days-btn { padding:4px 10px; font-size:.72rem; }
+
+        /* KPI grid: 2 cot tren mobile */
+        .sl-kpi-grid { grid-template-columns:repeat(2,1fr); gap:8px; }
+        .sl-kpi-val  { font-size:1.25rem; }
+
+        /* Bang that thoat: font nho hon, scroll ngang ro rang hon */
+        .tt-wrap {
+            overflow-x:auto;
+            -webkit-overflow-scrolling:touch;
+            margin:0 -1rem;   /* tran ra ria de tan dung chieu rong */
+            padding:0 1rem;
+        }
+        .tt-table { font-size:.75rem; min-width:420px; }
+        .tt-table thead tr th { padding:8px 10px; font-size:.65rem; }
+        .tt-table tbody tr td { padding:8px 10px; }
+        .tt-table tbody tr td:first-child {
+            padding:8px 10px;
+            min-width:130px;
+            max-width:150px;
+            font-size:.75rem;
+        }
+    }
 </style>
 
 <div class="container-fluid py-4">
@@ -455,7 +493,8 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
         box-shadow:0 20px 60px rgba(0,0,0,.25);
     }
     .tt-header {
-        display:flex; justify-content:space-between; align-items:center;
+        display:flex; flex-wrap:wrap; gap:8px;
+        justify-content:space-between; align-items:flex-start;
         margin-bottom:1.25rem; padding-bottom:1rem;
         border-bottom:1px solid rgba(54,153,255,.15);
     }
@@ -493,10 +532,15 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
     .tt-table thead tr th:first-child { text-align:left; }
     .tt-table tbody tr td:first-child {
         text-align:left; font-weight:600; color:#c0d0e8;
-        white-space:nowrap; padding:11px 16px;
+        white-space:nowrap; padding:11px 14px;
         border-right:1px solid rgba(54,153,255,.1);
-        background:rgba(255,255,255,.03);
+        background:rgba(10,14,28,.95);
         position:sticky; left:0; z-index:2;
+        min-width:160px; max-width:200px;
+    }
+    .tt-table thead tr th:first-child {
+        position:sticky; left:0; z-index:3;
+        background:rgba(10,14,28,.95);
     }
     .tt-table tbody tr td {
         padding:11px 14px; text-align:right;
@@ -1016,11 +1060,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 }).join('');
 
                 // Tinh tong / trung binh
-                const sumRaw  = rows.reduce((s,d) => s + d.nuoc_tho,    0);
-                const sumCap  = rows.reduce((s,d) => s + d.nuoc_cap,    0);
-                const sumKH   = rows.reduce((s,d) => s + d.nuoc_kh,     0);
-                const sumNRW  = rows.reduce((s,d) => s + d.that_thoat,  0);
-                const avgTL   = sumCap > 0 ? sumNRW / sumCap * 100 : 0;
+                // Chi tinh tren cac ngay co du lieu day du (ti_le != null)
+                const validRows = rows.filter(d => d.ti_le !== null && d.ti_le !== undefined
+                                                 && d.nuoc_cap > 0 && d.nuoc_kh > 0);
+                const sumRaw  = rows.reduce((s,d) => s + (d.nuoc_tho || 0), 0);
+                const sumCap  = rows.reduce((s,d) => s + (d.nuoc_cap || 0), 0);
+                const sumKH   = validRows.reduce((s,d) => s + (d.nuoc_kh || 0), 0);
+                const sumNRW  = validRows.reduce((s,d) => s + (d.that_thoat || 0), 0);
+                const sumCapValid = validRows.reduce((s,d) => s + (d.nuoc_cap || 0), 0);
+                const avgTL   = sumCapValid > 0 ? sumNRW / sumCapValid * 100 : 0;
 
                 // Build data rows
                 const ROWS_DEF = [
@@ -1050,10 +1098,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     {
                         key: 'ti_le', label: 'Tỷ lệ thất thoát (%)',
-                        cls: 'tt-row-tl', valCls: null,  // dynamic
-                        fmt: (v, rowKey) => {
-                            if (!v) return '—';
-                            const cls = v < 15 ? 'val-tl-ok' : v <= 20 ? 'val-tl-warn' : 'val-tl-bad';
+                        cls: 'tt-row-tl', valCls: null,
+                        fmt: (v) => {
+                            if (v === null || v === undefined) return '<span style="color:#3d5a78;font-size:.75rem;">—</span>';
+                            const cls  = v < 15 ? 'val-tl-ok' : v <= 20 ? 'val-tl-warn' : 'val-tl-bad';
                             const icon = v < 15 ? '↓' : v <= 20 ? '→' : '↑';
                             return `<span class="val-tl ${cls}">${icon} ${v.toFixed(2)}%</span>`;
                         },
@@ -1065,20 +1113,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 ROWS_DEF.forEach(row => {
                     let cells = rows.map((d, i) => {
                         const isToday = i === rows.length - 1;
-                        const val  = d[row.key];
-                        const disp = row.fmt(val, row.key);
+                        const val     = d[row.key];
+                        const hasNote = d.note && row.key === 'ti_le';
+                        let disp = row.fmt(val, row.key);
+                        // Hien thi ghi chu cho o ti le
+                        if (hasNote) {
+                            disp = `<span style="color:#4d6d8a;font-size:.72rem;font-style:italic;">${d.note}</span>`;
+                        }
                         const vCls = row.valCls ? row.valCls : '';
-                        return `<td class="${isToday ? 'tt-today' : ''} ${vCls}">${disp}</td>`;
+                        const style = d.note && row.key !== 'ti_le' ? 'opacity:.5;' : '';
+                        return `<td class="${isToday ? 'tt-today' : ''} ${vCls}" style="${style}">${disp}</td>`;
                     }).join('');
 
                     // Summary cell
                     let sumCell = '';
                     if (row.key === 'ti_le') {
-                        const cls = avgTL < 15 ? 'val-tl-ok' : avgTL <= 20 ? 'val-tl-warn' : 'val-tl-bad';
-                        sumCell = `<td><span class="val-tl ${cls}">${avgTL.toFixed(2)}%</span></td>`;
+                        if (validRows.length > 0) {
+                            const cls = avgTL < 15 ? 'val-tl-ok' : avgTL <= 20 ? 'val-tl-warn' : 'val-tl-bad';
+                            const lbl = validRows.length < rows.length
+                                ? `${avgTL.toFixed(2)}% <small style="opacity:.6">(${validRows.length}/${rows.length} ngày)</small>`
+                                : `${avgTL.toFixed(2)}%`;
+                            sumCell = `<td class="tt-sum-col"><span class="val-tl ${cls}">${lbl}</span></td>`;
+                        } else {
+                            sumCell = `<td class="tt-sum-col" style="color:#3d5a78;">—</td>`;
+                        }
                     } else {
                         const vCls = row.valCls || '';
-                        sumCell = `<td class="${vCls}">${row.sum > 0 ? row.sum.toLocaleString('vi-VN') : '—'}</td>`;
+                        const sumVal = row.key === 'nuoc_kh' ? sumKH : (row.key === 'that_thoat' ? sumNRW : row.sum);
+                        sumCell = `<td class="tt-sum-col ${vCls}">${sumVal > 0 ? Math.round(sumVal).toLocaleString('vi-VN') : '—'}</td>`;
                     }
 
                     bodyRows += `<tr class="${row.cls}">

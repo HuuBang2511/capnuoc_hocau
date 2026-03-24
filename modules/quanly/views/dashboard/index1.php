@@ -381,7 +381,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
             <div class="tt-controls">
                 <button class="tt-days-btn active" onclick="loadTTTable(7, this)">7 ngày</button>
                 <button class="tt-days-btn" onclick="loadTTTable(14, this)">14 ngày</button>
-                <button class="tt-days-btn" id="tt-refresh-btn" onclick="loadTTTable(ttCurrentDays, document.querySelector('.tt-days-btn.active'))" title="Làm mới">
+                <button class="tt-days-btn" id="tt-refresh-btn" onclick="window.loadTTTable(window.ttCurrentDays, document.querySelector('.tt-days-btn.active'))" title="Làm mới">
                     <i class="fa-solid fa-rotate-right"></i>
                 </button>
             </div>
@@ -982,9 +982,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // ================================================================
     // BẢNG THẤT THOÁT NƯỚC
     // ================================================================
-    let ttCurrentDays = 7;
+    window.ttCurrentDays = 7;
 
-    function loadTTTable(days, btn) {
+    window.loadTTTable = function(days, btn) {
         ttCurrentDays = days;
         document.querySelectorAll('.tt-days-btn').forEach(b => b.classList.remove('active'));
         if (btn && btn.classList.contains('tt-days-btn')) btn.classList.add('active');
@@ -1110,7 +1110,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('tt-content').innerHTML =
                     '<div class="tt-loading" style="color:#f64e60;"><i class="fa-solid fa-circle-exclamation me-2"></i>Không kết nối được SCADA server</div>';
             });
-    }
+    };
 
     // Load khi trang mo
     loadTTTable(7, null);

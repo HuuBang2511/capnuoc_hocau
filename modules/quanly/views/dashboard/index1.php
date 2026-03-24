@@ -1125,22 +1125,38 @@ document.addEventListener('DOMContentLoaded', function() {
                         return `<td class="${isToday ? 'tt-today' : ''} ${vCls}" style="${style}">${disp}</td>`;
                     }).join('');
 
-                    // Summary cell
+                    // Summary: 2 cot Tong + TB
                     let sumCell = '';
+                    const validDays = validRows.length || rows.length;
                     if (row.key === 'ti_le') {
+                        // Cot 1: TB thi le (%)
+                        let tong_td, tb_td;
                         if (validRows.length > 0) {
                             const cls = avgTL < 15 ? 'val-tl-ok' : avgTL <= 20 ? 'val-tl-warn' : 'val-tl-bad';
-                            const lbl = validRows.length < rows.length
-                                ? `${avgTL.toFixed(2)}% <small style="opacity:.6">(${validRows.length}/${rows.length} ngày)</small>`
-                                : `${avgTL.toFixed(2)}%`;
-                            sumCell = `<td class="tt-sum-col"><span class="val-tl ${cls}">${lbl}</span></td>`;
+                            const note = validRows.length < rows.length
+                                ? `<br><small style="opacity:.55;font-size:.65rem">${validRows.length}/${rows.length} ngày hợp lệ</small>`
+                                : '';
+                            tong_td = `<td class="tt-sum-col" style="text-align:center;">—</td>`;
+                            tb_td   = `<td class="tt-sum-col" style="text-align:center;background:rgba(54,153,255,.06)"><span class="val-tl ${cls}">${avgTL.toFixed(2)}%</span>${note}</td>`;
                         } else {
-                            sumCell = `<td class="tt-sum-col" style="color:#3d5a78;">—</td>`;
+                            tong_td = `<td class="tt-sum-col" style="color:#3d5a78;text-align:center;">—</td>`;
+                            tb_td   = `<td class="tt-sum-col" style="color:#3d5a78;text-align:center;background:rgba(54,153,255,.06)">—</td>`;
                         }
+                        sumCell = tong_td + tb_td;
                     } else {
-                        const vCls = row.valCls || '';
-                        const sumVal = row.key === 'nuoc_kh' ? sumKH : (row.key === 'that_thoat' ? sumNRW : row.sum);
-                        sumCell = `<td class="tt-sum-col ${vCls}">${sumVal > 0 ? Math.round(sumVal).toLocaleString('vi-VN') : '—'}</td>`;
+                        // Lay sumVal dung theo key
+                        const sumVal = row.key === 'nuoc_kh'     ? sumKH
+                                     : row.key === 'that_thoat'  ? sumNRW
+                                     : row.sum || 0;
+                        // TB ngay: chi tinh tren validDays co du lieu
+                        const countForAvg = (row.key === 'nuoc_kh' || row.key === 'that_thoat')
+                                            ? validRows.length
+                                            : rows.filter(d => (d[row.key]||0) > 0).length;
+                        const tbVal = countForAvg > 0 ? sumVal / countForAvg : 0;
+                        const vCls  = row.valCls || '';
+                        const fmtN  = v => v > 0 ? Math.round(v).toLocaleString('vi-VN') : '—';
+                        sumCell = `<td class="tt-sum-col ${vCls}">${fmtN(sumVal)}</td>`
+                                + `<td class="tt-sum-col ${vCls}" style="background:rgba(54,153,255,.06)">${fmtN(tbVal)}</td>`;
                     }
 
                     bodyRows += `<tr class="${row.cls}">
@@ -1157,8 +1173,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <tr>
                                     <th style="min-width:220px;text-align:left;">Chỉ tiêu</th>
                                     ${headCols}
-                                    <th style="background:rgba(54,153,255,.12);color:#7ab8ff;">
-                                        Tổng / TB<br><small style="font-size:.65rem;opacity:.7;">${days} ngày</small>
+                                    <th style="background:rgba(54,153,255,.12);color:#7ab8ff;white-space:nowrap;">
+                                        Tổng<br><small style="font-size:.65rem;opacity:.7;">${days} ngày</small>
+                                    </th>
+                                    <th style="background:rgba(54,153,255,.08);color:#5a9fd4;white-space:nowrap;">
+                                        TB / ngày
                                     </th>
                                 </tr>
                             </thead>

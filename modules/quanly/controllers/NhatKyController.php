@@ -2,12 +2,12 @@
 namespace app\modules\quanly\controllers;
 
 use Yii;
-use yii\web\Controller;
+use app\modules\quanly\base\QuanlyBaseController;
 use app\modules\quanly\models\hocau\NkChatLuongGio;
 use app\modules\quanly\models\hocau\NkGiaoCa;
 use app\modules\quanly\components\BaoCaoNgayExcel;
 
-class NhatKyController extends Controller
+class NhatKyController extends QuanlyBaseController
 {
     public function actionBaoCao()
     {
@@ -97,8 +97,8 @@ class NhatKyController extends Controller
             $rows[] = [
                 'gio'     => date('H:i', strtotime($r->thoi_gian)),
                 'ca'      => $r->ca,
-                'ns_ph'   => $r->ns_ph,  'ns_ntu' => $r->ns_ntu,
-                'nt_ph'   => $r->nt_ph,  'nt_ntu' => $r->nt_ntu,
+                'ns_ph'   => $r->ns_ph,  'ns_ntu'  => $r->ns_ntu,
+                'nt_ph'   => $r->nt_ph,  'nt_ntu'  => $r->nt_ntu,
                 'nl1_ph'  => $r->nl1_ph, 'nl1_ntu' => $r->nl1_ntu,
                 'nl2_ph'  => $r->nl2_ph, 'nl2_ntu' => $r->nl2_ntu,
                 'clo_du'  => $r->clo_du,
@@ -128,18 +128,15 @@ class NhatKyController extends Controller
 
         $giaoCa = NkGiaoCa::findAll(['ngay' => $ngay]);
 
-        // Lay data SCADA
         $scadaData = [];
-        $iotUrl = 'http://192.168.31.11/iot_api.php?action=sanluong&loai=thatthoat&key=SCADA_HOCAU_2024_SECRET_KEY';
-        $json = @file_get_contents($iotUrl);
+        $json = @file_get_contents(
+            'http://192.168.31.11/iot_api.php?action=sanluong&loai=thatthoat&key=SCADA_HOCAU_2024_SECRET_KEY'
+        );
         if ($json) {
-            $data = json_decode($json, true);
+            $data    = json_decode($json, true);
             $ngay_vn = date('d/m/Y', strtotime($ngay));
             foreach (($data['days'] ?? []) as $d) {
-                if ($d['ngay'] === $ngay_vn) {
-                    $scadaData = $d;
-                    break;
-                }
+                if ($d['ngay'] === $ngay_vn) { $scadaData = $d; break; }
             }
         }
 

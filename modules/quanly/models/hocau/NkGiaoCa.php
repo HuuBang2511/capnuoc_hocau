@@ -1,5 +1,5 @@
 <?php
-namespace app\modules\quanly\models\nhatky;
+namespace app\modules\quanly\models\hocau;
 use yii\db\ActiveRecord;
 
 class NkGiaoCa extends ActiveRecord

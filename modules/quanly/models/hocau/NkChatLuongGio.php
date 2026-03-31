@@ -11,7 +11,9 @@ class NkChatLuongGio extends ActiveRecord
     ];
 
     public static function tableName() { return 'nk_chat_luong_gio'; }
-    public static function getDb() { return \Yii::$app->db_webgis; }
+    // Su dung connection 'db' mac dinh (xem config/db.php)
+    // Neu PostgreSQL dung connection khac, sua lai o day
+    // public static function getDb() { return \Yii::$app->get('ten_connection'); }
 
     public function rules()
     {

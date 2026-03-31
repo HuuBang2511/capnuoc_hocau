@@ -1,410 +1,317 @@
 <?php
-use yii\helpers\Html;
-use yii\helpers\Url;
+namespace app\modules\quanly\components;
 
-$this->title = 'Báo cáo nội bộ hàng ngày';
-?>
-<style>
-.bc-wrap { max-width:960px; margin:0 auto; padding:20px 16px; }
-.bc-hero  { background:linear-gradient(135deg,#1e3a5f,#2d6099);
-            border-radius:16px; padding:28px 24px; margin-bottom:24px; color:#fff; }
-.bc-hero h1 { font-size:1.2rem; font-weight:700; margin:0 0 4px; }
-.bc-hero p  { font-size:.85rem; opacity:.75; margin:0; }
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\{Fill, Border, Alignment, Font};
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use Yii;
 
-/* Chọn ngày */
-.bc-date-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-               margin-bottom:24px; }
-.bc-date-row input[type=date] {
-    padding:10px 14px; border:1.5px solid #e2e8f0; border-radius:10px;
-    font-size:.95rem; outline:none; background:#fff; }
-.bc-date-row input[type=date]:focus { border-color:#3b82f6; }
-.bc-btn-primary { padding:10px 20px; background:#3b82f6; color:#fff; border:none;
-                  border-radius:10px; font-size:.9rem; font-weight:600;
-                  cursor:pointer; text-decoration:none; display:inline-flex;
-                  align-items:center; gap:6px; }
-.bc-btn-primary:hover { background:#2563eb; color:#fff; }
-.bc-btn-outline { padding:10px 20px; border:1.5px solid #e2e8f0; background:#fff;
-                  color:#475569; border-radius:10px; font-size:.9rem; font-weight:600;
-                  cursor:pointer; text-decoration:none; display:inline-flex;
-                  align-items:center; gap:6px; }
-.bc-btn-outline:hover { border-color:#3b82f6; color:#3b82f6; }
+class BaoCaoNgayExcel
+{
+    private $ngay;
+    private $scada;      // Dữ liệu từ SCADA
+    private $chatLuong;  // Mảng NkChatLuongGio
+    private $giaoCa;     // Mảng NkGiaoCa (2 phần tử: ca ngày + ca đêm)
 
-/* Shortcuts ngày */
-.bc-shortcuts { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px; }
-.bc-shortcut  { padding:6px 14px; border-radius:99px; font-size:.82rem; font-weight:500;
-                background:#f1f5f9; color:#475569; cursor:pointer; border:none;
-                text-decoration:none; }
-.bc-shortcut:hover, .bc-shortcut.active { background:#3b82f6; color:#fff; }
+    // Màu sắc
+    const C_HEADER  = 'FF1E3A5F';  // Xanh đậm header
+    const C_SUBHEAD = 'FF2D6099';  // Xanh nhạt sub-header
+    const C_ODD     = 'FFF0F4F8';  // Nền dòng lẻ
+    const C_OK      = 'FFD1FAE5';  // Xanh lá OK
+    const C_WARN    = 'FFFEF3C7';  // Vàng cảnh báo
+    const C_BAD     = 'FFFEE2E2';  // Đỏ vượt ngưỡng
+    const C_WHITE   = 'FFFFFFFF';
 
-/* Cards tình trạng dữ liệu */
-.bc-status-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px;
-                  margin-bottom:24px; }
-.bc-status-card { border:1px solid #e2e8f0; border-radius:12px; padding:16px; }
-.bc-status-card .label { font-size:.75rem; color:#94a3b8; margin-bottom:4px; }
-.bc-status-card .value { font-size:1rem; font-weight:700; color:#1e3a5f; }
-.bc-status-card .sub   { font-size:.78rem; color:#64748b; margin-top:2px; }
-.bc-status-card.has-data  { border-left:4px solid #22c55e; }
-.bc-status-card.no-data   { border-left:4px solid #f59e0b; }
-.bc-status-card.auto-data { border-left:4px solid #3b82f6; }
-
-/* Preview nhanh */
-.bc-preview { border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;
-              margin-bottom:24px; }
-.bc-preview-head { background:#f8fafc; padding:12px 16px; font-weight:600;
-                   font-size:.9rem; color:#334155; border-bottom:1px solid #e2e8f0;
-                   display:flex; justify-content:space-between; align-items:center; }
-.bc-table { width:100%; border-collapse:collapse; font-size:.85rem; }
-.bc-table th { background:#f8fafc; padding:8px 12px; text-align:left;
-               border-bottom:2px solid #e2e8f0; white-space:nowrap;
-               font-weight:600; color:#475569; }
-.bc-table td { padding:9px 12px; border-bottom:1px solid #f1f5f9; }
-.bc-table tr:last-child td { border-bottom:none; }
-.bc-table tr:hover td { background:#f8fafc; }
-.bc-badge { display:inline-block; padding:2px 9px; border-radius:99px; font-size:.75rem; }
-.bc-badge.ok   { background:#dcfce7; color:#166534; }
-.bc-badge.warn { background:#fef9c3; color:#854d0e; }
-.bc-badge.bad  { background:#fee2e2; color:#991b1b; }
-.bc-badge.auto { background:#dbeafe; color:#1e40af; }
-.bc-badge.miss { background:#f1f5f9; color:#94a3b8; }
-
-/* Action buttons */
-.bc-actions { display:flex; gap:10px; flex-wrap:wrap; }
-
-/* Lịch sử xuất file */
-.bc-history { border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; }
-.bc-history-head { background:#f8fafc; padding:12px 16px; font-weight:600;
-                   font-size:.85rem; color:#334155; border-bottom:1px solid #e2e8f0; }
-.bc-history-row { padding:10px 16px; display:flex; justify-content:space-between;
-                  align-items:center; border-bottom:1px solid #f1f5f9; font-size:.85rem; }
-.bc-history-row:last-child { border-bottom:none; }
-
-@media(max-width:576px) {
-    .bc-status-grid { grid-template-columns:1fr; }
-    .bc-date-row    { flex-direction:column; align-items:stretch; }
-    .bc-actions     { flex-direction:column; }
-    .bc-btn-primary, .bc-btn-outline { justify-content:center; }
-}
-</style>
-
-<div class="bc-wrap">
-
-    <!-- Hero -->
-    <div class="bc-hero">
-        <h1>📊 Báo cáo nội bộ hàng ngày</h1>
-        <p>Tổng hợp sản xuất • Chất lượng nước • Giao ca — Xuất file Excel</p>
-    </div>
-
-    <!-- Chọn ngày -->
-    <div class="bc-date-row">
-        <input type="date" id="input-ngay"
-               value="<?= date('Y-m-d') ?>"
-               max="<?= date('Y-m-d') ?>"
-               onchange="loadPreview(this.value)" />
-        <button class="bc-btn-primary" onclick="xuatExcel()">
-            ⬇ Xuất Excel
-        </button>
-        <a href="<?= Url::to(['nhat-ky/chat-luong-gio']) ?>" class="bc-btn-outline">
-            ✏ Nhập CLN
-        </a>
-        <a href="<?= Url::to(['nhat-ky/giao-ca']) ?>" class="bc-btn-outline">
-            📋 Sổ giao ca
-        </a>
-    </div>
-
-    <!-- Shortcuts -->
-    <div class="bc-shortcuts">
-        <?php for ($i = 0; $i < 7; $i++):
-            $d = date('Y-m-d', strtotime("-$i days"));
-            $lbl = $i==0?'Hôm nay':($i==1?'Hôm qua':date('d/m', strtotime("-$i days")));
-        ?>
-        <a class="bc-shortcut <?= $i==0?'active':'' ?>"
-           href="javascript:void(0)"
-           onclick="setNgay('<?= $d ?>',this)"><?= $lbl ?></a>
-        <?php endfor; ?>
-    </div>
-
-    <!-- Tình trạng dữ liệu -->
-    <div id="status-grid" class="bc-status-grid">
-        <div class="bc-status-card auto-data">
-            <div class="label">Sản lượng SCADA</div>
-            <div class="value" id="st-scada">Đang tải...</div>
-            <div class="sub">Tự động từ SCADA</div>
-        </div>
-        <div class="bc-status-card" id="card-cln">
-            <div class="label">Chất lượng nước</div>
-            <div class="value" id="st-cln">—</div>
-            <div class="sub">Nhập tay</div>
-        </div>
-        <div class="bc-status-card" id="card-ca-ngay">
-            <div class="label">Sổ giao ca ngày</div>
-            <div class="value" id="st-ca-ngay">—</div>
-            <div class="sub">Nhập tay</div>
-        </div>
-        <div class="bc-status-card" id="card-ca-dem">
-            <div class="label">Sổ giao ca đêm</div>
-            <div class="value" id="st-ca-dem">—</div>
-            <div class="sub">Nhập tay</div>
-        </div>
-    </div>
-
-    <!-- Preview sản lượng -->
-    <div class="bc-preview">
-        <div class="bc-preview-head">
-            <span>Sơ lược sản lượng</span>
-            <span id="preview-ngay" style="color:#94a3b8;font-size:.8rem;font-weight:400"></span>
-        </div>
-        <div style="overflow-x:auto;">
-        <table class="bc-table" id="tbl-sanluong">
-            <thead>
-                <tr>
-                    <th>Chỉ tiêu</th>
-                    <th>Giá trị</th>
-                    <th>Trạng thái</th>
-                </tr>
-            </thead>
-            <tbody id="tbody-sanluong">
-                <tr><td colspan="3" style="text-align:center;color:#94a3b8;padding:20px">Đang tải...</td></tr>
-            </tbody>
-        </table>
-        </div>
-    </div>
-
-    <!-- Preview CLN hôm nay -->
-    <div class="bc-preview" id="preview-cln" style="display:none">
-        <div class="bc-preview-head">
-            <span>Chất lượng nước trong ngày</span>
-            <a href="<?= Url::to(['nhat-ky/chat-luong-gio']) ?>"
-               style="font-size:.8rem;color:#3b82f6;font-weight:400;text-decoration:none">
-               Xem đầy đủ →
-            </a>
-        </div>
-        <div style="overflow-x:auto;">
-        <table class="bc-table">
-            <thead>
-                <tr>
-                    <th>Giờ</th><th>Ca</th>
-                    <th>NS pH</th><th>NS NTU</th>
-                    <th>Clo dư</th><th>NT pH</th><th>NT NTU</th>
-                </tr>
-            </thead>
-            <tbody id="tbody-cln"></tbody>
-        </table>
-        </div>
-    </div>
-
-    <!-- Action xuất -->
-    <div class="bc-actions">
-        <button class="bc-btn-primary" onclick="xuatExcel()" style="font-size:1rem;padding:13px 28px;">
-            ⬇ Xuất báo cáo Excel
-        </button>
-        <span style="font-size:.82rem;color:#94a3b8;align-self:center;">
-            File Excel gồm 3 sheet: Sản xuất • Chất lượng nước • Giao ca
-        </span>
-    </div>
-
-</div>
-
-<script>
-const API_URL  = '<?= Url::to(['/site/iot-api']) ?>';
-const SCADA_KEY = 'SCADA_HOCAU_2024_SECRET_KEY';
-
-let currentNgay = '<?= date('Y-m-d') ?>';
-
-function setNgay(ngay, el) {
-    currentNgay = ngay;
-    document.getElementById('input-ngay').value = ngay;
-    document.querySelectorAll('.bc-shortcut').forEach(a => a.classList.remove('active'));
-    if (el) el.classList.add('active');
-    loadPreview(ngay);
-}
-
-function loadPreview(ngay) {
-    currentNgay = ngay;
-    document.getElementById('preview-ngay').textContent = formatNgayVN(ngay);
-    loadScada(ngay);
-    loadCLN(ngay);
-}
-
-function formatNgayVN(y) {
-    // y co the la yyyy-MM-dd hoac dd/MM/yyyy
-    let d;
-    if (y && y.includes('-')) {
-        d = new Date(y + 'T00:00:00'); // tranh timezone shift
-    } else if (y && y.includes('/')) {
-        const p = y.split('/');
-        d = new Date(p[2]+'-'+p[1]+'-'+p[0]+'T00:00:00');
-    } else {
-        return y;
+    public function __construct($ngay, $scada, $chatLuong, $giaoCa)
+    {
+        $this->ngay      = $ngay;
+        $this->scada     = $scada;
+        $this->chatLuong = $chatLuong;
+        $this->giaoCa    = $giaoCa;
     }
-    const thu = ['CN','T2','T3','T4','T5','T6','T7'][d.getDay()];
-    return `${thu}, ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-}
 
-// Chuyen bat ky format ngay nao -> yyyy-MM-dd
-function toIso(ngay) {
-    if (!ngay) return '';
-    if (/^\d{4}-\d{2}-\d{2}/.test(ngay)) return ngay.slice(0,10); // ISO
-    if (/^\d{2}\/\d{2}\/\d{4}/.test(ngay)) {                      // dd/MM/yyyy
-        const p = ngay.split('/');
-        return p[2] + '-' + p[1] + '-' + p[0];
+    public function download()
+    {
+        $spreadsheet = new Spreadsheet();
+        $spreadsheet->getProperties()
+            ->setTitle('Báo cáo ngày ' . $this->ngay)
+            ->setCompany('Công ty CP Cấp Nước Hồ Cầu Mới');
+
+        $this->buildSheet1($spreadsheet->getActiveSheet());
+        $this->buildSheet2($spreadsheet->createSheet());
+        $this->buildSheet3($spreadsheet->createSheet());
+
+        $spreadsheet->setActiveSheetIndex(0);
+
+        $filename = 'BaoCaoNgay_' . $this->ngay . '.xlsx';
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
+        Yii::$app->end();
     }
-    return ngay;
-}
 
-function loadScada(ngay) {
-    const url = '/iot_api.php?action=sanluong&loai=thatthoat&key=' + SCADA_KEY;
-    const ngayIso = toIso(ngay); // yyyy-MM-dd
-    const stEl = document.getElementById('st-scada');
-    stEl.textContent = 'Đang tải...';
-    stEl.style.color = '#94a3b8';
+    // ── SHEET 1: SẢN XUẤT (từ SCADA) ────────────────────────
+    private function buildSheet1($sheet)
+    {
+        $sheet->setTitle('Sản xuất');
+        $ngay_vn  = date('d/m/Y', strtotime($this->ngay));
+        $thu_vn   = ['CN','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'][date('w', strtotime($this->ngay))];
+        $s = $this->scada;
 
-    fetch(url)
-        .then(r => r.json())
-        .then(data => {
-            const days = (data.days || []).filter(d => d && d.ngay);
-            if (days.length === 0) {
-                stEl.textContent = '— Không có dữ liệu';
-                stEl.style.color = '#94a3b8';
-                renderSanLuong(null);
-                return;
-            }
+        // Header công ty
+        $sheet->mergeCells('A1:H1');
+        $sheet->setCellValue('A1', 'CÔNG TY CỔ PHẦN CẤP NƯỚC HỒ CẦU MỚI');
+        $sheet->mergeCells('A2:H2');
+        $sheet->setCellValue('A2', 'BÁO CÁO SẢN XUẤT HÀNG NGÀY');
+        $sheet->mergeCells('A3:H3');
+        $sheet->setCellValue('A3', "$thu_vn, ngày $ngay_vn");
 
-            // Normalize tat ca ngay trong days sang ISO de so sanh
-            const daysNorm = days.map(d => ({ ...d, _iso: toIso(d.ngay) }));
+        $this->styleHeader($sheet, 'A1:H1', 14, self::C_HEADER, 'FFFFFFFF');
+        $this->styleHeader($sheet, 'A2:H2', 12, self::C_SUBHEAD, 'FFFFFFFF');
+        $this->styleCenter($sheet, 'A3:H3');
 
-            // Tim chinh xac ngay yeu cau
-            let day = daysNorm.find(d => d._iso === ngayIso);
+        // Bảng sản lượng
+        $row = 5;
+        $this->writeRow($sheet, $row, ['STT','Chỉ tiêu','Đvt','Ca Ngày','Ca Đêm','Tổng ngày','Tháng lũy kế','Ghi chú'], true);
+        $row++;
 
-            if (day) {
-                stEl.textContent = '✓ Có dữ liệu';
-                stEl.style.color = '#16a34a';
-            } else {
-                // Khong co ngay hom nay -> fallback ngay moi nhat
-                day = daysNorm[daysNorm.length - 1];
-                const lbl = formatNgayVN(day._iso);
-                stEl.textContent = '↩ DailyReport: ' + lbl;
-                stEl.style.color = '#f59e0b';
-                // Cap nhat tieu de preview
-                const pv = document.getElementById('preview-ngay');
-                if (pv) pv.textContent = lbl + ' (mới nhất có dữ liệu)';
-            }
-            renderSanLuong(day);
-        })
-        .catch(err => {
-            console.error('SCADA fetch error:', err);
-            stEl.textContent = '✗ Lỗi kết nối SCADA';
-            stEl.style.color = '#ef4444';
-            renderSanLuong(null);
-        });
-}
+        $ca_ngay = $this->getGiaoCa(1);
+        $ca_dem  = $this->getGiaoCa(2);
 
-function renderSanLuong(d) {
-    const tbody = document.getElementById('tbody-sanluong');
-    if (!d) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#94a3b8;padding:16px">Không có dữ liệu SCADA cho ngày này</td></tr>';
-        return;
-    }
-    const fmt = v => v != null ? Number(v).toLocaleString('vi-VN') : '—';
-    const badge = (v, type) => {
-        if (v == null || v === 0) return '<span class="bc-badge miss">—</span>';
-        if (type === 'auto') return `<span class="bc-badge auto">Tự động</span>`;
-        if (type === 'tl') {
-            const cls = v < 10 ? 'ok' : v < 20 ? 'warn' : 'bad';
-            return `<span class="bc-badge ${cls}">${v.toFixed(2)}%</span>`;
+        $sl_cap_ngay = ($ca_ngay !== null ? $ca_ngay->getSanLuongCap() : null) ?? (($s['nuoc_cap'] ?? 0) / 2);
+        $sl_tho_ngay = ($ca_ngay && $ca_ngay->nuoc_tho_cuoi) ?
+                        $ca_ngay->nuoc_tho_cuoi - $ca_ngay->nuoc_tho_dau :
+                        ($s['nuoc_tho'] ?? 0) / 2;
+
+        $data = [
+            [1, 'SL Nước thô bơm vào',  'm³', round($sl_tho_ngay), round($s['nuoc_tho']??0 - $sl_tho_ngay), $s['nuoc_tho']??'—', '—'],
+            [2, 'SL Nước sạch cấp ra',  'm³', round($sl_cap_ngay), round($s['nuoc_cap']??0 - $sl_cap_ngay), $s['nuoc_cap']??'—', '—'],
+            [3, 'SL KH đồng hồ lớn',    'm³', '—', '—', $s['nuoc_kh']??'—', '—'],
+            [4, 'Nước thất thoát',       'm³', '—', '—', $s['that_thoat']??'—', '—'],
+            [5, 'Tỷ lệ thất thoát',      '%',  '—', '—', isset($s['ti_le'])?number_format($s['ti_le'],2).'%':'—', '—'],
+        ];
+
+        foreach ($data as $i => $d) {
+            $bgColor = $i % 2 == 0 ? self::C_ODD : self::C_WHITE;
+            $this->writeRow($sheet, $row, array_merge($d, ['']), false, $bgColor);
+            $row++;
         }
-        return `<span class="bc-badge ok">✓</span>`;
-    };
-    const rows = [
-        ['Nước thô bơm vào (m³)',    fmt(d.nuoc_tho),   badge(d.nuoc_tho,'auto')],
-        ['Nước sạch cấp ra (m³)',    fmt(d.nuoc_cap),   badge(d.nuoc_cap,'auto')],
-        ['Sản lượng KH (m³)',        fmt(d.nuoc_kh),    badge(d.nuoc_kh, d.nuoc_kh>0?'auto':'miss')],
-        ['Thất thoát (m³)',          fmt(d.that_thoat), badge(d.that_thoat,'auto')],
-        ['Tỷ lệ thất thoát',         d.ti_le!=null?d.ti_le.toFixed(2)+'%':'—', d.ti_le!=null?badge(d.ti_le,'tl'):'<span class="bc-badge miss">Chưa đủ KH</span>'],
-    ];
-    tbody.innerHTML = rows.map(([a,b,c],i) =>
-        `<tr style="${i%2?'':'background:#f8fafc'}"><td style="font-weight:500">${a}</td><td>${b}</td><td>${c}</td></tr>`
-    ).join('');
-}
 
-function loadCLN(ngay) {
-    fetch(`/quanly/nhat-ky/api-cln?ngay=${ngay}`)
-        .then(r => r.json())
-        .then(data => {
-            const count = data.count || 0;
-            const st = document.getElementById('st-cln');
-            const card = document.getElementById('card-cln');
-            if (count > 0) {
-                st.textContent = `✓ ${count} lần nhập`;
-                st.style.color = '#16a34a';
-                card.classList.add('has-data');
-                card.classList.remove('no-data');
-                renderCLN(data.rows || []);
-                document.getElementById('preview-cln').style.display = 'block';
-            } else {
-                st.textContent = '— Chưa nhập';
-                st.style.color = '#f59e0b';
-                card.classList.add('no-data');
-                card.classList.remove('has-data');
-                document.getElementById('preview-cln').style.display = 'none';
+        // Hóa chất
+        $row++;
+        $this->writeRow($sheet, $row, ['','Hóa chất sử dụng','','Ca Ngày','Ca Đêm','Tổng','',''], true, self::C_SUBHEAD, 'FFFFFFFF');
+        $row++;
+        $hc = [
+            ['1','PAC','kg', isset($ca_ngay) && isset($ca_ngay->pac_kg) ? $ca_ngay->pac_kg : '—', isset($ca_dem) && isset($ca_dem->pac_kg) ? $ca_dem->pac_kg : '—'],
+            ['2','Chlorine','kg', isset($ca_ngay) && isset($ca_ngay->chlorine_kg) ? $ca_ngay->chlorine_kg : '—', isset($ca_dem) && isset($ca_dem->chlorine_kg) ? $ca_dem->chlorine_kg : '—'],
+            ['3','Polymer','kg', isset($ca_ngay) && isset($ca_ngay->polymer_kg) ? $ca_ngay->polymer_kg : '—', isset($ca_dem) && isset($ca_dem->polymer_kg) ? $ca_dem->polymer_kg : '—'],
+        ];
+        foreach ($hc as $i => $d) {
+            $tong = is_numeric($d[3]) && is_numeric($d[4]) ? $d[3]+$d[4] : '—';
+            $this->writeRow($sheet, $row, [$d[0],$d[1],$d[2],$d[3],$d[4],$tong,'',''], false, $i%2==0?self::C_ODD:self::C_WHITE);
+            $row++;
+        }
+
+        // Điện
+        $row++;
+        $this->writeRow($sheet, $row, ['','Điện tiêu thụ','KWh','Ca Ngày','Ca Đêm','Tổng','Định mức',''], true, self::C_SUBHEAD, 'FFFFFFFF');
+        $row++;
+        foreach (['Điện nhà máy','Điện trạm bơm'] as $i => $label) {
+            $f_d = $i==0?'dien_nha_may':'dien_tram_bom';
+            $d = ($ca_ngay&&$ca_ngay->{$f_d.'_cuoi'}) ? $ca_ngay->{$f_d.'_cuoi'}-$ca_ngay->{$f_d.'_dau'} : '—';
+            $e = ($ca_dem &&$ca_dem->{$f_d.'_cuoi'})  ? $ca_dem->{$f_d.'_cuoi'} -$ca_dem->{$f_d.'_dau'}  : '—';
+            $tong = is_numeric($d)&&is_numeric($e) ? $d+$e : '—';
+            $this->writeRow($sheet, $row, ['',($i+1).'. '.$label,'KWh',$d,$e,$tong,'',''], false, $i%2==0?self::C_ODD:self::C_WHITE);
+            $row++;
+        }
+
+        // Mực nước hồ
+        $row++;
+        $sheet->setCellValue("A$row", 'Mực nước hồ chứa: ');
+        $sheet->setCellValue("C$row", ($s['level_lake']??'—') . ' m');
+
+        // Column widths
+        foreach (['A'=>8,'B'=>35,'C'=>8,'D'=>12,'E'=>12,'F'=>14,'G'=>14,'H'=>20] as $col=>$w)
+            $sheet->getColumnDimension($col)->setWidth($w);
+    }
+
+    // ── SHEET 2: CHẤT LƯỢNG NƯỚC ─────────────────────────────
+    private function buildSheet2($sheet)
+    {
+        $sheet->setTitle('Chất lượng nước');
+        $ngay_vn = date('d/m/Y', strtotime($this->ngay));
+
+        $sheet->mergeCells('A1:K1');
+        $sheet->setCellValue('A1', 'NHẬT KÝ PHÂN TÍCH CHẤT LƯỢNG NƯỚC — ' . $ngay_vn);
+        $this->styleHeader($sheet, 'A1:K1', 12, self::C_HEADER, 'FFFFFFFF');
+
+        // Ngưỡng QCVN ghi chú
+        $sheet->setCellValue('A2', 'QCVN 01-1:2018/BYT: pH 6.5–8.5 | Độ đục < 2 NTU | Clo dư 0.2–1.0 mg/L');
+        $sheet->mergeCells('A2:K2');
+        $sheet->getStyle('A2')->getFont()->setItalic(true)->setSize(9);
+        $sheet->getStyle('A2')->getFont()->getColor()->setARGB('FF64748B');
+
+        $row = 4;
+        $headers = ['Giờ','Ca','NS - pH','NS - NTU','NT - pH','NT - NTU',
+                    'Lắng 1 - pH','Lắng 1 - NTU','Lắng 2 - pH','Lắng 2 - NTU','Clo dư (mg/L)'];
+        $this->writeRow($sheet, $row, $headers, true);
+        $row++;
+
+        $qcvn = ['ns_ph'=>[6.5,8.5],'ns_ntu'=>[0,2.0],'clo_du'=>[0.2,1.0]];
+
+        foreach ($this->chatLuong as $i => $r) {
+            $gio = date('H:i', strtotime($r->thoi_gian));
+            $ten_ca = $r->ca==1?'Ngày':'Đêm';
+            $vals = [$gio,$ten_ca,$r->ns_ph,$r->ns_ntu,$r->nt_ph,$r->nt_ntu,
+                     $r->nl1_ph,$r->nl1_ntu,$r->nl2_ph,$r->nl2_ntu,$r->clo_du];
+            $bg = $i%2==0?self::C_ODD:self::C_WHITE;
+            $this->writeRow($sheet, $row, $vals, false, $bg);
+
+            // Tô màu ô vượt ngưỡng
+            $check = ['ns_ph'=>'C','ns_ntu'=>'D','clo_du'=>'K'];
+            foreach ($check as $field => $col) {
+                $v = $r->$field;
+                if ($v === null) continue;
+                [$mn,$mx] = $qcvn[$field];
+                if ((float)$v < $mn || (float)$v > $mx) {
+                    $sheet->getStyle("{$col}{$row}")->getFill()
+                          ->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB(self::C_BAD);
+                } elseif ((float)$v < $mn+($mx-$mn)*0.05 || (float)$v > $mx-($mx-$mn)*0.05) {
+                    $sheet->getStyle("{$col}{$row}")->getFill()
+                          ->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB(self::C_WARN);
+                }
+            }
+            $row++;
+        }
+
+        if (empty($this->chatLuong)) {
+            $sheet->mergeCells("A{$row}:K{$row}");
+            $sheet->setCellValue("A{$row}", '— Chưa có dữ liệu cho ngày này —');
+            $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        }
+
+        foreach (['A'=>8,'B'=>8,'C'=>8,'D'=>9,'E'=>8,'F'=>9,
+                  'G'=>11,'H'=>12,'I'=>11,'J'=>12,'K'=>13] as $c=>$w)
+            $sheet->getColumnDimension($c)->setWidth($w);
+    }
+
+    // ── SHEET 3: GIAO CA ─────────────────────────────────────
+    private function buildSheet3($sheet)
+    {
+        $sheet->setTitle('Giao ca');
+        $ngay_vn = date('d/m/Y', strtotime($this->ngay));
+
+        $sheet->mergeCells('A1:E1');
+        $sheet->setCellValue('A1', 'SỔ GIAO CA — ' . $ngay_vn);
+        $this->styleHeader($sheet, 'A1:E1', 12, self::C_HEADER, 'FFFFFFFF');
+
+        $row = 3;
+        foreach ([1=>'CA NGÀY (07h–18h)', 2=>'CA ĐÊM (19h–06h)'] as $ca => $label) {
+            $gc = $this->getGiaoCa($ca);
+
+            $sheet->mergeCells("A{$row}:E{$row}");
+            $sheet->setCellValue("A{$row}", $label);
+            $this->styleHeader($sheet, "A{$row}:E{$row}", 10, self::C_SUBHEAD, 'FFFFFFFF');
+            $row++;
+
+            $items = [
+                ['Nước cấp (m³)', isset($gc) && isset($gc->nuoc_cap_dau) ? $gc->nuoc_cap_dau : '—', isset($gc) && isset($gc->nuoc_cap_cuoi) ? $gc->nuoc_cap_cuoi : '—', isset($gc) && method_exists($gc, 'getSanLuongCap') && $gc->getSanLuongCap() !== null ? $gc->getSanLuongCap() : '—'],
+                ['Nước thô (m³)', isset($gc) && isset($gc->nuoc_tho_dau) ? $gc->nuoc_tho_dau : '—', isset($gc) && isset($gc->nuoc_tho_cuoi) ? $gc->nuoc_tho_cuoi : '—', '—'],
+                ['Điện NM (KWh)', isset($gc) && isset($gc->dien_nha_may_dau) ? $gc->dien_nha_may_dau : '—', isset($gc) && isset($gc->dien_nha_may_cuoi) ? $gc->dien_nha_may_cuoi : '—',
+                 (isset($gc) && isset($gc->dien_nha_may_cuoi) && isset($gc->dien_nha_may_dau)) ? $gc->dien_nha_may_cuoi - $gc->dien_nha_may_dau : '—'],
+            ];
+            $sheet->setCellValue("A{$row}", 'Chỉ tiêu');
+            $sheet->setCellValue("B{$row}", 'Đầu ca');
+            $sheet->setCellValue("C{$row}", 'Cuối ca');
+            $sheet->setCellValue("D{$row}", 'Tổng ca');
+            $this->styleRow($sheet, "A{$row}:D{$row}", true);
+            $row++;
+            foreach ($items as $i=>$it) {
+                $sheet->fromArray($it, null, "A{$row}");
+                if ($i%2==0) $sheet->getStyle("A{$row}:D{$row}")->getFill()
+                    ->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB(self::C_ODD);
+                $row++;
             }
 
-            // Giao ca
-            const ca1 = data.ca_ngay;
-            const ca2 = data.ca_dem;
-            ['ca_ngay','ca_dem'].forEach((k,i) => {
-                const ca = i==0?ca1:ca2;
-                const stEl = document.getElementById(`st-${k.replace('_','-')}`);
-                const cardEl = document.getElementById(`card-${k.replace('_','-')}`);
-                if (ca) {
-                    stEl.textContent = '✓ Đã nhập';
-                    stEl.style.color = '#16a34a';
-                    cardEl.classList.add('has-data');
-                    cardEl.classList.remove('no-data');
-                } else {
-                    stEl.textContent = '— Chưa nhập';
-                    stEl.style.color = '#f59e0b';
-                    cardEl.classList.add('no-data');
-                    cardEl.classList.remove('has-data');
+            // Bơm + hóa chất
+            $row++;
+            $sheet->setCellValue("A{$row}", 'Bơm NT: ' . (isset($gc) && isset($gc->bom_nt_chay) ? $gc->bom_nt_chay : '—')
+                . ' | Bơm TH: ' . (isset($gc) && isset($gc->bom_th_chay) ? $gc->bom_th_chay : '—'));
+            $sheet->mergeCells("A{$row}:D{$row}"); $row++;
+            $sheet->setCellValue("A{$row}", 'PAC: ' . (isset($gc) && isset($gc->pac_kg) ? $gc->pac_kg : '—') . ' kg'
+                . ' | Chlorine: ' . (isset($gc) && isset($gc->chlorine_kg) ? $gc->chlorine_kg : '—') . ' kg'
+                . ' | Polymer: ' . (isset($gc) && isset($gc->polymer_kg) ? $gc->polymer_kg : '—') . ' kg');
+            $sheet->mergeCells("A{$row}:D{$row}"); $row++;
+
+            if (isset($gc) && isset($gc->su_co) && $gc->su_co) {
+                $sheet->setCellValue("A{$row}", '⚠ Sự cố: ' . $gc->su_co);
+                $sheet->mergeCells("A{$row}:D{$row}");
+                $sheet->getStyle("A{$row}")->getFont()->getColor()->setARGB('FFDC2626');
+                $row++;
+                if (isset($gc->bien_phap) && $gc->bien_phap) {
+                    $sheet->setCellValue("A{$row}", '→ Biện pháp: ' . $gc->bien_phap);
+                    $sheet->mergeCells("A{$row}:D{$row}"); $row++;
                 }
-            });
-        })
-        .catch(() => {});
-}
+            }
 
-function renderCLN(rows) {
-    const qcvn = {ns_ph:[6.5,8.5], ns_ntu:[0,2.0], clo_du:[0.2,1.0]};
-    function badge(v, field) {
-        if (v==null) return '—';
-        const q = qcvn[field];
-        if (!q) return v;
-        const cls = (v<q[0]||v>q[1]) ? 'bad' : ((v<q[0]+0.1||v>q[1]-0.1)?'warn':'ok');
-        return `<span class="bc-badge ${cls}">${v}</span>`;
+            $sheet->setCellValue("A{$row}", 'NV giao: ' . (isset($gc) && isset($gc->nhan_vien_giao) ? $gc->nhan_vien_giao : '—')
+                . '   |   NV nhận: ' . (isset($gc) && isset($gc->nhan_vien_nhan) ? $gc->nhan_vien_nhan : '—'));
+            $sheet->mergeCells("A{$row}:D{$row}"); $row += 2;
+        }
+
+        foreach (['A'=>25,'B'=>12,'C'=>12,'D'=>12,'E'=>15] as $c=>$w)
+            $sheet->getColumnDimension($c)->setWidth($w);
     }
-    document.getElementById('tbody-cln').innerHTML = rows.map((r,i) =>
-        `<tr style="${i%2?'':'background:#f8fafc'}">
-            <td>${r.gio}</td>
-            <td>${r.ca==1?'Ngày':'Đêm'}</td>
-            <td>${badge(r.ns_ph,'ns_ph')}</td>
-            <td>${badge(r.ns_ntu,'ns_ntu')}</td>
-            <td>${badge(r.clo_du,'clo_du')}</td>
-            <td>${r.nt_ph??'—'}</td>
-            <td>${r.nt_ntu??'—'}</td>
-        </tr>`
-    ).join('');
-}
 
-function xuatExcel() {
-    const ngay = currentNgay;
-    const btn = event.target;
-    btn.textContent = '⏳ Đang tạo file...';
-    btn.disabled = true;
-    window.location.href = `/quanly/nhat-ky/xuat-bao-cao-ngay?ngay=${ngay}`;
-    setTimeout(() => {
-        btn.textContent = '⬇ Xuất báo cáo Excel';
-        btn.disabled = false;
-    }, 3000);
-}
+    // ── Helpers ───────────────────────────────────────────────
+    private function getGiaoCa($ca)
+    {
+        foreach ($this->giaoCa as $gc) {
+            if ($gc->ca == $ca) return $gc;
+        }
+        return null;
+    }
 
-// Load ngay khi mở trang
-loadPreview(currentNgay);
-</script>
+    private function writeRow($sheet, $row, $data, $bold=false, $bg=null, $color=null)
+    {
+        $cols = range('A', chr(ord('A') + count($data) - 1));
+        foreach ($data as $i => $val) {
+            $cell = $cols[$i] . $row;
+            $sheet->setCellValue($cell, $val ?? '');
+        }
+        $range = 'A'.$row.':'.$cols[count($data)-1].$row;
+        $this->styleRow($sheet, $range, $bold, $bg, $color);
+    }
+
+    private function styleRow($sheet, $range, $bold=false, $bg=null, $color=null)
+    {
+        $style = $sheet->getStyle($range);
+        $style->getAlignment()
+              ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+              ->setVertical(Alignment::VERTICAL_CENTER);
+        $style->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)
+              ->getColor()->setARGB('FFE2E8F0');
+        if ($bold) $style->getFont()->setBold(true);
+        if ($bg) $style->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB($bg);
+        if ($color) $style->getFont()->getColor()->setARGB($color);
+    }
+
+    private function styleHeader($sheet, $range, $size=11, $bg=null, $color=null)
+    {
+        $style = $sheet->getStyle($range);
+        $style->getFont()->setBold(true)->setSize($size);
+        $style->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)
+              ->setVertical(Alignment::VERTICAL_CENTER);
+        if ($bg) $style->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB($bg);
+        if ($color) $style->getFont()->getColor()->setARGB($color);
+    }
+
+    private function styleCenter($sheet, $range)
+    {
+        $sheet->getStyle($range)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+    }
+}

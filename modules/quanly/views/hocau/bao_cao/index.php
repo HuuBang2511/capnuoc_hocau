@@ -206,9 +206,7 @@ $this->title = 'Báo cáo nội bộ hàng ngày';
 
 <script>
 const API_URL  = '<?= Url::to(['/site/iot-api']) ?>';
-const XUAT_URL = '<?= Url::to(['nhat-ky/xuat-bao-cao-ngay']) ?>';
-const CLN_URL  = '<?= Url::to(['nhat-ky/api-cln']) ?>';
-const SCADA_KEY = '<?= Yii::$app->params['scada_key'] ?? 'SCADA_HOCAU_2024_SECRET_KEY' ?>';
+const SCADA_KEY = 'SCADA_HOCAU_2024_SECRET_KEY';
 
 let currentNgay = '<?= date('Y-m-d') ?>';
 
@@ -228,34 +226,75 @@ function loadPreview(ngay) {
 }
 
 function formatNgayVN(y) {
-    const d = new Date(y);
+    // y co the la yyyy-MM-dd hoac dd/MM/yyyy
+    let d;
+    if (y && y.includes('-')) {
+        d = new Date(y + 'T00:00:00'); // tranh timezone shift
+    } else if (y && y.includes('/')) {
+        const p = y.split('/');
+        d = new Date(p[2]+'-'+p[1]+'-'+p[0]+'T00:00:00');
+    } else {
+        return y;
+    }
     const thu = ['CN','T2','T3','T4','T5','T6','T7'][d.getDay()];
     return `${thu}, ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
 }
 
+// Chuyen bat ky format ngay nao -> yyyy-MM-dd
+function toIso(ngay) {
+    if (!ngay) return '';
+    if (/^\d{4}-\d{2}-\d{2}/.test(ngay)) return ngay.slice(0,10); // ISO
+    if (/^\d{2}\/\d{2}\/\d{4}/.test(ngay)) {                      // dd/MM/yyyy
+        const p = ngay.split('/');
+        return p[2] + '-' + p[1] + '-' + p[0];
+    }
+    return ngay;
+}
+
 function loadScada(ngay) {
-    const url = `/iot_api.php?action=sanluong&loai=thatthoat&key=${SCADA_KEY}`;
+    const url = '/iot_api.php?action=sanluong&loai=thatthoat&key=' + SCADA_KEY;
+    const ngayIso = toIso(ngay); // yyyy-MM-dd
+    const stEl = document.getElementById('st-scada');
+    stEl.textContent = 'Đang tải...';
+    stEl.style.color = '#94a3b8';
+
     fetch(url)
         .then(r => r.json())
         .then(data => {
-            const ngay_vn = (() => {
-                const d = new Date(ngay);
-                return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-            })();
-            const day = (data.days||[]).find(d => d.ngay === ngay_vn);
-            if (day) {
-                document.getElementById('st-scada').textContent = '✓ Có dữ liệu';
-                document.getElementById('st-scada').style.color = '#16a34a';
-                renderSanLuong(day);
-            } else {
-                document.getElementById('st-scada').textContent = '— Chưa có';
-                document.getElementById('st-scada').style.color = '#f59e0b';
+            const days = (data.days || []).filter(d => d && d.ngay);
+            if (days.length === 0) {
+                stEl.textContent = '— Không có dữ liệu';
+                stEl.style.color = '#94a3b8';
                 renderSanLuong(null);
+                return;
             }
+
+            // Normalize tat ca ngay trong days sang ISO de so sanh
+            const daysNorm = days.map(d => ({ ...d, _iso: toIso(d.ngay) }));
+
+            // Tim chinh xac ngay yeu cau
+            let day = daysNorm.find(d => d._iso === ngayIso);
+
+            if (day) {
+                stEl.textContent = '✓ Có dữ liệu';
+                stEl.style.color = '#16a34a';
+            } else {
+                // Khong co ngay hom nay -> fallback ngay moi nhat
+                day = daysNorm[daysNorm.length - 1];
+                const lbl = formatNgayVN(day._iso);
+                stEl.textContent = '↩ DailyReport: ' + lbl;
+                stEl.style.color = '#f59e0b';
+                // Cap nhat tieu de preview
+                const pv = document.getElementById('preview-ngay');
+                if (pv) pv.textContent = lbl + ' (mới nhất có dữ liệu)';
+            }
+            renderSanLuong(day);
         })
-        .catch(() => {
-            document.getElementById('st-scada').textContent = '✗ Lỗi kết nối SCADA';
-            document.getElementById('st-scada').style.color = '#ef4444';
+        .catch(err => {
+            console.error('SCADA fetch error:', err);
+            stEl.textContent = '✗ Lỗi kết nối SCADA';
+            stEl.style.color = '#ef4444';
+            renderSanLuong(null);
         });
 }
 
@@ -288,7 +327,7 @@ function renderSanLuong(d) {
 }
 
 function loadCLN(ngay) {
-    fetch(`<?= Url::to(['nhat-ky/api-cln']) ?>?ngay=${ngay}`)
+    fetch(`/quanly/nhat-ky/api-cln?ngay=${ngay}`)
         .then(r => r.json())
         .then(data => {
             const count = data.count || 0;
@@ -359,7 +398,7 @@ function xuatExcel() {
     const btn = event.target;
     btn.textContent = '⏳ Đang tạo file...';
     btn.disabled = true;
-    window.location.href = `<?= Url::to(['nhat-ky/xuat-bao-cao-ngay']) ?>?ngay=${ngay}`;
+    window.location.href = `/quanly/nhat-ky/xuat-bao-cao-ngay?ngay=${ngay}`;
     setTimeout(() => {
         btn.textContent = '⬇ Xuất báo cáo Excel';
         btn.disabled = false;

@@ -206,9 +206,7 @@ $this->title = 'Báo cáo nội bộ hàng ngày';
 
 <script>
 const API_URL  = '<?= Url::to(['/site/iot-api']) ?>';
-const XUAT_URL = '<?= Url::to(['nhat-ky/xuat-bao-cao-ngay']) ?>';
-const CLN_URL  = '<?= Url::to(['nhat-ky/api-cln']) ?>';
-const SCADA_KEY = '<?= Yii::$app->params['scada_key'] ?? 'SCADA_HOCAU_2024_SECRET_KEY' ?>';
+const SCADA_KEY = 'SCADA_HOCAU_2024_SECRET_KEY';
 
 let currentNgay = '<?= date('Y-m-d') ?>';
 
@@ -329,7 +327,7 @@ function renderSanLuong(d) {
 }
 
 function loadCLN(ngay) {
-    fetch(`<?= Url::to(['nhat-ky/api-cln']) ?>?ngay=${ngay}`)
+    fetch(`/quanly/nhat-ky/api-cln?ngay=${ngay}`)
         .then(r => r.json())
         .then(data => {
             const count = data.count || 0;
@@ -400,7 +398,7 @@ function xuatExcel() {
     const btn = event.target;
     btn.textContent = '⏳ Đang tạo file...';
     btn.disabled = true;
-    window.location.href = `<?= Url::to(['nhat-ky/xuat-bao-cao-ngay']) ?>?ngay=${ngay}`;
+    window.location.href = `/quanly/nhat-ky/xuat-bao-cao-ngay?ngay=${ngay}`;
     setTimeout(() => {
         btn.textContent = '⬇ Xuất báo cáo Excel';
         btn.disabled = false;

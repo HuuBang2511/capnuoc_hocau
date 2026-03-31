@@ -82,7 +82,7 @@ class BaoCaoNgayExcel
         $ca_ngay = $this->getGiaoCa(1);
         $ca_dem  = $this->getGiaoCa(2);
 
-        $sl_cap_ngay = $ca_ngay?->getSanLuongCap() ?? ($s['nuoc_cap']   ?? 0) / 2;
+        $sl_cap_ngay = ($ca_ngay !== null ? $ca_ngay->getSanLuongCap() : null) ?? (($s['nuoc_cap'] ?? 0) / 2);
         $sl_tho_ngay = ($ca_ngay && $ca_ngay->nuoc_tho_cuoi) ?
                         $ca_ngay->nuoc_tho_cuoi - $ca_ngay->nuoc_tho_dau :
                         ($s['nuoc_tho'] ?? 0) / 2;
@@ -106,9 +106,9 @@ class BaoCaoNgayExcel
         $this->writeRow($sheet, $row, ['','Hóa chất sử dụng','','Ca Ngày','Ca Đêm','Tổng','',''], true, self::C_SUBHEAD, 'FFFFFFFF');
         $row++;
         $hc = [
-            ['1','PAC','kg', $ca_ngay?->pac_kg??'—', $ca_dem?->pac_kg??'—'],
-            ['2','Chlorine','kg', $ca_ngay?->chlorine_kg??'—', $ca_dem?->chlorine_kg??'—'],
-            ['3','Polymer','kg', $ca_ngay?->polymer_kg??'—', $ca_dem?->polymer_kg??'—'],
+            ['1','PAC','kg', isset($ca_ngay) && isset($ca_ngay->pac_kg) ? $ca_ngay->pac_kg : '—', isset($ca_dem) && isset($ca_dem->pac_kg) ? $ca_dem->pac_kg : '—'],
+            ['2','Chlorine','kg', isset($ca_ngay) && isset($ca_ngay->chlorine_kg) ? $ca_ngay->chlorine_kg : '—', isset($ca_dem) && isset($ca_dem->chlorine_kg) ? $ca_dem->chlorine_kg : '—'],
+            ['3','Polymer','kg', isset($ca_ngay) && isset($ca_ngay->polymer_kg) ? $ca_ngay->polymer_kg : '—', isset($ca_dem) && isset($ca_dem->polymer_kg) ? $ca_dem->polymer_kg : '—'],
         ];
         foreach ($hc as $i => $d) {
             $tong = is_numeric($d[3]) && is_numeric($d[4]) ? $d[3]+$d[4] : '—';
@@ -219,10 +219,10 @@ class BaoCaoNgayExcel
             $row++;
 
             $items = [
-                ['Nước cấp (m³)', $gc?->nuoc_cap_dau??'—', $gc?->nuoc_cap_cuoi??'—', $gc?->getSanLuongCap()??'—'],
-                ['Nước thô (m³)', $gc?->nuoc_tho_dau??'—', $gc?->nuoc_tho_cuoi??'—', '—'],
-                ['Điện NM (KWh)', $gc?->dien_nha_may_dau??'—', $gc?->dien_nha_may_cuoi??'—',
-                 ($gc&&$gc->dien_nha_may_cuoi)?$gc->dien_nha_may_cuoi-$gc->dien_nha_may_dau:'—'],
+                ['Nước cấp (m³)', isset($gc) && isset($gc->nuoc_cap_dau) ? $gc->nuoc_cap_dau : '—', isset($gc) && isset($gc->nuoc_cap_cuoi) ? $gc->nuoc_cap_cuoi : '—', isset($gc) && method_exists($gc, 'getSanLuongCap') && $gc->getSanLuongCap() !== null ? $gc->getSanLuongCap() : '—'],
+                ['Nước thô (m³)', isset($gc) && isset($gc->nuoc_tho_dau) ? $gc->nuoc_tho_dau : '—', isset($gc) && isset($gc->nuoc_tho_cuoi) ? $gc->nuoc_tho_cuoi : '—', '—'],
+                ['Điện NM (KWh)', isset($gc) && isset($gc->dien_nha_may_dau) ? $gc->dien_nha_may_dau : '—', isset($gc) && isset($gc->dien_nha_may_cuoi) ? $gc->dien_nha_may_cuoi : '—',
+                 (isset($gc) && isset($gc->dien_nha_may_cuoi) && isset($gc->dien_nha_may_dau)) ? $gc->dien_nha_may_cuoi - $gc->dien_nha_may_dau : '—'],
             ];
             $sheet->setCellValue("A{$row}", 'Chỉ tiêu');
             $sheet->setCellValue("B{$row}", 'Đầu ca');
@@ -239,27 +239,27 @@ class BaoCaoNgayExcel
 
             // Bơm + hóa chất
             $row++;
-            $sheet->setCellValue("A{$row}", 'Bơm NT: ' . ($gc?->bom_nt_chay??'—')
-                . ' | Bơm TH: ' . ($gc?->bom_th_chay??'—'));
+            $sheet->setCellValue("A{$row}", 'Bơm NT: ' . (isset($gc) && isset($gc->bom_nt_chay) ? $gc->bom_nt_chay : '—')
+                . ' | Bơm TH: ' . (isset($gc) && isset($gc->bom_th_chay) ? $gc->bom_th_chay : '—'));
             $sheet->mergeCells("A{$row}:D{$row}"); $row++;
-            $sheet->setCellValue("A{$row}", 'PAC: ' . ($gc?->pac_kg??'—') . ' kg'
-                . ' | Chlorine: ' . ($gc?->chlorine_kg??'—') . ' kg'
-                . ' | Polymer: ' . ($gc?->polymer_kg??'—') . ' kg');
+            $sheet->setCellValue("A{$row}", 'PAC: ' . (isset($gc) && isset($gc->pac_kg) ? $gc->pac_kg : '—') . ' kg'
+                . ' | Chlorine: ' . (isset($gc) && isset($gc->chlorine_kg) ? $gc->chlorine_kg : '—') . ' kg'
+                . ' | Polymer: ' . (isset($gc) && isset($gc->polymer_kg) ? $gc->polymer_kg : '—') . ' kg');
             $sheet->mergeCells("A{$row}:D{$row}"); $row++;
 
-            if ($gc?->su_co) {
+            if (isset($gc) && isset($gc->su_co) && $gc->su_co) {
                 $sheet->setCellValue("A{$row}", '⚠ Sự cố: ' . $gc->su_co);
                 $sheet->mergeCells("A{$row}:D{$row}");
                 $sheet->getStyle("A{$row}")->getFont()->getColor()->setARGB('FFDC2626');
                 $row++;
-                if ($gc->bien_phap) {
+                if (isset($gc->bien_phap) && $gc->bien_phap) {
                     $sheet->setCellValue("A{$row}", '→ Biện pháp: ' . $gc->bien_phap);
                     $sheet->mergeCells("A{$row}:D{$row}"); $row++;
                 }
             }
 
-            $sheet->setCellValue("A{$row}", 'NV giao: ' . ($gc?->nhan_vien_giao??'—')
-                . '   |   NV nhận: ' . ($gc?->nhan_vien_nhan??'—'));
+            $sheet->setCellValue("A{$row}", 'NV giao: ' . (isset($gc) && isset($gc->nhan_vien_giao) ? $gc->nhan_vien_giao : '—')
+                . '   |   NV nhận: ' . (isset($gc) && isset($gc->nhan_vien_nhan) ? $gc->nhan_vien_nhan : '—'));
             $sheet->mergeCells("A{$row}:D{$row}"); $row += 2;
         }
 

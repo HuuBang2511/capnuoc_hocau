@@ -242,48 +242,61 @@ function formatNgayVN(y) {
     return `${thu}, ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
 }
 
+// Chuyen bat ky format ngay nao -> yyyy-MM-dd
 function toIso(ngay) {
-    // ngay co the la yyyy-MM-dd hoac dd/MM/yyyy
     if (!ngay) return '';
-    if (ngay.includes('-')) return ngay; // da la ISO
-    const p = ngay.split('/');
-    return p[2] + '-' + p[1] + '-' + p[0];
+    if (/^\d{4}-\d{2}-\d{2}/.test(ngay)) return ngay.slice(0,10); // ISO
+    if (/^\d{2}\/\d{2}\/\d{4}/.test(ngay)) {                      // dd/MM/yyyy
+        const p = ngay.split('/');
+        return p[2] + '-' + p[1] + '-' + p[0];
+    }
+    return ngay;
 }
 
 function loadScada(ngay) {
-    const url = `/iot_api.php?action=sanluong&loai=thatthoat&key=${SCADA_KEY}`;
+    const url = '/iot_api.php?action=sanluong&loai=thatthoat&key=' + SCADA_KEY;
+    const ngayIso = toIso(ngay); // yyyy-MM-dd
+    const stEl = document.getElementById('st-scada');
+    stEl.textContent = 'Đang tải...';
+    stEl.style.color = '#94a3b8';
+
     fetch(url)
         .then(r => r.json())
         .then(data => {
-            const days = data.days || [];
-            // Tim ngay yeu cau (so sanh theo ISO yyyy-MM-dd)
-            const ngayIso = ngay.includes('-') ? ngay :
-                (() => { const p=ngay.split('/'); return p[2]+'-'+p[1]+'-'+p[0]; })();
+            const days = (data.days || []).filter(d => d && d.ngay);
+            if (days.length === 0) {
+                stEl.textContent = '— Không có dữ liệu';
+                stEl.style.color = '#94a3b8';
+                renderSanLuong(null);
+                return;
+            }
 
-            let day = days.find(d => toIso(d.ngay) === ngayIso);
+            // Normalize tat ca ngay trong days sang ISO de so sanh
+            const daysNorm = days.map(d => ({ ...d, _iso: toIso(d.ngay) }));
 
-            // Neu khong co ngay hom nay (DailyReport chua cap nhat)
-            // -> hien ngay moi nhat co trong data
-            const stEl  = document.getElementById('st-scada');
-            if (!day && days.length > 0) {
-                day = days[days.length - 1];
-                const latestNgay = day.ngay;
-                stEl.textContent = `↩ Mới nhất: ${latestNgay}`;
-                stEl.style.color = '#f59e0b';
-                document.getElementById('preview-ngay').textContent +=
-                    ` (DailyReport mới nhất: ${latestNgay})`;
-            } else if (day) {
+            // Tim chinh xac ngay yeu cau
+            let day = daysNorm.find(d => d._iso === ngayIso);
+
+            if (day) {
                 stEl.textContent = '✓ Có dữ liệu';
                 stEl.style.color = '#16a34a';
             } else {
-                stEl.textContent = '— Chưa có';
-                stEl.style.color = '#94a3b8';
+                // Khong co ngay hom nay -> fallback ngay moi nhat
+                day = daysNorm[daysNorm.length - 1];
+                const lbl = formatNgayVN(day._iso);
+                stEl.textContent = '↩ DailyReport: ' + lbl;
+                stEl.style.color = '#f59e0b';
+                // Cap nhat tieu de preview
+                const pv = document.getElementById('preview-ngay');
+                if (pv) pv.textContent = lbl + ' (mới nhất có dữ liệu)';
             }
-            renderSanLuong(day || null);
+            renderSanLuong(day);
         })
-        .catch(() => {
-            document.getElementById('st-scada').textContent = '✗ Lỗi kết nối SCADA';
-            document.getElementById('st-scada').style.color = '#ef4444';
+        .catch(err => {
+            console.error('SCADA fetch error:', err);
+            stEl.textContent = '✗ Lỗi kết nối SCADA';
+            stEl.style.color = '#ef4444';
+            renderSanLuong(null);
         });
 }
 

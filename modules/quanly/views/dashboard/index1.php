@@ -422,6 +422,10 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
                 <button class="tt-days-btn" id="tt-refresh-btn" onclick="window.loadTTTable(window.ttCurrentDays, document.querySelector('.tt-days-btn.active'))" title="Làm mới">
                     <i class="fa-solid fa-rotate-right"></i>
                 </button>
+                <a href="/quanly/nhat-ky/bao-cao" class="tt-report-btn" title="Báo cáo hàng ngày">
+                    <i class="fa-solid fa-file-excel"></i>
+                    <span>Báo cáo</span>
+                </a>
             </div>
         </div>
         <div id="tt-content">

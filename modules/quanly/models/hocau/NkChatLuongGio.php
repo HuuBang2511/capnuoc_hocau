@@ -1,8 +1,8 @@
 <?php
 namespace app\modules\quanly\models\hocau;
-use yii\db\ActiveRecord;
+use app\modules\quanly\base\QuanlyBaseModel;
 
-class NkChatLuongGio extends ActiveRecord
+class NkChatLuongGio extends QuanlyBaseModel
 {
     const QCVN = [
         'ns_ph'  => ['min'=>6.5,  'max'=>8.5,  'unit'=>''],
@@ -11,9 +11,6 @@ class NkChatLuongGio extends ActiveRecord
     ];
 
     public static function tableName() { return 'nk_chat_luong_gio'; }
-    // Su dung connection 'db' mac dinh (xem config/db.php)
-    // Neu PostgreSQL dung connection khac, sua lai o day
-    // public static function getDb() { return \Yii::$app->get('ten_connection'); }
 
     public function rules()
     {

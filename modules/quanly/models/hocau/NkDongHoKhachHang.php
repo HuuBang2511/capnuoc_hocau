@@ -39,7 +39,8 @@ class NkDongHoKhachHang extends QuanlyBaseModel
     public function getChannelDauVaoArr(): array
     {
         $arr = json_decode($this->channel_dau_vao ?? '[]', true);
-        return is_array($arr) ? array_map('intval', $arr) : [];
+        // Giu nguyen string (ho tro ca so '60007' lan chuoi 'NT5_D200')
+        return is_array($arr) ? array_values(array_filter(array_map('strval', $arr))) : [];
     }
 
     /**
@@ -48,7 +49,7 @@ class NkDongHoKhachHang extends QuanlyBaseModel
     public function getChannelDauRaArr(): array
     {
         $arr = json_decode($this->channel_dau_ra ?? '[]', true);
-        return is_array($arr) ? array_map('intval', $arr) : [];
+        return is_array($arr) ? array_values(array_filter(array_map('strval', $arr))) : [];
     }
 
     /**

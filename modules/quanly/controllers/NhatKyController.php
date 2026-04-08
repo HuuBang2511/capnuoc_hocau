@@ -179,8 +179,15 @@ class NhatKyController extends QuanlyBaseController
 
         $model->ten_kh          = $post['ten_kh'] ?? '';
         $model->thu_tu          = (int)($post['thu_tu'] ?? 0);
-        $model->channel_dau_vao = json_encode(array_values(array_map('intval', $dvao)));
-        $model->channel_dau_ra  = json_encode(array_values(array_map('intval', $dra)));
+        // Sanitize: cho phep so (60007) va chuoi (NT5_D200) — chi loai ky tu nguy hiem
+        $sanitize = function($ids) {
+            return array_values(array_filter(array_map(function($id) {
+                $id = trim($id);
+                return preg_match('/^[a-zA-Z0-9_]+$/', $id) ? $id : null;
+            }, $ids)));
+        };
+        $model->channel_dau_vao = json_encode($sanitize($dvao));
+        $model->channel_dau_ra  = json_encode($sanitize($dra));
         $model->don_vi          = $post['don_vi'] ?? 'm³';
         $model->ghi_chu         = $post['ghi_chu'] ?? null;
         $model->active          = (bool)($post['active'] ?? true);
@@ -360,7 +367,9 @@ class NhatKyController extends QuanlyBaseController
         // data: { "60007": { "2026-04-01": 1234, ... }, ... }
         $result = [];
         foreach (($data['data'] ?? []) as $channelId => $ngayData) {
-            $result[(int)$channelId] = $ngayData;
+            // Giu nguyen string key de khop voi NkDongHoKhachHang::getChannelDauVaoArr()
+            // Ho tro ca so (60007) lan chuoi (NT5_D200)
+            $result[(string)$channelId] = $ngayData;
         }
         return $result;
     }

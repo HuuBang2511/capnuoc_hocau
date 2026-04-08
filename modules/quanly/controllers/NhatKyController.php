@@ -338,25 +338,26 @@ class NhatKyController extends QuanlyBaseController
      */
     private function fetchScadaSanLuong(array $channelIds, string $tu_ngay, string $den_ngay): array
     {
+        // Goi thang Python gateway qua LAN noi bo
+        // Tranh self-loop khi PHP tren 192.168.31.11 goi chinh no qua iot_api.php
         $params = http_build_query([
-            'action'    => 'sanluong_dong_ho',
-            'key'       => 'SCADA_HOCAU_2024_SECRET_KEY',
-            'channels'  => implode(',', $channelIds),
-            'tu_ngay'   => $tu_ngay,
-            'den_ngay'  => $den_ngay,
+            'key'      => 'SCADA_HOCAU_2024_SECRET_KEY',
+            'channels' => implode(',', $channelIds),
+            'tu_ngay'  => $tu_ngay,
+            'den_ngay' => $den_ngay,
         ]);
 
-        $ctx = stream_context_create(['http'=>['timeout'=>10]]);
+        $ctx  = stream_context_create(['http' => ['timeout' => 15]]);
         $json = @file_get_contents(
-            'http://192.168.31.11/iot_api.php?' . $params, false, $ctx
+            'http://192.168.31.6:5001/sanluong_dong_ho?' . $params, false, $ctx
         );
 
         if (!$json) return [];
 
         $data = json_decode($json, true);
-        if (!isset($data['data'])) return [];
+        if (empty($data['success']) || !isset($data['data'])) return [];
 
-        // Format trả về: { "data": { "60007": { "2026-03-01": 1234, ... }, ... } }
+        // data: { "60007": { "2026-04-01": 1234, ... }, ... }
         $result = [];
         foreach (($data['data'] ?? []) as $channelId => $ngayData) {
             $result[(int)$channelId] = $ngayData;

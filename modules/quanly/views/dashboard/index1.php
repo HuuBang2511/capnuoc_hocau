@@ -426,6 +426,10 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
                     <i class="fa-solid fa-file-excel"></i>
                     <span>Báo cáo</span>
                 </a>
+                <a href="/quanly/nhat-ky/san-luong-dong-ho" class="tt-report-btn green" title="Sản lượng theo đồng hồ khách hàng">
+                    <i class="fa-solid fa-gauge-high"></i>
+                    <span>Đồng hồ KH</span>
+                </a>
             </div>
         </div>
         <div id="tt-content">
@@ -512,7 +516,22 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
         display:flex; align-items:center; justify-content:center;
         font-size:.85rem; color:#fff; flex-shrink:0;
     }
-    .tt-controls { display:flex; align-items:center; gap:8px; }
+    .tt-controls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .tt-report-btn {
+        display:inline-flex; align-items:center; gap:6px;
+        padding:5px 12px; border-radius:7px; font-size:.75rem; font-weight:600;
+        border:1px solid rgba(54,153,255,.25); background:transparent;
+        color:#5a82a8; cursor:pointer; transition:all .2s; text-decoration:none;
+    }
+    .tt-report-btn:hover {
+        background:rgba(54,153,255,.18); border-color:#3699ff; color:#7ab8ff;
+    }
+    .tt-report-btn.green {
+        border-color:rgba(27,197,189,.3); color:#1bc5bd;
+    }
+    .tt-report-btn.green:hover {
+        background:rgba(27,197,189,.15); border-color:#1bc5bd; color:#1bc5bd;
+    }
     .tt-days-btn {
         padding:5px 12px; border-radius:7px; font-size:.75rem; font-weight:600;
         border:1px solid rgba(54,153,255,.25); background:transparent;

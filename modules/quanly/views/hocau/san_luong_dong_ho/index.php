@@ -157,6 +157,12 @@ function renderTable(data) {
     html += '</tr></tfoot></table></div>';
 
     document.getElementById('sl-content').innerHTML = html;
+
+    // Tren mobile: tu scroll ngang ve cot ngay gan nhat (phai man hinh)
+    requestAnimationFrame(() => {
+        const wrap = document.querySelector('.sl-table-wrap');
+        if (wrap) wrap.scrollLeft = wrap.scrollWidth;
+    });
 }
 
 function xuatExcel() {

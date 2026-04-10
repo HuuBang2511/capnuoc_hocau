@@ -237,6 +237,32 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
         </button>
     </div>
 
+    <!-- ══════════════════════════════════════════════════════════════
+         BẢNG THẤT THOÁT NƯỚC THEO NGÀY
+    ══════════════════════════════════════════════════════════════════ -->
+    <div class="tt-section">
+        <div class="tt-header">
+            <h4 class="tt-title">
+                <span class="icon-badge"><i class="fa-solid fa-droplet-slash"></i></span>
+                Bảng Theo Dõi Sản Lượng & Thất Thoát Nước
+            </h4>
+            <div class="tt-controls">
+                <input type="date" id="tt-date-from" class="tt-date-input" title="Từ ngày">
+                <span style="color:#94a3b8;font-size:.75rem;">→</span>
+                <input type="date" id="tt-date-to" class="tt-date-input" title="Đến ngày" value="<?= date('Y-m-d') ?>">
+                <button class="tt-days-btn" onclick="loadTTTableRange()" title="Xem theo ngày chọn">
+                    <i class="fa-solid fa-search"></i>
+                </button>
+                <a href="/quanly/nhat-ky/san-luong-dong-ho" class="tt-report-btn green" title="Sản lượng đồng hồ KH">
+                    <i class="fa-solid fa-gauge-high"></i><span>Đồng hồ KH</span>
+                </a>
+            </div>
+        </div>
+        <div id="tt-content">
+            <div class="tt-loading"><div class="sl-spinner"></div> Đang tải...</div>
+        </div>
+    </div>
+
     <!-- ══ HÀNG 1: KPI 5 đối tượng cấp cao ══════════════════════ -->
     <div class="kpi-row">
         <a href="<?= $urlNhaMay ?>" class="kpi-card border-blue">
@@ -354,32 +380,6 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
                 <div class="panel-header"><h5 class="panel-title"><i class="fa-solid fa-link text-dark"></i> Loại Mối nối</h5></div>
                 <div class="chart-wrapper"><canvas id="moinoiChart"></canvas></div>
             </div>
-        </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════════════════════════
-         BẢNG THẤT THOÁT NƯỚC THEO NGÀY
-    ══════════════════════════════════════════════════════════════════ -->
-    <div class="tt-section">
-        <div class="tt-header">
-            <h4 class="tt-title">
-                <span class="icon-badge"><i class="fa-solid fa-droplet-slash"></i></span>
-                Bảng Theo Dõi Sản Lượng & Thất Thoát Nước
-            </h4>
-            <div class="tt-controls">
-                <input type="date" id="tt-date-from" class="tt-date-input" title="Từ ngày">
-                <span style="color:#94a3b8;font-size:.75rem;">→</span>
-                <input type="date" id="tt-date-to" class="tt-date-input" title="Đến ngày" value="<?= date('Y-m-d') ?>">
-                <button class="tt-days-btn" onclick="loadTTTableRange()" title="Xem theo ngày chọn">
-                    <i class="fa-solid fa-search"></i>
-                </button>
-                <a href="/quanly/nhat-ky/san-luong-dong-ho" class="tt-report-btn green" title="Sản lượng đồng hồ KH">
-                    <i class="fa-solid fa-gauge-high"></i><span>Đồng hồ KH</span>
-                </a>
-            </div>
-        </div>
-        <div id="tt-content">
-            <div class="tt-loading"><div class="sl-spinner"></div> Đang tải...</div>
         </div>
     </div>
 

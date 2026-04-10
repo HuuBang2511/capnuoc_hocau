@@ -16,6 +16,7 @@ $this->title = 'Báo cáo sản lượng theo đồng hồ';
 .btn-view  { background:#3b82f6; color:#fff; }
 .btn-excel { background:#16a34a; color:#fff; }
 .btn-cfg   { background:#f1f5f9; color:#475569; border:1px solid #e2e8f0 !important; }
+.btn-back  { background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; margin-left:auto; }
 .sl-loading { text-align:center; padding:40px; color:#94a3b8; font-size:.9rem; }
 .sl-table-wrap { overflow-x:auto; }
 table.sl-tbl { border-collapse:collapse; font-size:.78rem; width:100%; }
@@ -54,6 +55,7 @@ table.sl-tbl tfoot td.col-kh { background:#2d6099; }
         <button class="btn-view" onclick="loadData()">🔍 Xem</button>
         <button class="btn-excel" onclick="xuatExcel()">📥 Xuất Excel</button>
         <button class="btn-cfg" onclick="location.href='<?= Url::to(['nhat-ky/dong-ho-config']) ?>'">⚙️ Cấu hình</button>
+        <button class="btn-back" onclick="history.back()">← Quay lại</button>
     </div>
 
     <!-- Bảng dữ liệu -->

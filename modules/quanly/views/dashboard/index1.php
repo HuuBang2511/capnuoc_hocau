@@ -77,19 +77,19 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
 
     /* ── SẢN LƯỢNG SECTION — DARK THEME ────────────────────────── */
     .sl-section {
-        background:linear-gradient(135deg, #0f1e36 0%, #1a3354 100%);
+        background:#ffffff;
         border-radius:16px; padding:1.75rem; margin-bottom:1.5rem;
-        border:1px solid var(--sl-border);
-        box-shadow:0 20px 60px rgba(0,0,0,.25);
+        border:1px solid #e2e8f0;
+        box-shadow:0 0 20px 0 rgba(76,87,125,.08);
     }
     .sl-section-header {
         display:flex; flex-wrap:wrap; gap:10px;
         justify-content:space-between; align-items:flex-start;
         margin-bottom:1.5rem; padding-bottom:1rem;
-        border-bottom:1px solid rgba(54,153,255,.15);
+        border-bottom:1px solid #e2e8f0;
     }
     .sl-section-title {
-        font-size:1rem; font-weight:700; color:#fff;
+        font-size:1rem; font-weight:700; color:#181c32;
         display:flex; align-items:center; gap:10px; margin:0;
         flex-shrink:0;
     }
@@ -103,18 +103,18 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
     /* Tab switcher - wrap tren mobile */
     .sl-tabs { display:flex; flex-wrap:wrap; gap:5px; }
     .sl-tab {
-        padding:6px 14px; border-radius:8px; border:1px solid rgba(54,153,255,.25);
-        background:transparent; color:#5a82a8; font-size:.78rem; font-weight:600;
+        padding:6px 14px; border-radius:8px; border:1px solid #e2e8f0;
+        background:#f8fafc; color:#64748b; font-size:.78rem; font-weight:600;
         cursor:pointer; transition:all .2s; letter-spacing:.3px;
     }
     .sl-tab:hover, .sl-tab.active {
-        background:rgba(54,153,255,.18); border-color:var(--sl-blue); color:#7ab8ff;
+        background:#3699ff; border-color:#3699ff; color:#fff;
     }
 
     /* KPI mini cards trong section sản lượng */
     .sl-kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:1.5rem; }
     .sl-kpi {
-        background:rgba(255,255,255,.04); border:1px solid rgba(54,153,255,.12);
+        background:#f8fafc; border:1px solid #e2e8f0;
         border-radius:10px; padding:14px 16px; position:relative; overflow:hidden;
         transition:all .2s;
     }
@@ -122,10 +122,10 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
         content:''; position:absolute; top:0; left:0; right:0; height:3px;
         background:var(--kpi-color, var(--sl-blue));
     }
-    .sl-kpi:hover { background:rgba(54,153,255,.08); border-color:rgba(54,153,255,.3); }
-    .sl-kpi-label { font-size:.7rem; color:#4d6d8a; font-weight:600; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px; }
-    .sl-kpi-val   { font-size:1.55rem; font-weight:800; color:#fff; line-height:1.1; }
-    .sl-kpi-unit  { font-size:.72rem; color:#3d6080; margin-left:3px; font-weight:400; }
+    .sl-kpi:hover { background:#eff6ff; border-color:#93c5fd; }
+    .sl-kpi-label { font-size:.7rem; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px; }
+    .sl-kpi-val   { font-size:1.55rem; font-weight:800; color:#181c32; line-height:1.1; }
+    .sl-kpi-unit  { font-size:.72rem; color:#94a3b8; margin-left:3px; font-weight:400; }
     .sl-kpi-trend {
         font-size:.72rem; margin-top:5px; display:flex; align-items:center; gap:4px;
     }
@@ -136,11 +136,11 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
     .sl-chart-grid { display:grid; grid-template-columns:2fr 1fr; gap:14px; margin-bottom:14px; }
     .sl-chart-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
     .sl-card {
-        background:rgba(255,255,255,.04); border:1px solid rgba(54,153,255,.1);
+        background:#f8fafc; border:1px solid #e2e8f0;
         border-radius:12px; padding:16px; display:flex; flex-direction:column;
     }
     .sl-card-title {
-        font-size:.78rem; font-weight:700; color:#7ab8ff; text-transform:uppercase;
+        font-size:.78rem; font-weight:700; color:#3699ff; text-transform:uppercase;
         letter-spacing:.5px; margin-bottom:12px; display:flex; align-items:center; gap:7px;
     }
     .sl-card-title span.dot {
@@ -153,13 +153,13 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
     .rt-table { width:100%; border-collapse:collapse; font-size:.8rem; }
     .rt-table th {
         padding:7px 10px; text-align:left;
-        color:#3d5a78; font-weight:700; font-size:.68rem;
+        color:#64748b; font-weight:700; font-size:.68rem;
         text-transform:uppercase; letter-spacing:.5px;
         border-bottom:1px solid rgba(54,153,255,.12);
     }
-    .rt-table td { padding:7px 10px; border-bottom:1px solid rgba(255,255,255,.04); color:#cdd9ee; }
+    .rt-table td { padding:7px 10px; border-bottom:1px solid #f1f5f9; color:#334155; }
     .rt-table tr:last-child td { border-bottom:none; }
-    .rt-table tr:hover td { background:rgba(54,153,255,.06); }
+    .rt-table tr:hover td { background:#eff6ff; }
     .ap-badge {
         display:inline-flex; align-items:center; gap:5px;
         padding:3px 8px; border-radius:5px; font-weight:700; font-size:.75rem;
@@ -173,9 +173,9 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
     /* Loading spinner */
     .sl-loading {
         display:flex; align-items:center; justify-content:center;
-        min-height:160px; color:#3d5a78; font-size:.85rem; gap:10px;
+        min-height:160px; color:#94a3b8; font-size:.85rem; gap:10px;
     }
-    .sl-spinner { width:20px; height:20px; border:2px solid #1a2d50; border-top-color:#3699ff; border-radius:50%; animation:spin .8s linear infinite; }
+    .sl-spinner { width:20px; height:20px; border:2px solid #e2e8f0; border-top-color:#3699ff; border-radius:50%; animation:spin .8s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
 
     /* Count-up animation */
@@ -358,6 +358,32 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
     </div>
 
     <!-- ══════════════════════════════════════════════════════════════
+         BẢNG THẤT THOÁT NƯỚC THEO NGÀY
+    ══════════════════════════════════════════════════════════════════ -->
+    <div class="tt-section">
+        <div class="tt-header">
+            <h4 class="tt-title">
+                <span class="icon-badge"><i class="fa-solid fa-droplet-slash"></i></span>
+                Bảng Theo Dõi Sản Lượng & Thất Thoát Nước
+            </h4>
+            <div class="tt-controls">
+                <input type="date" id="tt-date-from" class="tt-date-input" title="Từ ngày">
+                <span style="color:#94a3b8;font-size:.75rem;">→</span>
+                <input type="date" id="tt-date-to" class="tt-date-input" title="Đến ngày" value="<?= date('Y-m-d') ?>">
+                <button class="tt-days-btn" onclick="loadTTTableRange()" title="Xem theo ngày chọn">
+                    <i class="fa-solid fa-search"></i>
+                </button>
+                <a href="/quanly/nhat-ky/san-luong-dong-ho" class="tt-report-btn green" title="Sản lượng đồng hồ KH">
+                    <i class="fa-solid fa-gauge-high"></i><span>Đồng hồ KH</span>
+                </a>
+            </div>
+        </div>
+        <div id="tt-content">
+            <div class="tt-loading"><div class="sl-spinner"></div> Đang tải...</div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
          SẢN LƯỢNG SCADA REALTIME — DARK SECTION
     ══════════════════════════════════════════════════════════════════ -->
     <div class="sl-section">
@@ -411,37 +437,6 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
         </div>
     </div>
 
-
-    <!-- ══════════════════════════════════════════════════════════════
-         BẢNG THẤT THOÁT NƯỚC THEO NGÀY
-    ══════════════════════════════════════════════════════════════════ -->
-    <div class="tt-section">
-        <div class="tt-header">
-            <h4 class="tt-title">
-                <span class="icon-badge"><i class="fa-solid fa-droplet-slash"></i></span>
-                Bảng Theo Dõi Sản Lượng & Thất Thoát Nước
-            </h4>
-            <div class="tt-controls">
-                <button class="tt-days-btn active" onclick="loadTTTable(7, this)">7 ngày</button>
-                <button class="tt-days-btn" onclick="loadTTTable(14, this)">14 ngày</button>
-                <input type="date" id="tt-date-from" class="tt-date-input" title="Từ ngày">
-                <span style="color:#3d5a78;font-size:.75rem;">→</span>
-                <input type="date" id="tt-date-to" class="tt-date-input" title="Đến ngày" value="<?= date('Y-m-d') ?>">
-                <button class="tt-days-btn" onclick="loadTTTableRange()" title="Xem theo ngày chọn">
-                    <i class="fa-solid fa-search"></i>
-                </button>
-                <button class="tt-days-btn" id="tt-refresh-btn" onclick="window.loadTTTable(window.ttCurrentDays, null)" title="Làm mới">
-                    <i class="fa-solid fa-rotate-right"></i>
-                </button>
-                <a href="/quanly/nhat-ky/san-luong-dong-ho" class="tt-report-btn green" title="Sản lượng đồng hồ KH">
-                    <i class="fa-solid fa-gauge-high"></i><span>Đồng hồ KH</span>
-                </a>
-            </div>
-        </div>
-        <div id="tt-content">
-            <div class="tt-loading"><div class="sl-spinner"></div> Đang tải...</div>
-        </div>
-    </div>
 
     <!-- ══ DANH SÁCH SỰ CỐ GẦN ĐÂY ══════════════════════════════ -->
     <div class="row">
@@ -501,19 +496,19 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
 
     /* ── BẢNG THẤT THOÁT NƯỚC ─────────────────────────────────── */
     .tt-section {
-        background:linear-gradient(135deg, #0f1e36 0%, #1a3354 100%);
+        background:#ffffff;
         border-radius:16px; padding:1.75rem; margin-bottom:1.5rem;
-        border:1px solid rgba(54,153,255,.18);
-        box-shadow:0 20px 60px rgba(0,0,0,.25);
+        border:1px solid #e2e8f0;
+        box-shadow:0 0 20px 0 rgba(76,87,125,.08);
     }
     .tt-header {
         display:flex; flex-wrap:wrap; gap:8px;
         justify-content:space-between; align-items:flex-start;
         margin-bottom:1.25rem; padding-bottom:1rem;
-        border-bottom:1px solid rgba(54,153,255,.15);
+        border-bottom:1px solid #e2e8f0;
     }
     .tt-title {
-        font-size:1.05rem; font-weight:700; color:#fff;
+        font-size:1.05rem; font-weight:700; color:#181c32;
         display:flex; align-items:center; gap:10px; margin:0;
     }
     .tt-title .icon-badge {
@@ -526,56 +521,56 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
     .tt-date-input {
         padding:4px 8px; border-radius:7px; font-size:.75rem;
         border:1px solid rgba(54,153,255,.25); background:rgba(255,255,255,.05);
-        color:#7ab8ff; outline:none; cursor:pointer; color-scheme:dark;
+        color:#334155; outline:none; cursor:pointer; color-scheme:light;
     }
     .tt-date-input:focus { border-color:#3699ff; }
     .tt-report-btn {
         display:inline-flex; align-items:center; gap:6px;
         padding:5px 12px; border-radius:7px; font-size:.75rem; font-weight:600;
-        border:1px solid rgba(54,153,255,.25); background:transparent;
-        color:#5a82a8; cursor:pointer; transition:all .2s; text-decoration:none;
+        border:1px solid #e2e8f0; background:#f8fafc;
+        color:#64748b; cursor:pointer; transition:all .2s; text-decoration:none;
     }
-    .tt-report-btn:hover { background:rgba(54,153,255,.18); border-color:#3699ff; color:#7ab8ff; }
-    .tt-report-btn.green { border-color:rgba(27,197,189,.3); color:#1bc5bd; }
-    .tt-report-btn.green:hover { background:rgba(27,197,189,.15); border-color:#1bc5bd; }
+    .tt-report-btn:hover { background:#3699ff; border-color:#3699ff; color:#fff; }
+    .tt-report-btn.green { border-color:#1bc5bd; color:#1bc5bd; background:#f0fdf9; }
+    .tt-report-btn.green:hover { background:#1bc5bd; border-color:#1bc5bd; color:#fff; }
     .tt-days-btn {
         padding:5px 12px; border-radius:7px; font-size:.75rem; font-weight:600;
-        border:1px solid rgba(54,153,255,.25); background:transparent;
-        color:#5a82a8; cursor:pointer; transition:all .2s;
+        border:1px solid #e2e8f0; background:#f8fafc;
+        color:#64748b; cursor:pointer; transition:all .2s;
     }
     .tt-days-btn.active, .tt-days-btn:hover {
-        background:rgba(54,153,255,.18); border-color:#3699ff; color:#7ab8ff;
+        background:#3699ff; border-color:#3699ff; color:#fff;
     }
     .tt-loading {
         display:flex; align-items:center; justify-content:center;
-        min-height:120px; color:#3d5a78; font-size:.85rem; gap:8px;
+        min-height:120px; color:#94a3b8; font-size:.85rem; gap:8px;
     }
     .tt-wrap { overflow-x:auto; }
     .tt-table { width:100%; border-collapse:separate; border-spacing:0; font-size:.82rem; }
     .tt-table thead tr th {
         padding:10px 14px; text-align:right; font-size:.72rem; font-weight:700;
-        color:#a0c4e8; text-transform:uppercase; letter-spacing:.5px;
-        background:#1e3a5f; border-bottom:1px solid rgba(54,153,255,.15);
+        color:#fff; text-transform:uppercase; letter-spacing:.5px;
+        background:#3699ff; border-bottom:1px solid rgba(54,153,255,.15);
         white-space:nowrap;
     }
     .tt-table thead tr th:first-child { text-align:left; }
     .tt-table tbody tr td:first-child {
-        text-align:left; font-weight:600; color:#c0d0e8;
+        text-align:left; font-weight:600; color:#334155;
         white-space:nowrap; padding:11px 14px;
-        border-right:1px solid rgba(54,153,255,.1);
-        background:rgba(10,14,28,.95);
+        border-right:1px solid #e2e8f0;
+        background:#ffffff;
         position:sticky; left:0; z-index:2;
         min-width:160px; max-width:200px;
     }
     .tt-table thead tr th:first-child {
         position:sticky; left:0; z-index:3;
-        background:rgba(10,14,28,.95);
+        background:#3699ff;
     }
     .tt-table tbody tr td {
         padding:11px 14px; text-align:right;
-        border-bottom:1px solid rgba(255,255,255,.04); color:#a0b8d8;
+        border-bottom:1px solid #f1f5f9; color:#334155;
     }
-    .tt-table tbody tr:hover td { background:rgba(54,153,255,.06); }
+    .tt-table tbody tr:hover td { background:#eff6ff; }
     .tt-table tbody tr:last-child td { border-bottom:none; }
     .tt-row-raw td:first-child { border-left:3px solid #3699ff; }
     .tt-row-cap td:first-child { border-left:3px solid #1bc5bd; }
@@ -590,9 +585,9 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
     .val-tl-ok   { color:#a3e635; }
     .val-tl-warn { color:#fbbf24; }
     .val-tl-bad  { color:#f87171; }
-    .tt-today      { background:rgba(54,153,255,.07) !important; }
-    .tt-today-head { background:rgba(54,153,255,.15) !important; color:#7ab8ff !important; }
-    .tt-sum-col    { background:rgba(54,153,255,.08) !important; color:#7ab8ff !important; }
+    .tt-today      { background:#dbeafe !important; }
+    .tt-today-head { background:#2563eb !important; color:#fff !important; }
+    .tt-sum-col    { background:#eff6ff !important; color:#3699ff !important; font-weight:700; }
 
 </style>
 

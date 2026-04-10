@@ -375,11 +375,8 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
                     <button class="sl-tab" onclick="switchSLTab('khachhang',this)">Khách Hàng</button>
                     <button class="sl-tab" onclick="switchSLTab('realtime',this)">Realtime</button>
                 </div>
-                <a href="/quanly/nhat-ky/bao-cao" class="tt-report-btn" title="Báo cáo hàng ngày" style="margin-left:4px;">
+                <a href="/quanly/nhat-ky/bao-cao" class="tt-report-btn" title="Báo cáo hàng ngày">
                     <i class="fa-solid fa-file-excel"></i><span>Báo cáo</span>
-                </a>
-                <a href="/quanly/nhat-ky/san-luong-dong-ho" class="tt-report-btn green" title="Sản lượng đồng hồ KH">
-                    <i class="fa-solid fa-gauge-high"></i><span>Đồng hồ KH</span>
                 </a>
             </div>
         </div>
@@ -436,6 +433,9 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
                 <button class="tt-days-btn" id="tt-refresh-btn" onclick="window.loadTTTable(window.ttCurrentDays, null)" title="Làm mới">
                     <i class="fa-solid fa-rotate-right"></i>
                 </button>
+                <a href="/quanly/nhat-ky/san-luong-dong-ho" class="tt-report-btn green" title="Sản lượng đồng hồ KH">
+                    <i class="fa-solid fa-gauge-high"></i><span>Đồng hồ KH</span>
+                </a>
             </div>
         </div>
         <div id="tt-content">
@@ -526,8 +526,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
     .tt-date-input {
         padding:4px 8px; border-radius:7px; font-size:.75rem;
         border:1px solid rgba(54,153,255,.25); background:rgba(255,255,255,.05);
-        color:#7ab8ff; outline:none; cursor:pointer;
-        color-scheme: dark;
+        color:#7ab8ff; outline:none; cursor:pointer; color-scheme:dark;
     }
     .tt-date-input:focus { border-color:#3699ff; }
     .tt-report-btn {
@@ -1078,158 +1077,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Chi lay `days` ngay cuoi
                 const allDays = data.days;
                 const rows = allDays.slice(-days);
-                window._renderTT(rows, days);
-            })
-            .catch(() => {
-                document.getElementById('tt-content').innerHTML =
-                    '<div class="tt-loading" style="color:#f64e60;"><i class="fa-solid fa-circle-exclamation me-2"></i>Không kết nối được SCADA server</div>';
-            });
-    };
-
-    // Ham render TT tach rieng de tai su dung
-    window._renderTT = function(rows, days) {
-
-                // Lay ngay hom nay
-                const today = new Date();
-                const todayStr = today.toLocaleDateString('vi-VN', {day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'/');
-
-                // Build header
-                // Cot Tong + TB dat BEN TRAI (truoc cac cot ngay)
-                const sumHeadCols = `
-                    <th style="background:rgba(54,153,255,.12);color:#7ab8ff;white-space:nowrap;text-align:center;">
-                        Tổng<br><small style="font-size:.65rem;opacity:.7;">${days} ngày</small>
-                    </th>
-                    <th style="background:rgba(54,153,255,.08);color:#5a9fd4;white-space:nowrap;text-align:center;">
-                        TB / ngày
-                    </th>`;
-
-                let headCols = rows.map((d, i) => {
-                    const isToday = d.ngay === todayStr || i === rows.length - 1;
-                    return `<th class="${isToday ? 'tt-today-head' : ''}">${d.ngay}</th>`;
-                }).join('');
-
-                // Tinh tong / trung binh
-                // Chi tinh tren cac ngay co du lieu day du (ti_le != null)
-                const validRows = rows.filter(d => d.ti_le !== null && d.ti_le !== undefined
-                                                 && d.nuoc_cap > 0 && d.nuoc_kh > 0);
-                const sumRaw  = rows.reduce((s,d) => s + (d.nuoc_tho || 0), 0);
-                const sumCap  = rows.reduce((s,d) => s + (d.nuoc_cap || 0), 0);
-                const sumKH   = validRows.reduce((s,d) => s + (d.nuoc_kh || 0), 0);
-                const sumNRW  = validRows.reduce((s,d) => s + (d.that_thoat || 0), 0);
-                const sumCapValid = validRows.reduce((s,d) => s + (d.nuoc_cap || 0), 0);
-                const avgTL   = sumCapValid > 0 ? sumNRW / sumCapValid * 100 : 0;
-
-                // Build data rows
-                const ROWS_DEF = [
-                    {
-                        key: 'nuoc_tho', label: 'Sản lượng nước thô (m³)',
-                        cls: 'tt-row-raw', valCls: 'val-raw',
-                        fmt: v => v > 0 ? v.toLocaleString('vi-VN') : '—',
-                        sum: sumRaw,
-                    },
-                    {
-                        key: 'nuoc_cap', label: 'Nước sạch cấp ra mạng (m³)',
-                        cls: 'tt-row-cap', valCls: 'val-cap',
-                        fmt: v => v > 0 ? v.toLocaleString('vi-VN') : '—',
-                        sum: sumCap,
-                    },
-                    {
-                        key: 'nuoc_kh',  label: 'Sản lượng khách hàng (m³)',
-                        cls: 'tt-row-kh',  valCls: 'val-kh',
-                        fmt: v => v > 0 ? v.toLocaleString('vi-VN') : '—',
-                        sum: sumKH,
-                    },
-                    {
-                        key: 'that_thoat', label: 'Lượng nước thất thoát (m³)',
-                        cls: 'tt-row-nrw',  valCls: 'val-nrw',
-                        fmt: v => v > 0 ? v.toLocaleString('vi-VN') : '—',
-                        sum: sumNRW,
-                    },
-                    {
-                        key: 'ti_le', label: 'Tỷ lệ thất thoát (%)',
-                        cls: 'tt-row-tl', valCls: null,
-                        fmt: (v) => {
-                            if (v === null || v === undefined) return '<span style="color:#3d5a78;font-size:.75rem;">—</span>';
-                            const cls  = v < 15 ? 'val-tl-ok' : v <= 20 ? 'val-tl-warn' : 'val-tl-bad';
-                            const icon = v < 15 ? '↓' : v <= 20 ? '→' : '↑';
-                            return `<span class="val-tl ${cls}">${icon} ${v.toFixed(2)}%</span>`;
-                        },
-                        sum: null, avgTL: avgTL,
-                    },
-                ];
-
-                let bodyRows = '';
-                ROWS_DEF.forEach(row => {
-                    let cells = rows.map((d, i) => {
-                        const isToday = i === rows.length - 1;
-                        const val     = d[row.key];
-                        const hasNote = d.note && row.key === 'ti_le';
-                        let disp = row.fmt(val, row.key);
-                        // Hien thi ghi chu cho o ti le
-                        if (hasNote) {
-                            disp = `<span style="color:#4d6d8a;font-size:.72rem;font-style:italic;">${d.note}</span>`;
-                        }
-                        const vCls = row.valCls ? row.valCls : '';
-                        const style = d.note && row.key !== 'ti_le' ? 'opacity:.5;' : '';
-                        return `<td class="${isToday ? 'tt-today' : ''} ${vCls}" style="${style}">${disp}</td>`;
-                    }).join('');
-
-                    // Summary: 2 cot Tong + TB
-                    let sumCell = '';
-                    const validDays = validRows.length || rows.length;
-                    if (row.key === 'ti_le') {
-                        // Cot 1: TB thi le (%)
-                        let tong_td, tb_td;
-                        if (validRows.length > 0) {
-                            const cls = avgTL < 15 ? 'val-tl-ok' : avgTL <= 20 ? 'val-tl-warn' : 'val-tl-bad';
-                            const note = validRows.length < rows.length
-                                ? `<br><small style="opacity:.55;font-size:.65rem">${validRows.length}/${rows.length} ngày hợp lệ</small>`
-                                : '';
-                            tong_td = `<td class="tt-sum-col" style="text-align:center;">—</td>`;
-                            tb_td   = `<td class="tt-sum-col" style="text-align:center;background:rgba(54,153,255,.06)"><span class="val-tl ${cls}">${avgTL.toFixed(2)}%</span>${note}</td>`;
-                        } else {
-                            tong_td = `<td class="tt-sum-col" style="color:#3d5a78;text-align:center;">—</td>`;
-                            tb_td   = `<td class="tt-sum-col" style="color:#3d5a78;text-align:center;background:rgba(54,153,255,.06)">—</td>`;
-                        }
-                        sumCell = tong_td + tb_td;
-                    } else {
-                        // Lay sumVal dung theo key
-                        const sumVal = row.key === 'nuoc_kh'     ? sumKH
-                                     : row.key === 'that_thoat'  ? sumNRW
-                                     : row.sum || 0;
-                        // TB ngay: chi tinh tren validDays co du lieu
-                        const countForAvg = (row.key === 'nuoc_kh' || row.key === 'that_thoat')
-                                            ? validRows.length
-                                            : rows.filter(d => (d[row.key]||0) > 0).length;
-                        const tbVal = countForAvg > 0 ? sumVal / countForAvg : 0;
-                        const vCls  = row.valCls || '';
-                        const fmtN  = v => v > 0 ? Math.round(v).toLocaleString('vi-VN') : '—';
-                        sumCell = `<td class="tt-sum-col ${vCls}">${fmtN(sumVal)}</td>`
-                                + `<td class="tt-sum-col ${vCls}" style="background:rgba(54,153,255,.06)">${fmtN(tbVal)}</td>`;
-                    }
-
-                    bodyRows += `<tr class="${row.cls}">
-                        <td>${row.label}</td>
-                        ${sumCell}
-                        ${cells}
-                    </tr>`;
-                });
-
-                document.getElementById('tt-content').innerHTML = `
-                    <div class="tt-wrap">
-                        <table class="tt-table">
-                            <thead>
-                                <tr>
-                                    <th style="min-width:220px;text-align:left;">Chỉ tiêu</th>
-                                    ${sumHeadCols}
-                                    ${headCols}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${bodyRows}
-                            </tbody>
-                        </table>
-                    </div>`;
+                renderTTRows(rows, days);
             })
             .catch(() => {
                 document.getElementById('tt-content').innerHTML =
@@ -1240,17 +1088,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load khi trang mo
     loadTTTable(7, null);
 
-    }; // end _renderTT
-
     // Auto refresh moi 60 giay
     setInterval(function() {
-        // Refresh bang that thoat
-        if (window.ttCurrentDays) {
-            window.loadTTTable(window.ttCurrentDays, null);
-        }
-        // Refresh SL tab hien tai (chi tab ngay/realtime de tranh overload)
-        if (curTab === 'ngay' || curTab === 'realtime') {
-            loadSLTab(curTab);
+        if (!document.hidden) {
+            if (window.ttCurrentDays) window.loadTTTable(window.ttCurrentDays, null);
+            if (curTab === 'ngay' || curTab === 'realtime') loadSLTab(curTab);
         }
     }, 60000);
 
@@ -1259,30 +1101,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const from = document.getElementById('tt-date-from').value;
         const to   = document.getElementById('tt-date-to').value;
         if (!from || !to) { alert('Vui lòng chọn đủ từ ngày và đến ngày'); return; }
-        if (from > to) { alert('Từ ngày phải nhỏ hơn đến ngày'); return; }
+        if (from > to)    { alert('Từ ngày phải nhỏ hơn đến ngày'); return; }
 
-        // Tinh so ngay
-        const d1 = new Date(from), d2 = new Date(to);
-        const days = Math.round((d2 - d1) / 86400000) + 1;
-
-        // Xoa active tren nut 7/14
         document.querySelectorAll('.tt-days-btn').forEach(b => b.classList.remove('active'));
-
         document.getElementById('tt-content').innerHTML =
             '<div class="tt-loading"><div class="sl-spinner"></div> Đang tải...</div>';
 
         fetch(IOT_BASE + '?action=sanluong&loai=thatthoat&key=' + IOT_KEY)
             .then(r => r.json())
-            .then(data => {
+            .then(function(data) {
                 if (!data.days || !data.days.length) {
                     document.getElementById('tt-content').innerHTML =
                         '<div class="tt-loading" style="color:#3d5a78;">Chưa có dữ liệu</div>';
                     return;
                 }
-                // Loc ngay trong khoang
-                const filtered = data.days.filter(d => {
+                const filtered = data.days.filter(function(d) {
                     if (!d.ngay) return false;
-                    // Convert dd/mm/yyyy -> yyyy-mm-dd de so sanh
                     let iso = d.ngay;
                     if (d.ngay.includes('/')) {
                         const p = d.ngay.split('/');
@@ -1295,15 +1129,112 @@ document.addEventListener('DOMContentLoaded', function() {
                         '<div class="tt-loading" style="color:#3d5a78;">Không có dữ liệu trong khoảng này</div>';
                     return;
                 }
-                // Dung lai ham render hien tai voi du lieu da loc
-                const fakeData = { days: filtered };
-                window._renderTT(filtered, filtered.length);
+                // Goi lai loadTTTable voi so ngay tuong duong de render
+                const days = filtered.length;
+                window.ttCurrentDays = days;
+                // Thay the data.days bang filtered roi render
+                const origFetch = window.fetch;
+                const fakeResponse = { days: filtered };
+                // Render truc tiep bang cach copy logic tu loadTTTable
+                renderTTRows(filtered, days);
             })
-            .catch(() => {
+            .catch(function() {
                 document.getElementById('tt-content').innerHTML =
                     '<div class="tt-loading" style="color:#f64e60;">Lỗi kết nối SCADA</div>';
             });
     };
+
+    // Tach rieng phan render de tai su dung
+    function renderTTRows(rows, days) {
+        const today    = new Date();
+        const todayStr = today.toLocaleDateString('vi-VN', {day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'/');
+
+        const sumHeadCols = `
+            <th style="background:rgba(54,153,255,.12);color:#7ab8ff;white-space:nowrap;text-align:center;">
+                Tổng<br><small style="font-size:.65rem;opacity:.7;">${days} ngày</small>
+            </th>
+            <th style="background:rgba(54,153,255,.08);color:#5a9fd4;white-space:nowrap;text-align:center;">
+                TB / ngày
+            </th>`;
+
+        let headCols = rows.map(function(d, i) {
+            const isToday = d.ngay === todayStr || i === rows.length - 1;
+            return `<th class="${isToday ? 'tt-today-head' : ''}">${d.ngay}</th>`;
+        }).join('');
+
+        const validRows   = rows.filter(function(d) { return d.ti_le !== null && d.ti_le !== undefined && d.nuoc_cap > 0 && d.nuoc_kh > 0; });
+        const sumRaw      = rows.reduce(function(s,d){ return s+(d.nuoc_tho||0); }, 0);
+        const sumCap      = rows.reduce(function(s,d){ return s+(d.nuoc_cap||0); }, 0);
+        const sumKH       = validRows.reduce(function(s,d){ return s+(d.nuoc_kh||0); }, 0);
+        const sumNRW      = validRows.reduce(function(s,d){ return s+(d.that_thoat||0); }, 0);
+        const sumCapValid = validRows.reduce(function(s,d){ return s+(d.nuoc_cap||0); }, 0);
+        const avgTL       = sumCapValid > 0 ? sumNRW / sumCapValid * 100 : 0;
+
+        const ROWS_DEF = [
+            { key:'nuoc_tho',   label:'Sản lượng nước thô (m³)',      cls:'tt-row-raw', valCls:'val-raw', fmt:function(v){ return v>0?v.toLocaleString('vi-VN'):'—'; }, sum:sumRaw },
+            { key:'nuoc_cap',   label:'Nước sạch cấp ra mạng (m³)',   cls:'tt-row-cap', valCls:'val-cap', fmt:function(v){ return v>0?v.toLocaleString('vi-VN'):'—'; }, sum:sumCap },
+            { key:'nuoc_kh',    label:'Sản lượng khách hàng (m³)',    cls:'tt-row-kh',  valCls:'val-kh',  fmt:function(v){ return v>0?v.toLocaleString('vi-VN'):'—'; }, sum:sumKH  },
+            { key:'that_thoat', label:'Lượng nước thất thoát (m³)',   cls:'tt-row-nrw', valCls:'val-nrw', fmt:function(v){ return v>0?v.toLocaleString('vi-VN'):'—'; }, sum:sumNRW },
+            { key:'ti_le',      label:'Tỷ lệ thất thoát (%)',         cls:'tt-row-tl',  valCls:null,
+              fmt:function(v) {
+                if (v===null||v===undefined) return '<span style="color:#3d5a78;font-size:.75rem;">—</span>';
+                const cls  = v<15?'val-tl-ok':v<=20?'val-tl-warn':'val-tl-bad';
+                const icon = v<15?'↓':v<=20?'→':'↑';
+                return `<span class="val-tl ${cls}">${icon} ${v.toFixed(2)}%</span>`;
+              }, sum:null, avgTL:avgTL },
+        ];
+
+        let bodyRows = '';
+        ROWS_DEF.forEach(function(row) {
+            let cells = rows.map(function(d, i) {
+                const isToday = i === rows.length - 1;
+                const val     = d[row.key];
+                const hasNote = d.note && row.key === 'ti_le';
+                let disp = row.fmt(val);
+                if (hasNote) disp = `<span style="color:#4d6d8a;font-size:.72rem;font-style:italic;">${d.note}</span>`;
+                const vCls  = row.valCls || '';
+                const style = (d.note && row.key !== 'ti_le') ? 'opacity:.5;' : '';
+                return `<td class="${isToday?'tt-today':''} ${vCls}" style="${style}">${disp}</td>`;
+            }).join('');
+
+            let sumCell = '';
+            if (row.key === 'ti_le') {
+                if (validRows.length > 0) {
+                    const cls  = avgTL<15?'val-tl-ok':avgTL<=20?'val-tl-warn':'val-tl-bad';
+                    const note = validRows.length < rows.length
+                        ? `<br><small style="opacity:.55;font-size:.65rem">${validRows.length}/${rows.length} ngày hợp lệ</small>` : '';
+                    sumCell = `<td class="tt-sum-col" style="text-align:center;">—</td>`
+                            + `<td class="tt-sum-col" style="text-align:center;background:rgba(54,153,255,.06)"><span class="val-tl ${cls}">${avgTL.toFixed(2)}%</span>${note}</td>`;
+                } else {
+                    sumCell = '<td class="tt-sum-col" style="color:#3d5a78;text-align:center;">—</td>'
+                            + '<td class="tt-sum-col" style="color:#3d5a78;text-align:center;background:rgba(54,153,255,.06)">—</td>';
+                }
+            } else {
+                const sumVal = row.key==='nuoc_kh'?sumKH:row.key==='that_thoat'?sumNRW:(row.sum||0);
+                const countForAvg = (row.key==='nuoc_kh'||row.key==='that_thoat')
+                    ? validRows.length
+                    : rows.filter(function(d){ return (d[row.key]||0)>0; }).length;
+                const tbVal = countForAvg > 0 ? sumVal / countForAvg : 0;
+                const vCls  = row.valCls || '';
+                const fmtN  = function(v){ return v>0?Math.round(v).toLocaleString('vi-VN'):'—'; };
+                sumCell = `<td class="tt-sum-col ${vCls}">${fmtN(sumVal)}</td>`
+                        + `<td class="tt-sum-col ${vCls}" style="background:rgba(54,153,255,.06)">${fmtN(tbVal)}</td>`;
+            }
+            bodyRows += `<tr class="${row.cls}"><td>${row.label}</td>${sumCell}${cells}</tr>`;
+        });
+
+        document.getElementById('tt-content').innerHTML = `
+            <div class="tt-wrap">
+                <table class="tt-table">
+                    <thead><tr>
+                        <th style="min-width:220px;text-align:left;">Chỉ tiêu</th>
+                        ${sumHeadCols}
+                        ${headCols}
+                    </tr></thead>
+                    <tbody>${bodyRows}</tbody>
+                </table>
+            </div>`;
+    }
 
 });
 </script>

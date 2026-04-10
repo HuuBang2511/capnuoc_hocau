@@ -428,4 +428,15 @@ function xuatExcel(btn) {
 
 // Load khi mở trang
 loadPreview(currentNgay);
+
+// Auto refresh moi 60 giay — chi khi dang xem ngay hom nay va tab active
+setInterval(function() {
+    if (!document.hidden) {
+        const today = new Date().toISOString().slice(0,10);
+        if (currentNgay === today) {
+            loadScada(currentNgay);
+            loadCLN(currentNgay);
+        }
+    }
+}, 60000);
 </script>

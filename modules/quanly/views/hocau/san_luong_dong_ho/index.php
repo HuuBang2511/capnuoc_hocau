@@ -188,4 +188,9 @@ function showError(msg) {
 
 // Auto load khi vào trang
 document.addEventListener('DOMContentLoaded', loadData);
+
+// Auto refresh moi 60 giay — chi refresh neu dang o tab nay
+setInterval(function() {
+    if (!document.hidden) loadData();
+}, 60000);
 </script>

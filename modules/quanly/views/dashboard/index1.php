@@ -77,7 +77,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
 
     /* ── SẢN LƯỢNG SECTION — DARK THEME ────────────────────────── */
     .sl-section {
-        background:linear-gradient(135deg, #0f1629 0%, #131d38 100%);
+        background:linear-gradient(135deg, #0f1e36 0%, #1a3354 100%);
         border-radius:16px; padding:1.75rem; margin-bottom:1.5rem;
         border:1px solid var(--sl-border);
         box-shadow:0 20px 60px rgba(0,0,0,.25);
@@ -367,12 +367,20 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
                 Sản Lượng & Vận Hành SCADA
                 <span id="sl-live-dot" style="width:8px;height:8px;border-radius:50%;background:#1bc5bd;animation:pulse-dot 2s infinite;" title="Live data"></span>
             </h4>
-            <div class="sl-tabs">
-                <button class="sl-tab active" onclick="switchSLTab('ngay',this)">Theo Ngày</button>
-                <button class="sl-tab" onclick="switchSLTab('thang',this)">Theo Tháng</button>
-                <button class="sl-tab" onclick="switchSLTab('nam',this)">Theo Năm</button>
-                <button class="sl-tab" onclick="switchSLTab('khachhang',this)">Khách Hàng</button>
-                <button class="sl-tab" onclick="switchSLTab('realtime',this)">Realtime</button>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <div class="sl-tabs">
+                    <button class="sl-tab active" onclick="switchSLTab('ngay',this)">Theo Ngày</button>
+                    <button class="sl-tab" onclick="switchSLTab('thang',this)">Theo Tháng</button>
+                    <button class="sl-tab" onclick="switchSLTab('nam',this)">Theo Năm</button>
+                    <button class="sl-tab" onclick="switchSLTab('khachhang',this)">Khách Hàng</button>
+                    <button class="sl-tab" onclick="switchSLTab('realtime',this)">Realtime</button>
+                </div>
+                <a href="/quanly/nhat-ky/bao-cao" class="tt-report-btn" title="Báo cáo hàng ngày" style="margin-left:4px;">
+                    <i class="fa-solid fa-file-excel"></i><span>Báo cáo</span>
+                </a>
+                <a href="/quanly/nhat-ky/san-luong-dong-ho" class="tt-report-btn green" title="Sản lượng đồng hồ KH">
+                    <i class="fa-solid fa-gauge-high"></i><span>Đồng hồ KH</span>
+                </a>
             </div>
         </div>
 
@@ -419,17 +427,15 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
             <div class="tt-controls">
                 <button class="tt-days-btn active" onclick="loadTTTable(7, this)">7 ngày</button>
                 <button class="tt-days-btn" onclick="loadTTTable(14, this)">14 ngày</button>
-                <button class="tt-days-btn" id="tt-refresh-btn" onclick="window.loadTTTable(window.ttCurrentDays, document.querySelector('.tt-days-btn.active'))" title="Làm mới">
+                <input type="date" id="tt-date-from" class="tt-date-input" title="Từ ngày">
+                <span style="color:#3d5a78;font-size:.75rem;">→</span>
+                <input type="date" id="tt-date-to" class="tt-date-input" title="Đến ngày" value="<?= date('Y-m-d') ?>">
+                <button class="tt-days-btn" onclick="loadTTTableRange()" title="Xem theo ngày chọn">
+                    <i class="fa-solid fa-search"></i>
+                </button>
+                <button class="tt-days-btn" id="tt-refresh-btn" onclick="window.loadTTTable(window.ttCurrentDays, null)" title="Làm mới">
                     <i class="fa-solid fa-rotate-right"></i>
                 </button>
-                <a href="/quanly/nhat-ky/bao-cao" class="tt-report-btn" title="Báo cáo hàng ngày">
-                    <i class="fa-solid fa-file-excel"></i>
-                    <span>Báo cáo</span>
-                </a>
-                <a href="/quanly/nhat-ky/san-luong-dong-ho" class="tt-report-btn green" title="Sản lượng theo đồng hồ khách hàng">
-                    <i class="fa-solid fa-gauge-high"></i>
-                    <span>Đồng hồ KH</span>
-                </a>
             </div>
         </div>
         <div id="tt-content">
@@ -495,7 +501,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
 
     /* ── BẢNG THẤT THOÁT NƯỚC ─────────────────────────────────── */
     .tt-section {
-        background:linear-gradient(135deg,#0f1629 0%,#131d38 100%);
+        background:linear-gradient(135deg, #0f1e36 0%, #1a3354 100%);
         border-radius:16px; padding:1.75rem; margin-bottom:1.5rem;
         border:1px solid rgba(54,153,255,.18);
         box-shadow:0 20px 60px rgba(0,0,0,.25);
@@ -517,21 +523,22 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
         font-size:.85rem; color:#fff; flex-shrink:0;
     }
     .tt-controls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .tt-date-input {
+        padding:4px 8px; border-radius:7px; font-size:.75rem;
+        border:1px solid rgba(54,153,255,.25); background:rgba(255,255,255,.05);
+        color:#7ab8ff; outline:none; cursor:pointer;
+        color-scheme: dark;
+    }
+    .tt-date-input:focus { border-color:#3699ff; }
     .tt-report-btn {
         display:inline-flex; align-items:center; gap:6px;
         padding:5px 12px; border-radius:7px; font-size:.75rem; font-weight:600;
         border:1px solid rgba(54,153,255,.25); background:transparent;
         color:#5a82a8; cursor:pointer; transition:all .2s; text-decoration:none;
     }
-    .tt-report-btn:hover {
-        background:rgba(54,153,255,.18); border-color:#3699ff; color:#7ab8ff;
-    }
-    .tt-report-btn.green {
-        border-color:rgba(27,197,189,.3); color:#1bc5bd;
-    }
-    .tt-report-btn.green:hover {
-        background:rgba(27,197,189,.15); border-color:#1bc5bd; color:#1bc5bd;
-    }
+    .tt-report-btn:hover { background:rgba(54,153,255,.18); border-color:#3699ff; color:#7ab8ff; }
+    .tt-report-btn.green { border-color:rgba(27,197,189,.3); color:#1bc5bd; }
+    .tt-report-btn.green:hover { background:rgba(27,197,189,.15); border-color:#1bc5bd; }
     .tt-days-btn {
         padding:5px 12px; border-radius:7px; font-size:.75rem; font-weight:600;
         border:1px solid rgba(54,153,255,.25); background:transparent;
@@ -548,8 +555,8 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
     .tt-table { width:100%; border-collapse:separate; border-spacing:0; font-size:.82rem; }
     .tt-table thead tr th {
         padding:10px 14px; text-align:right; font-size:.72rem; font-weight:700;
-        color:#3d6080; text-transform:uppercase; letter-spacing:.5px;
-        background:rgba(255,255,255,.03); border-bottom:1px solid rgba(54,153,255,.15);
+        color:#a0c4e8; text-transform:uppercase; letter-spacing:.5px;
+        background:#1e3a5f; border-bottom:1px solid rgba(54,153,255,.15);
         white-space:nowrap;
     }
     .tt-table thead tr th:first-child { text-align:left; }
@@ -1071,12 +1078,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Chi lay `days` ngay cuoi
                 const allDays = data.days;
                 const rows = allDays.slice(-days);
+                window._renderTT(rows, days);
+            })
+            .catch(() => {
+                document.getElementById('tt-content').innerHTML =
+                    '<div class="tt-loading" style="color:#f64e60;"><i class="fa-solid fa-circle-exclamation me-2"></i>Không kết nối được SCADA server</div>';
+            });
+    };
+
+    // Ham render TT tach rieng de tai su dung
+    window._renderTT = function(rows, days) {
 
                 // Lay ngay hom nay
                 const today = new Date();
                 const todayStr = today.toLocaleDateString('vi-VN', {day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'/');
 
                 // Build header
+                // Cot Tong + TB dat BEN TRAI (truoc cac cot ngay)
+                const sumHeadCols = `
+                    <th style="background:rgba(54,153,255,.12);color:#7ab8ff;white-space:nowrap;text-align:center;">
+                        Tổng<br><small style="font-size:.65rem;opacity:.7;">${days} ngày</small>
+                    </th>
+                    <th style="background:rgba(54,153,255,.08);color:#5a9fd4;white-space:nowrap;text-align:center;">
+                        TB / ngày
+                    </th>`;
+
                 let headCols = rows.map((d, i) => {
                     const isToday = d.ngay === todayStr || i === rows.length - 1;
                     return `<th class="${isToday ? 'tt-today-head' : ''}">${d.ngay}</th>`;
@@ -1184,8 +1210,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     bodyRows += `<tr class="${row.cls}">
                         <td>${row.label}</td>
-                        ${cells}
                         ${sumCell}
+                        ${cells}
                     </tr>`;
                 });
 
@@ -1195,13 +1221,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             <thead>
                                 <tr>
                                     <th style="min-width:220px;text-align:left;">Chỉ tiêu</th>
+                                    ${sumHeadCols}
                                     ${headCols}
-                                    <th style="background:rgba(54,153,255,.12);color:#7ab8ff;white-space:nowrap;">
-                                        Tổng<br><small style="font-size:.65rem;opacity:.7;">${days} ngày</small>
-                                    </th>
-                                    <th style="background:rgba(54,153,255,.08);color:#5a9fd4;white-space:nowrap;">
-                                        TB / ngày
-                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1218,6 +1239,71 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load khi trang mo
     loadTTTable(7, null);
+
+    }; // end _renderTT
+
+    // Auto refresh moi 60 giay
+    setInterval(function() {
+        // Refresh bang that thoat
+        if (window.ttCurrentDays) {
+            window.loadTTTable(window.ttCurrentDays, null);
+        }
+        // Refresh SL tab hien tai (chi tab ngay/realtime de tranh overload)
+        if (curTab === 'ngay' || curTab === 'realtime') {
+            loadSLTab(curTab);
+        }
+    }, 60000);
+
+    // Ham load theo khoang ngay tu date picker
+    window.loadTTTableRange = function() {
+        const from = document.getElementById('tt-date-from').value;
+        const to   = document.getElementById('tt-date-to').value;
+        if (!from || !to) { alert('Vui lòng chọn đủ từ ngày và đến ngày'); return; }
+        if (from > to) { alert('Từ ngày phải nhỏ hơn đến ngày'); return; }
+
+        // Tinh so ngay
+        const d1 = new Date(from), d2 = new Date(to);
+        const days = Math.round((d2 - d1) / 86400000) + 1;
+
+        // Xoa active tren nut 7/14
+        document.querySelectorAll('.tt-days-btn').forEach(b => b.classList.remove('active'));
+
+        document.getElementById('tt-content').innerHTML =
+            '<div class="tt-loading"><div class="sl-spinner"></div> Đang tải...</div>';
+
+        fetch(IOT_BASE + '?action=sanluong&loai=thatthoat&key=' + IOT_KEY)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.days || !data.days.length) {
+                    document.getElementById('tt-content').innerHTML =
+                        '<div class="tt-loading" style="color:#3d5a78;">Chưa có dữ liệu</div>';
+                    return;
+                }
+                // Loc ngay trong khoang
+                const filtered = data.days.filter(d => {
+                    if (!d.ngay) return false;
+                    // Convert dd/mm/yyyy -> yyyy-mm-dd de so sanh
+                    let iso = d.ngay;
+                    if (d.ngay.includes('/')) {
+                        const p = d.ngay.split('/');
+                        iso = p[2] + '-' + p[1] + '-' + p[0];
+                    }
+                    return iso >= from && iso <= to;
+                });
+                if (!filtered.length) {
+                    document.getElementById('tt-content').innerHTML =
+                        '<div class="tt-loading" style="color:#3d5a78;">Không có dữ liệu trong khoảng này</div>';
+                    return;
+                }
+                // Dung lai ham render hien tai voi du lieu da loc
+                const fakeData = { days: filtered };
+                window._renderTT(filtered, filtered.length);
+            })
+            .catch(() => {
+                document.getElementById('tt-content').innerHTML =
+                    '<div class="tt-loading" style="color:#f64e60;">Lỗi kết nối SCADA</div>';
+            });
+    };
 
 });
 </script>

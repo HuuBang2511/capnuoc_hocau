@@ -214,8 +214,8 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
         .tt-wrap {
             overflow-x:auto;
             -webkit-overflow-scrolling:touch;
-            margin:0 -1rem;   /* tran ra ria de tan dung chieu rong */
-            padding:0 1rem;
+            margin:0 -1rem;
+            padding:0;  /* bo padding de sticky left:0 sat le trai */
         }
         .tt-table { font-size:.75rem; min-width:420px; }
         .tt-table thead tr th { padding:8px 10px; font-size:.65rem; }

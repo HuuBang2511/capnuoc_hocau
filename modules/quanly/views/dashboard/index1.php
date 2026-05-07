@@ -408,25 +408,25 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
         </div>
 
         <!-- KPI mini tự cập nhật theo tab -->
-        <div class="sl-kpi-grid" id="sl-kpi-row">
+        <div class="sl-kpi-grid" id="sl-kpi-row" style="grid-template-columns:repeat(4,1fr);">
             <div class="sl-kpi" style="--kpi-color:#3699ff;">
-                <div class="sl-kpi-label">Sản lượng nước sạch</div>
+                <div class="sl-kpi-label" id="kpi-nuoc-label">Sản lượng nước sạch</div>
                 <div class="sl-kpi-val" id="kpi-nuoc">—<span class="sl-kpi-unit">m³</span></div>
                 <div class="sl-kpi-trend" id="kpi-nuoc-trend"></div>
             </div>
             <div class="sl-kpi" style="--kpi-color:#ffa800;">
-                <div class="sl-kpi-label">Điện năng tiêu thụ</div>
+                <div class="sl-kpi-label" id="kpi-dien-label">Điện năng tiêu thụ</div>
                 <div class="sl-kpi-val" id="kpi-dien">—<span class="sl-kpi-unit">KWh</span></div>
                 <div class="sl-kpi-trend" id="kpi-dien-trend"></div>
             </div>
             <div class="sl-kpi" style="--kpi-color:#1bc5bd;">
-                <div class="sl-kpi-label">Lưu lượng hiện tại</div>
-                <div class="sl-kpi-val" id="kpi-flow">—<span class="sl-kpi-unit">m³/h</span></div>
+                <div class="sl-kpi-label" id="kpi-flow-label">PAC tiêu thụ</div>
+                <div class="sl-kpi-val" id="kpi-flow">—<span class="sl-kpi-unit">kg</span></div>
                 <div class="sl-kpi-trend" id="kpi-flow-trend"></div>
             </div>
-            <div class="sl-kpi" style="--kpi-color:#f64e60;">
-                <div class="sl-kpi-label">Áp lực TB mạng lưới</div>
-                <div class="sl-kpi-val" id="kpi-ap">—<span class="sl-kpi-unit">m</span></div>
+            <div class="sl-kpi" style="--kpi-color:#8950fc;">
+                <div class="sl-kpi-label" id="kpi-ap-label">Chlorine tiêu thụ</div>
+                <div class="sl-kpi-val" id="kpi-ap">—<span class="sl-kpi-unit">kg</span></div>
                 <div class="sl-kpi-trend" id="kpi-ap-trend"></div>
             </div>
         </div>
@@ -493,6 +493,16 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
     0%,100%{ opacity:1; transform:scale(1); }
     50%    { opacity:.4; transform:scale(1.3); }
 }
+
+    /* ── TRẠM REALTIME BLOCK ────────────────────────────────── */
+    .rt-station-block {
+        border-bottom:1px solid #f1f5f9; padding:8px 0; margin-bottom:2px;
+    }
+    .rt-station-block:last-child { border-bottom:none; }
+    .rt-station-name {
+        font-size:.78rem; font-weight:700; color:#334155;
+        margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
 
     /* ── BẢNG THẤT THOÁT NƯỚC ─────────────────────────────────── */
     .tt-section {
@@ -641,11 +651,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // ── SẢN LƯỢNG SCADA ─────────────────────────────────────────
     const IOT_BASE  = '/iot_api.php';
     const IOT_KEY   = 'SCADA_HOCAU_2024_SECRET_KEY';
-    let   slCharts  = {};   // lưu chart instances
+    let   slCharts  = {};
     let   curTab    = 'ngay';
-    let   rtData    = null; // cache realtime
+    let   rtData    = null;
 
-    // Màu palette dark theme
     const C = {
         blue:   '#3699ff', cyan: '#00d4ff', green: '#1bc5bd',
         amber:  '#ffa800', rose: '#f64e60', purple:'#8950fc',
@@ -659,17 +668,28 @@ document.addEventListener('DOMContentLoaded', function() {
         return g;
     }
     function fmt(n) {
+        if (n === null || n === undefined || isNaN(n)) return '—';
         if (n >= 1e6) return (n/1e6).toFixed(2) + 'M';
         if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
         return parseFloat(n).toFixed(1);
     }
-    function trendHtml(cur, prev, unit) {
-        if (!prev) return '';
+    function fmtN(n) {
+        if (!n) return '—';
+        return Math.round(n).toLocaleString('vi-VN');
+    }
+    function trendHtml(cur, prev) {
+        if (!prev || !cur) return '';
         const d = cur - prev;
-        const pct = prev ? Math.abs(d/prev*100).toFixed(1) : 0;
+        const pct = Math.abs(d/prev*100).toFixed(1);
         const icon = d >= 0 ? '▲' : '▼';
         const cls  = d >= 0 ? 'trend-up' : 'trend-down';
         return `<span class="${cls}">${icon} ${pct}%</span> so kỳ trước`;
+    }
+
+    // Tính cumulative sum
+    function cumsum(arr) {
+        let s = 0;
+        return arr.map(v => { s += (v||0); return s; });
     }
 
     const darkChartDefaults = {
@@ -678,8 +698,26 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     function destroyCharts() {
-        Object.values(slCharts).forEach(c => c.destroy());
+        Object.values(slCharts).forEach(c => { try{c.destroy();}catch(e){} });
         slCharts = {};
+    }
+
+    // ── Helpers KPI labels ──────────────────────────────────────
+    function setKpiLabels(l1, l2, l3, l4) {
+        document.getElementById('kpi-nuoc-label').textContent  = l1 || 'Sản lượng nước sạch';
+        document.getElementById('kpi-dien-label').textContent  = l2 || 'Điện năng tiêu thụ';
+        document.getElementById('kpi-flow-label').textContent  = l3 || 'PAC tiêu thụ';
+        document.getElementById('kpi-ap-label').textContent    = l4 || 'Chlorine tiêu thụ';
+    }
+    function updateKPI(nuoc, nuocTrend, dien, dienTrend, flow, flowTrend, ap, apTrend) {
+        if (nuoc  != null) document.getElementById('kpi-nuoc').innerHTML  = nuoc;
+        if (dien  != null) document.getElementById('kpi-dien').innerHTML  = dien;
+        if (flow  != null) document.getElementById('kpi-flow').innerHTML  = flow;
+        if (ap    != null) document.getElementById('kpi-ap').innerHTML    = ap;
+        if (nuocTrend != null) document.getElementById('kpi-nuoc-trend').innerHTML = nuocTrend;
+        if (dienTrend != null) document.getElementById('kpi-dien-trend').innerHTML = dienTrend;
+        if (flowTrend != null) document.getElementById('kpi-flow-trend').innerHTML = flowTrend;
+        if (apTrend   != null) document.getElementById('kpi-ap-trend').innerHTML   = apTrend;
     }
 
     // ── Fetch & render tab ──────────────────────────────────────
@@ -688,177 +726,367 @@ document.addEventListener('DOMContentLoaded', function() {
         content.innerHTML = '<div class="sl-loading"><div class="sl-spinner"></div> Đang tải...</div>';
         destroyCharts();
 
-        fetch(`${IOT_BASE}?action=sanluong&loai=${loai}&key=${IOT_KEY}`)
+        if (loai === 'realtime') {
+            // Realtime: fetch cả sanluong?loai=realtime + action=get
+            Promise.all([
+                fetch(`${IOT_BASE}?action=sanluong&loai=realtime&key=${IOT_KEY}`).then(r=>r.json()),
+                fetch(`${IOT_BASE}?action=get&key=${IOT_KEY}`).then(r=>r.json()),
+            ]).then(([slData, rtRaw]) => renderRealtime(slData, rtRaw))
+              .catch(() => {
+                content.innerHTML = '<div class="sl-loading" style="color:#f64e60;"><i class="fa-solid fa-circle-exclamation me-2"></i>Không kết nối được SCADA server</div>';
+              });
+            return;
+        }
+
+        // Các tab khác dùng loai=ngay/thang/nam/khachhang
+        const apiLoai = (loai === 'ngay' || loai === 'thang') ? 'ngay'
+                      : loai === 'nam' ? 'thang'
+                      : loai;
+
+        fetch(`${IOT_BASE}?action=sanluong&loai=${apiLoai}&key=${IOT_KEY}`)
             .then(r => r.json())
             .then(data => {
                 if      (loai === 'ngay')      renderNgay(data);
                 else if (loai === 'thang')     renderThang(data);
                 else if (loai === 'nam')       renderNam(data);
-                else if (loai === 'khachhang') renderKhachHang(data);
-                else if (loai === 'realtime')  renderRealtime(data);
+                else if (loai === 'khachhang') {
+                    fetch(`${IOT_BASE}?action=sanluong&loai=khachhang&key=${IOT_KEY}`)
+                        .then(r=>r.json()).then(renderKhachHang);
+                }
             })
             .catch(() => {
                 content.innerHTML = '<div class="sl-loading" style="color:#f64e60;"><i class="fa-solid fa-circle-exclamation me-2"></i>Không kết nối được SCADA server</div>';
             });
     }
 
-    // ── Tab: Theo Ngày ──────────────────────────────────────────
-    function renderNgay(d) {
-        if (!d.labels || !d.labels.length) { showEmpty(); return; }
-        const last   = d.nuoc_sach[d.nuoc_sach.length-1];
-        const prev   = d.nuoc_sach[d.nuoc_sach.length-2];
-        const lastD  = d.dien_nang[d.dien_nang.length-1];
-
-        updateKPI(fmt(last)+'<span class="sl-kpi-unit">m³</span>', trendHtml(last,prev,'m³'),
-                  fmt(lastD)+'<span class="sl-kpi-unit">KWh</span>', '',
-                  null, null, null, null);
-
-        document.getElementById('sl-content').innerHTML = `
-            <div class="sl-chart-grid">
-                <div class="sl-card">
-                    <div class="sl-card-title"><span class="dot" style="--dot-color:#3699ff;"></span>Sản lượng nước sạch (m³) — 30 ngày</div>
-                    <div class="sl-canvas-wrap"><canvas id="slNuocNgay"></canvas></div>
-                </div>
-                <div class="sl-card">
-                    <div class="sl-card-title"><span class="dot" style="--dot-color:#ffa800;"></span>Điện năng (KWh)</div>
-                    <div class="sl-canvas-wrap"><canvas id="slDienNgay"></canvas></div>
-                </div>
-            </div>`;
-
-        // Nuoc sach - area chart
-        const ctx1 = document.getElementById('slNuocNgay');
-        slCharts.nuoc = new Chart(ctx1, {
-            type:'line',
-            data:{ labels:d.labels, datasets:[{
-                label:'m³', data:d.nuoc_sach,
-                borderColor:C.blue, backgroundColor:mkGrad(ctx1.getContext('2d'),C.blue2,'rgba(54,153,255,0)'),
-                fill:true, tension:.4, borderWidth:2,
-                pointRadius:d.labels.length>20?0:3, pointHoverRadius:5,
-            }]},
-            options:{ ...darkChartDefaults, responsive:true, maintainAspectRatio:false,
-                plugins:{ legend:{display:false}, tooltip:{backgroundColor:'#0d1829',titleColor:'#7ab8ff',bodyColor:'#fff',callbacks:{label:c=>` ${fmt(c.parsed.y)} m³`}} },
-                scales:{ x:{ticks:{color:'#3d6080',maxTicksLimit:8,font:{size:10}},grid:{color:'rgba(54,153,255,.06)'}},
-                         y:{ticks:{color:'#3d6080',font:{size:10},callback:v=>fmt(v)},grid:{color:'rgba(54,153,255,.08)'}} }
-            }
-        });
-
-        // Dien nang - bar
-        slCharts.dien = new Chart(document.getElementById('slDienNgay'), {
-            type:'bar',
-            data:{ labels:d.labels, datasets:[{
-                label:'KWh', data:d.dien_nang,
-                backgroundColor:C.amber2, borderColor:C.amber,
-                borderWidth:1, borderRadius:4,
-            }]},
-            options:{ ...darkChartDefaults, responsive:true, maintainAspectRatio:false,
-                plugins:{ legend:{display:false} },
-                scales:{ x:{ticks:{color:'#3d6080',maxTicksLimit:8,font:{size:10}},grid:{display:false}},
-                         y:{ticks:{color:'#3d6080',font:{size:10},callback:v=>fmt(v)},grid:{color:'rgba(54,153,255,.08)'}} }
-            }
-        });
+    // ── Helper: lọc dữ liệu theo tháng/năm hiện tại ────────────
+    function filterByMonth(labels, ...arrays) {
+        const now = new Date();
+        const ym  = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+        const idx = labels.reduce((acc,l,i) => { if(l && l.startsWith(ym)) acc.push(i); return acc; }, []);
+        return {
+            labels: idx.map(i=>labels[i]),
+            arrays: arrays.map(arr => idx.map(i=>(arr&&arr[i])||0)),
+        };
+    }
+    function filterByYear(labels, ...arrays) {
+        const yr = String(new Date().getFullYear());
+        const idx = labels.reduce((acc,l,i) => { if(l && l.startsWith(yr)) acc.push(i); return acc; }, []);
+        return {
+            labels: idx.map(i=>labels[i]),
+            arrays: arrays.map(arr => idx.map(i=>(arr&&arr[i])||0)),
+        };
     }
 
-    // ── Tab: Theo Tháng ─────────────────────────────────────────
-    function renderThang(d) {
-        if (!d.labels || !d.labels.length) { showEmpty(); return; }
-        const last = d.nuoc_sach[d.nuoc_sach.length-1];
-        const prev = d.nuoc_sach[d.nuoc_sach.length-2];
-        updateKPI(fmt(last)+'<span class="sl-kpi-unit">m³</span>', trendHtml(last,prev,''),
-                  fmt(d.dien_nang[d.dien_nang.length-1])+'<span class="sl-kpi-unit">KWh</span>','',
-                  fmt(d.pac[d.pac.length-1])+'<span class="sl-kpi-unit">kg</span>','',
-                  fmt(d.chlorin[d.chlorin.length-1])+'<span class="sl-kpi-unit">kg</span>','');
-        // Update labels kpi 3,4
-        document.getElementById('kpi-flow').innerHTML = fmt(d.pac[d.pac.length-1])+'<span class="sl-kpi-unit">kg PAC</span>';
-        document.getElementById('kpi-ap').innerHTML   = fmt(d.chlorin[d.chlorin.length-1])+'<span class="sl-kpi-unit">kg Clo</span>';
-
-        document.getElementById('sl-content').innerHTML = `
-            <div class="sl-chart-grid">
-                <div class="sl-card">
-                    <div class="sl-card-title"><span class="dot" style="--dot-color:#3699ff;"></span>Sản lượng nước sạch & điện năng — 24 tháng</div>
-                    <div class="sl-canvas-wrap" style="min-height:220px;"><canvas id="slComboThang"></canvas></div>
-                </div>
-                <div class="sl-card">
-                    <div class="sl-card-title"><span class="dot" style="--dot-color:#1bc5bd;"></span>Hóa chất xử lý (kg)</div>
-                    <div class="sl-canvas-wrap"><canvas id="slHoaChatThang"></canvas></div>
-                </div>
-            </div>`;
-
-        const ctx = document.getElementById('slComboThang');
-        slCharts.combo = new Chart(ctx, {
+    // ── Combo chart lũy kế (dùng lại cho Ngày & Tháng) ─────────
+    function renderCumComboChart(canvasId, labels, nuoc, dien, labelNuoc, labelDien) {
+        const cumNuoc = cumsum(nuoc);
+        const cumDien = cumsum(dien);
+        const ctx = document.getElementById(canvasId);
+        slCharts[canvasId] = new Chart(ctx, {
             type:'bar',
-            data:{ labels:d.labels, datasets:[
-                { type:'bar',  label:'Nước sạch (m³)', data:d.nuoc_sach, backgroundColor:C.blue2, borderColor:C.blue, borderWidth:1, borderRadius:3, yAxisID:'y' },
-                { type:'line', label:'Điện năng (KWh)', data:d.dien_nang, borderColor:C.amber, backgroundColor:'transparent', borderWidth:2, tension:.4, pointRadius:3, yAxisID:'y1' },
+            data:{ labels, datasets:[
+                { type:'bar',  label: labelNuoc, data: cumNuoc,
+                  backgroundColor: C.blue2, borderColor: C.blue, borderWidth:1, borderRadius:3, yAxisID:'y' },
+                { type:'line', label: labelDien, data: cumDien,
+                  borderColor: C.amber, backgroundColor:'transparent', borderWidth:2.5,
+                  tension:.3, pointRadius:3, pointBackgroundColor:C.amber, yAxisID:'y1' },
             ]},
             options:{ ...darkChartDefaults, responsive:true, maintainAspectRatio:false,
                 plugins:{ legend:{labels:{color:'#5a82a8',usePointStyle:true,boxWidth:8,font:{size:11}}} },
                 scales:{
-                    x:{ticks:{color:'#3d6080',maxTicksLimit:12,font:{size:10}},grid:{display:false}},
-                    y:{ticks:{color:'#3d6080',font:{size:10},callback:v=>fmt(v)},grid:{color:'rgba(54,153,255,.07)'},title:{display:true,text:'m³',color:'#3d6080',font:{size:10}}},
-                    y1:{position:'right',ticks:{color:'#5a6080',font:{size:10},callback:v=>fmt(v)},grid:{display:false},title:{display:true,text:'KWh',color:'#5a6080',font:{size:10}}}
+                    x:{ticks:{color:'#3d6080',maxTicksLimit:14,font:{size:10}},grid:{display:false}},
+                    y:{ticks:{color:'#3d6080',font:{size:10},callback:v=>fmt(v)},
+                       grid:{color:'rgba(54,153,255,.07)'},
+                       title:{display:true,text:'m³',color:'#3d6080',font:{size:10}}},
+                    y1:{position:'right',ticks:{color:'#c08000',font:{size:10},callback:v=>fmt(v)},
+                        grid:{display:false},
+                        title:{display:true,text:'KWh',color:'#c08000',font:{size:10}}}
                 }
             }
         });
+        return {cumNuoc, cumDien};
+    }
 
-        slCharts.hc = new Chart(document.getElementById('slHoaChatThang'), {
+    // ── Tab: Theo Ngày (lũy kế từ đầu tháng) ──────────────────
+    function renderNgay(d) {
+        if (!d.labels || !d.labels.length) { showEmpty(); return; }
+
+        // Lọc dữ liệu tháng hiện tại
+        const f = filterByMonth(d.labels, d.nuoc_sach, d.dien_nang, d.pac||[], d.chlorin||[]);
+        const [nuocM, dienM, pacM, cloM] = f.arrays;
+        const labels = f.labels;
+
+        if (!labels.length) { showEmpty(); return; }
+
+        const cumNuoc = cumsum(nuocM);
+        const cumDien = cumsum(dienM);
+        const cumPac  = cumsum(pacM);
+        const cumClo  = cumsum(cloM);
+
+        const totNuoc = cumNuoc[cumNuoc.length-1] || 0;
+        const totDien = cumDien[cumDien.length-1] || 0;
+        const totPac  = cumPac[cumPac.length-1]   || 0;
+        const totClo  = cumClo[cumClo.length-1]   || 0;
+
+        const now = new Date();
+        const monthLabel = `tháng ${now.getMonth()+1}/${now.getFullYear()}`;
+
+        setKpiLabels(
+            `Nước sạch lũy kế ${monthLabel}`,
+            `Điện năng lũy kế ${monthLabel}`,
+            `PAC lũy kế ${monthLabel}`,
+            `Chlorine lũy kế ${monthLabel}`
+        );
+        updateKPI(
+            fmtN(totNuoc)+'<span class="sl-kpi-unit">m³</span>', '',
+            fmtN(totDien)+'<span class="sl-kpi-unit">KWh</span>', '',
+            fmt(totPac)+'<span class="sl-kpi-unit">kg</span>', '',
+            fmt(totClo)+'<span class="sl-kpi-unit">kg</span>', ''
+        );
+
+        document.getElementById('sl-content').innerHTML = `
+            <div class="sl-chart-grid" style="margin-bottom:14px;">
+                <div class="sl-card">
+                    <div class="sl-card-title"><span class="dot" style="--dot-color:#3699ff;"></span>
+                        Lũy kế Nước sạch & Điện năng — ${monthLabel}
+                    </div>
+                    <div class="sl-canvas-wrap" style="min-height:200px;"><canvas id="slCumNgay"></canvas></div>
+                </div>
+                <div class="sl-card">
+                    <div class="sl-card-title"><span class="dot" style="--dot-color:#1bc5bd;"></span>
+                        Lũy kế Hóa chất xử lý — ${monthLabel}
+                    </div>
+                    <div class="sl-canvas-wrap"><canvas id="slHoaChatNgay"></canvas></div>
+                </div>
+            </div>`;
+
+        // Chart lũy kế nước + điện
+        renderCumComboChart('slCumNgay', labels, nuocM, dienM, 'Nước sạch (m³)', 'Điện năng (KWh)');
+
+        // Chart lũy kế hoá chất
+        const cumPacArr = cumsum(pacM);
+        const cumCloArr = cumsum(cloM);
+        slCharts.hcNgay = new Chart(document.getElementById('slHoaChatNgay'), {
             type:'bar',
-            data:{ labels:d.labels, datasets:[
-                { label:'PAC (kg)',    data:d.pac,    backgroundColor:'rgba(27,197,189,.25)', borderColor:C.green, borderWidth:1, borderRadius:3 },
-                { label:'Chlorin (kg)',data:d.chlorin,backgroundColor:'rgba(137,80,252,.25)', borderColor:C.purple,borderWidth:1, borderRadius:3 },
+            data:{ labels, datasets:[
+                { type:'bar',  label:'PAC lũy kế (kg)',     data:cumPacArr,
+                  backgroundColor:'rgba(27,197,189,.25)', borderColor:C.green, borderWidth:1, borderRadius:3 },
+                { type:'line', label:'Chlorine lũy kế (kg)',data:cumCloArr,
+                  borderColor:C.purple, backgroundColor:'transparent', borderWidth:2.5,
+                  tension:.3, pointRadius:3, pointBackgroundColor:C.purple },
             ]},
             options:{ ...darkChartDefaults, responsive:true, maintainAspectRatio:false,
                 plugins:{ legend:{labels:{color:'#5a82a8',usePointStyle:true,boxWidth:8,font:{size:11}}} },
-                scales:{ x:{ticks:{color:'#3d6080',maxTicksLimit:8,font:{size:10}},grid:{display:false}},
+                scales:{ x:{ticks:{color:'#3d6080',maxTicksLimit:14,font:{size:10}},grid:{display:false}},
                          y:{ticks:{color:'#3d6080',font:{size:10}},grid:{color:'rgba(54,153,255,.07)'}} }
             }
         });
     }
 
-    // ── Tab: Theo Năm ───────────────────────────────────────────
-    function renderNam(d) {
+    // ── Tab: Theo Tháng (lũy kế từ đầu năm) ────────────────────
+    function renderThang(d) {
         if (!d.labels || !d.labels.length) { showEmpty(); return; }
-        const last = d.nuoc_sach[d.nuoc_sach.length-1];
-        updateKPI(fmt(last)+'<span class="sl-kpi-unit">m³</span>','',
-                  fmt(d.dien_nang[d.dien_nang.length-1])+'<span class="sl-kpi-unit">KWh</span>','',
-                  null,null,null,null);
+
+        // d là dữ liệu 30 ngày, ta cần group theo tháng rồi lũy kế theo năm hiện tại
+        // Tổng hợp theo tháng từ daily data
+        const monthMap = {};
+        d.labels.forEach((lbl, i) => {
+            const ym = lbl ? lbl.substring(0,7) : null;
+            if (!ym) return;
+            if (!monthMap[ym]) monthMap[ym] = {nuoc:0, dien:0, pac:0, clo:0};
+            monthMap[ym].nuoc += (d.nuoc_sach[i]||0);
+            monthMap[ym].dien += (d.dien_nang[i]||0);
+            monthMap[ym].pac  += ((d.pac||[])[i]||0);
+            monthMap[ym].clo  += ((d.chlorin||[])[i]||0);
+        });
+
+        // Lấy 24 tháng gần nhất từ monthMap
+        const mLabels = Object.keys(monthMap).sort();
+        const mNuoc = mLabels.map(k=>monthMap[k].nuoc);
+        const mDien = mLabels.map(k=>monthMap[k].dien);
+        const mPac  = mLabels.map(k=>monthMap[k].pac);
+        const mClo  = mLabels.map(k=>monthMap[k].clo);
+
+        // Lọc năm hiện tại
+        const yr = String(new Date().getFullYear());
+        const yIdx = mLabels.reduce((acc,l,i)=>{ if(l.startsWith(yr)) acc.push(i); return acc;}, []);
+        const yLabels = yIdx.map(i=>mLabels[i]);
+        const yNuoc   = yIdx.map(i=>mNuoc[i]);
+        const yDien   = yIdx.map(i=>mDien[i]);
+        const yPac    = yIdx.map(i=>mPac[i]);
+        const yClo    = yIdx.map(i=>mClo[i]);
+
+        // Nếu không có data năm hiện tại thì dùng data gốc (fallback: fetch thang)
+        const useLabels = yLabels.length ? yLabels : mLabels;
+        const useNuoc   = yLabels.length ? yNuoc   : mNuoc;
+        const useDien   = yLabels.length ? yDien   : mDien;
+        const usePac    = yLabels.length ? yPac    : mPac;
+        const useClo    = yLabels.length ? yClo    : mClo;
+
+        // Tính lũy kế
+        const cumNuoc = cumsum(useNuoc);
+        const cumDien = cumsum(useDien);
+        const cumPac  = cumsum(usePac);
+        const cumClo  = cumsum(useClo);
+
+        const totNuoc = cumNuoc[cumNuoc.length-1]||0;
+        const totDien = cumDien[cumDien.length-1]||0;
+        const totPac  = cumPac[cumPac.length-1]  ||0;
+        const totClo  = cumClo[cumClo.length-1]  ||0;
+
+        const yrLabel = `năm ${yr}`;
+        setKpiLabels(
+            `Nước sạch lũy kế ${yrLabel}`,
+            `Điện năng lũy kế ${yrLabel}`,
+            `PAC lũy kế ${yrLabel}`,
+            `Chlorine lũy kế ${yrLabel}`
+        );
+        updateKPI(
+            fmtN(totNuoc)+'<span class="sl-kpi-unit">m³</span>', '',
+            fmtN(totDien)+'<span class="sl-kpi-unit">KWh</span>', '',
+            fmt(totPac)+'<span class="sl-kpi-unit">kg</span>', '',
+            fmt(totClo)+'<span class="sl-kpi-unit">kg</span>', ''
+        );
 
         document.getElementById('sl-content').innerHTML = `
-            <div class="sl-chart-grid-3">
-                <div class="sl-card" style="grid-column:1/3;">
-                    <div class="sl-card-title"><span class="dot" style="--dot-color:#3699ff;"></span>Tăng trưởng sản lượng nước sạch theo năm</div>
-                    <div class="sl-canvas-wrap" style="min-height:220px;"><canvas id="slNamBar"></canvas></div>
+            <div class="sl-chart-grid" style="margin-bottom:14px;">
+                <div class="sl-card">
+                    <div class="sl-card-title"><span class="dot" style="--dot-color:#3699ff;"></span>
+                        Lũy kế Nước sạch & Điện năng — ${yrLabel}
+                    </div>
+                    <div class="sl-canvas-wrap" style="min-height:220px;"><canvas id="slCumThang"></canvas></div>
                 </div>
+                <div class="sl-card">
+                    <div class="sl-card-title"><span class="dot" style="--dot-color:#1bc5bd;"></span>
+                        Lũy kế Hóa chất xử lý — ${yrLabel}
+                    </div>
+                    <div class="sl-canvas-wrap"><canvas id="slHoaChatThang"></canvas></div>
+                </div>
+            </div>`;
+
+        renderCumComboChart('slCumThang', useLabels, useNuoc, useDien, 'Nước sạch (m³)', 'Điện năng (KWh)');
+
+        slCharts.hcThang = new Chart(document.getElementById('slHoaChatThang'), {
+            type:'bar',
+            data:{ labels:useLabels, datasets:[
+                { type:'bar',  label:'PAC lũy kế (kg)',      data:cumPac,
+                  backgroundColor:'rgba(27,197,189,.25)', borderColor:C.green, borderWidth:1, borderRadius:3 },
+                { type:'line', label:'Chlorine lũy kế (kg)', data:cumClo,
+                  borderColor:C.purple, backgroundColor:'transparent', borderWidth:2.5,
+                  tension:.3, pointRadius:3, pointBackgroundColor:C.purple },
+            ]},
+            options:{ ...darkChartDefaults, responsive:true, maintainAspectRatio:false,
+                plugins:{ legend:{labels:{color:'#5a82a8',usePointStyle:true,boxWidth:8,font:{size:11}}} },
+                scales:{ x:{ticks:{color:'#3d6080',maxTicksLimit:12,font:{size:10}},grid:{display:false}},
+                         y:{ticks:{color:'#3d6080',font:{size:10}},grid:{color:'rgba(54,153,255,.07)'}} }
+            }
+        });
+    }
+
+    // ── Tab: Theo Năm (fetch thang, group theo năm, lũy kế toàn bộ) ──
+    function renderNam(d) {
+        // d là dữ liệu 30 ngày từ apiLoai='thang', group theo năm
+        if (!d.labels || !d.labels.length) { showEmpty(); return; }
+
+        const yrMap = {};
+        d.labels.forEach((lbl, i) => {
+            const yr = lbl ? lbl.substring(0,4) : null;
+            if (!yr) return;
+            if (!yrMap[yr]) yrMap[yr] = {nuoc:0, dien:0, pac:0, clo:0};
+            yrMap[yr].nuoc += (d.nuoc_sach[i]||0);
+            yrMap[yr].dien += (d.dien_nang[i]||0);
+            yrMap[yr].pac  += ((d.pac||[])[i]||0);
+            yrMap[yr].clo  += ((d.chlorin||[])[i]||0);
+        });
+
+        const yLabels = Object.keys(yrMap).sort();
+        const yNuoc   = yLabels.map(k=>yrMap[k].nuoc);
+        const yDien   = yLabels.map(k=>yrMap[k].dien);
+        const yPac    = yLabels.map(k=>yrMap[k].pac);
+        const yClo    = yLabels.map(k=>yrMap[k].clo);
+
+        // Lũy kế toàn bộ lịch sử
+        const cumNuoc = cumsum(yNuoc);
+        const cumDien = cumsum(yDien);
+        const cumPac  = cumsum(yPac);
+        const cumClo  = cumsum(yClo);
+
+        const totNuoc = cumNuoc[cumNuoc.length-1]||0;
+        const totDien = cumDien[cumDien.length-1]||0;
+
+        setKpiLabels('Tổng nước sạch (toàn lịch sử)', 'Tổng điện năng (toàn lịch sử)', 'Tổng PAC (toàn lịch sử)', 'Tổng Chlorine (toàn lịch sử)');
+        updateKPI(
+            fmtN(totNuoc)+'<span class="sl-kpi-unit">m³</span>', '',
+            fmtN(totDien)+'<span class="sl-kpi-unit">KWh</span>', '',
+            fmt(cumPac[cumPac.length-1])+'<span class="sl-kpi-unit">kg</span>', '',
+            fmt(cumClo[cumClo.length-1])+'<span class="sl-kpi-unit">kg</span>', ''
+        );
+
+        document.getElementById('sl-content').innerHTML = `
+            <div class="sl-chart-grid" style="margin-bottom:14px;">
+                <div class="sl-card" style="grid-column:1/3;">
+                    <div class="sl-card-title"><span class="dot" style="--dot-color:#3699ff;"></span>
+                        Lũy kế Nước sạch & Điện năng — Toàn bộ dữ liệu
+                    </div>
+                    <div class="sl-canvas-wrap" style="min-height:220px;"><canvas id="slCumNam"></canvas></div>
+                </div>
+            </div>
+            <div class="sl-chart-grid-3">
                 <div class="sl-card">
                     <div class="sl-card-title"><span class="dot" style="--dot-color:#ffa800;"></span>Điện năng / năm</div>
                     <div class="sl-canvas-wrap"><canvas id="slNamDien"></canvas></div>
                 </div>
+                <div class="sl-card">
+                    <div class="sl-card-title"><span class="dot" style="--dot-color:#1bc5bd;"></span>PAC & Chlorine / năm (kg)</div>
+                    <div class="sl-canvas-wrap"><canvas id="slNamHoaChat"></canvas></div>
+                </div>
+                <div class="sl-card">
+                    <div class="sl-card-title"><span class="dot" style="--dot-color:#3699ff;"></span>Tăng trưởng nước sạch (%)</div>
+                    <div class="sl-canvas-wrap"><canvas id="slNamGrowth"></canvas></div>
+                </div>
             </div>`;
 
-        // Tinh % tang truong
-        const growth = d.nuoc_sach.map((v,i) => i===0?0:parseFloat(((v-d.nuoc_sach[i-1])/d.nuoc_sach[i-1]*100).toFixed(1)));
+        // Lũy kế combo
+        renderCumComboChart('slCumNam', yLabels, yNuoc, yDien, 'Nước sạch (m³)', 'Điện năng (KWh)');
 
-        slCharts.namBar = new Chart(document.getElementById('slNamBar'), {
+        // Điện năm
+        slCharts.namDien = new Chart(document.getElementById('slNamDien'), {
+            type:'doughnut',
+            data:{ labels:yLabels, datasets:[{data:yDien,backgroundColor:[C.amber2,'rgba(255,168,0,.35)','rgba(255,168,0,.5)',C.amber,'rgba(255,140,0,.8)'],borderWidth:0}] },
+            options:{ responsive:true,maintainAspectRatio:false,cutout:'65%',
+                plugins:{legend:{position:'bottom',labels:{color:'#5a82a8',usePointStyle:true,boxWidth:8,font:{size:11}}},
+                         tooltip:{callbacks:{label:c=>` ${fmt(c.parsed)} KWh`}}} }
+        });
+
+        // Hoá chất theo năm
+        slCharts.namHC = new Chart(document.getElementById('slNamHoaChat'), {
             type:'bar',
-            data:{ labels:d.labels, datasets:[
-                { type:'bar',  label:'Sản lượng (m³)', data:d.nuoc_sach, backgroundColor:d.labels.map((_,i)=>i===d.labels.length-1?C.blue:C.blue2), borderColor:C.blue, borderWidth:1, borderRadius:6, yAxisID:'y' },
-                { type:'line', label:'Tăng trưởng (%)', data:growth, borderColor:C.green, backgroundColor:'transparent', borderWidth:2, tension:.3, pointRadius:4, yAxisID:'y1' },
+            data:{ labels:yLabels, datasets:[
+                { label:'PAC (kg)',    data:yPac, backgroundColor:'rgba(27,197,189,.4)',  borderColor:C.green,  borderWidth:1, borderRadius:3 },
+                { label:'Chlorin (kg)',data:yClo, backgroundColor:'rgba(137,80,252,.4)', borderColor:C.purple, borderWidth:1, borderRadius:3 },
             ]},
-            options:{ ...darkChartDefaults, responsive:true, maintainAspectRatio:false,
-                plugins:{ legend:{labels:{color:'#5a82a8',usePointStyle:true,boxWidth:8}} },
-                scales:{
-                    x:{ticks:{color:'#3d6080',font:{size:12}},grid:{display:false}},
-                    y:{ticks:{color:'#3d6080',font:{size:10},callback:v=>fmt(v)},grid:{color:'rgba(54,153,255,.07)'}},
-                    y1:{position:'right',ticks:{color:'#1bc5bd',font:{size:10},callback:v=>v+'%'},grid:{display:false}}
-                }
+            options:{ ...darkChartDefaults,responsive:true,maintainAspectRatio:false,
+                plugins:{legend:{labels:{color:'#5a82a8',usePointStyle:true,boxWidth:8,font:{size:11}}}},
+                scales:{x:{ticks:{color:'#3d6080',font:{size:10}},grid:{display:false}},
+                        y:{ticks:{color:'#3d6080',font:{size:10}},grid:{color:'rgba(54,153,255,.07)'}}}
             }
         });
 
-        slCharts.namDien = new Chart(document.getElementById('slNamDien'), {
-            type:'doughnut',
-            data:{ labels:d.labels, datasets:[{data:d.dien_nang,backgroundColor:[C.amber2,'rgba(255,168,0,.35)','rgba(255,168,0,.5)',C.amber,'rgba(255,140,0,.8)'],borderWidth:0,hoverBorderWidth:2,hoverBorderColor:C.amber}] },
-            options:{ responsive:true, maintainAspectRatio:false, cutout:'65%',
-                plugins:{ legend:{position:'bottom',labels:{color:'#5a82a8',usePointStyle:true,boxWidth:8,font:{size:11}}},
-                          tooltip:{backgroundColor:'#0d1829',titleColor:'#7ab8ff',bodyColor:'#fff',callbacks:{label:c=>` ${fmt(c.parsed)} KWh`}} }
+        // Tăng trưởng nước
+        const growth = yNuoc.map((v,i)=>i===0?0:yNuoc[i-1]?parseFloat(((v-yNuoc[i-1])/yNuoc[i-1]*100).toFixed(1)):0);
+        slCharts.namGrowth = new Chart(document.getElementById('slNamGrowth'), {
+            type:'bar',
+            data:{ labels:yLabels, datasets:[{
+                label:'Tăng trưởng (%)', data:growth,
+                backgroundColor: growth.map(v=>v>=0?'rgba(27,197,189,.5)':'rgba(246,78,96,.5)'),
+                borderColor: growth.map(v=>v>=0?C.green:C.rose),
+                borderWidth:1, borderRadius:4,
+            }]},
+            options:{ ...darkChartDefaults,responsive:true,maintainAspectRatio:false,
+                plugins:{legend:{display:false}},
+                scales:{x:{ticks:{color:'#3d6080',font:{size:10}},grid:{display:false}},
+                        y:{ticks:{color:'#3d6080',font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(54,153,255,.07)'}}}
             }
         });
     }
@@ -866,11 +1094,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // ── Tab: Khách Hàng ─────────────────────────────────────────
     function renderKhachHang(d) {
         if (!d.kh_labels || !d.kh_labels.length) { showEmpty(); return; }
-
-        // Top khach hang hom nay
         const totalKH = d.kh_values.reduce((a,b)=>a+b, 0);
-        updateKPI(fmt(totalKH)+'<span class="sl-kpi-unit">m³</span>','Tổng sản lượng khách hàng lớn',
-                  null,null,null,null,null,null);
+        setKpiLabels('Tổng sản lượng KH lớn', 'Sản lượng Gò Dầu', 'Sản lượng NT6', 'Sản lượng CNNT');
+        updateKPI(
+            fmt(totalKH)+'<span class="sl-kpi-unit">m³</span>', '',
+            d.godau && d.godau.length ? fmt(d.godau[d.godau.length-1])+'<span class="sl-kpi-unit">m³</span>' : null, '',
+            d.nt6   && d.nt6.length   ? fmt(d.nt6[d.nt6.length-1])+'<span class="sl-kpi-unit">m³</span>'   : null, '',
+            d.cnnt  && d.cnnt.length  ? fmt(d.cnnt[d.cnnt.length-1])+'<span class="sl-kpi-unit">m³</span>' : null, ''
+        );
 
         document.getElementById('sl-content').innerHTML = `
             <div class="sl-chart-grid">
@@ -885,7 +1116,6 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>`;
 
         const colors = [C.blue,C.green,C.amber,C.rose,C.purple,'#00d4ff','#f64e60','#1bc5bd','#ffa800','#3699ff'];
-
         slCharts.khTrend = new Chart(document.getElementById('slKHTrend'), {
             type:'line',
             data:{ labels:d.labels, datasets:[
@@ -895,87 +1125,202 @@ document.addEventListener('DOMContentLoaded', function() {
                 { label:'Vinatex',  data:d.vinatex, borderColor:C.rose,   backgroundColor:'transparent',borderWidth:2,tension:.4,pointRadius:3 },
                 { label:'NT5 D300', data:d.nt5_d300,borderColor:C.purple, backgroundColor:'transparent',borderWidth:2,tension:.4,pointRadius:3 },
             ]},
-            options:{ ...darkChartDefaults, responsive:true, maintainAspectRatio:false,
-                plugins:{ legend:{labels:{color:'#5a82a8',usePointStyle:true,boxWidth:8,font:{size:11}}} },
-                scales:{ x:{ticks:{color:'#3d6080',font:{size:10}},grid:{display:false}},
-                         y:{ticks:{color:'#3d6080',font:{size:10},callback:v=>fmt(v)},grid:{color:'rgba(54,153,255,.07)'}} }
+            options:{ ...darkChartDefaults,responsive:true,maintainAspectRatio:false,
+                plugins:{legend:{labels:{color:'#5a82a8',usePointStyle:true,boxWidth:8,font:{size:11}}}},
+                scales:{x:{ticks:{color:'#3d6080',font:{size:10}},grid:{display:false}},
+                        y:{ticks:{color:'#3d6080',font:{size:10},callback:v=>fmt(v)},grid:{color:'rgba(54,153,255,.07)'}}}
             }
         });
-
         slCharts.khShare = new Chart(document.getElementById('slKHShare'), {
             type:'doughnut',
             data:{ labels:d.kh_labels, datasets:[{data:d.kh_values,backgroundColor:colors.slice(0,d.kh_labels.length),borderWidth:0,hoverOffset:6}] },
-            options:{ responsive:true, maintainAspectRatio:false, cutout:'60%',
-                plugins:{ legend:{position:'right',labels:{color:'#5a82a8',usePointStyle:true,boxWidth:8,font:{size:10}}},
-                          tooltip:{backgroundColor:'#0d1829',titleColor:'#7ab8ff',bodyColor:'#fff',callbacks:{label:c=>` ${fmt(c.parsed)} m³`}} }
+            options:{ responsive:true,maintainAspectRatio:false,cutout:'60%',
+                plugins:{legend:{position:'right',labels:{color:'#5a82a8',usePointStyle:true,boxWidth:8,font:{size:10}}},
+                         tooltip:{callbacks:{label:c=>` ${fmt(c.parsed)} m³`}}}
             }
         });
     }
 
-    // ── Tab: Realtime ───────────────────────────────────────────
-    function renderRealtime(d) {
-        if (!d.trams || !d.trams.length) { showEmpty(); return; }
-        rtData = d.trams;
+    // ── Tab: Realtime — layout 3 cột như hình ──────────────────
+    function renderRealtime(slData, rtRaw) {
+        // rtRaw = object { ma_tram: { ten_tram, channels:{...}, ap_luc, luu_luong_thuan, ... } }
+        const trams = slData && slData.trams ? slData.trams : [];
 
-        // Tinh KPI tong hop
-        const trams     = d.trams.filter(t => t.ap_luc > 0);
-        const totalFlow = d.trams.reduce((s,t)=>s+t.luu_luong,0);
-        const avgAp     = trams.length ? trams.reduce((s,t)=>s+t.ap_luc,0)/trams.length : 0;
+        // Tách trạm bơm/nhà máy (loai=tram_bom/nha_may) vs trạm đo (dong_ho/...)
+        const allRt = Object.values(rtRaw || {});
+        const tramBom  = allRt.filter(t => t.loai === 'tram_bom' || t.loai === 'nha_may');
+        const tramDo   = allRt.filter(t => t.loai !== 'tram_bom' && t.loai !== 'nha_may');
 
-        updateKPI(null,null,
-                  fmt(totalFlow)+'<span class="sl-kpi-unit">m³/h</span>','Tổng lưu lượng mạng lưới',
-                  avgAp.toFixed(2)+'<span class="sl-kpi-unit">m</span>','Áp lực TB '+trams.length+' trạm');
+        // KPI từ realtime
+        const totalFlow = allRt.reduce((s,t)=>s+parseFloat(t.luu_luong_thuan||t.luu_luong||0),0);
+        const apArr     = allRt.map(t=>parseFloat(t.ap_luc||t.ap_luc_sau_van||0)).filter(v=>v>0);
+        const avgAp     = apArr.length ? (apArr.reduce((a,b)=>a+b,0)/apArr.length).toFixed(2) : '—';
 
-        // Sort by ap_luc desc
-        const sorted = [...d.trams].sort((a,b)=>b.ap_luc-a.ap_luc);
+        setKpiLabels('Tổng lưu lượng', 'Áp lực TB mạng lưới', 'Số trạm SCADA', 'Trạm bơm hoạt động');
+        updateKPI(
+            fmt(totalFlow)+'<span class="sl-kpi-unit">m³/h</span>', '',
+            avgAp+'<span class="sl-kpi-unit">m</span>', '',
+            allRt.length+'<span class="sl-kpi-unit">trạm</span>', '',
+            tramBom.length+'<span class="sl-kpi-unit">trạm</span>', ''
+        );
+
+        // Helper render một thông số trạm
+        function tramDoRow(t) {
+            const ch = t.channels || {};
+            const rows = [];
+            const fieldMap = [
+                ['do_duc',   'Độ Đục',         'ntu',    '#5a82a8'],
+                ['luu_luong_thuan','Lưu Lượng', 'm³/h',  '#3699ff'],
+                ['ph',       'pH',              'ph',     '#1bc5bd'],
+                ['clo',      'Clo',             'ppm',    '#8950fc'],
+                ['muc_be',   'Mức Bể Chứa',    'm',      '#ffa800'],
+            ];
+            fieldMap.forEach(([key, label, unit, color]) => {
+                if (ch[key] !== undefined) {
+                    const val = ch[key];
+                    const v   = val && val.value !== undefined ? val.value : val;
+                    const ts  = val && val.timestamp ? val.timestamp.substring(5,16) : (t.timestamp||'').substring(5,16);
+                    rows.push(`<tr>
+                        <td style="color:#5a8ab5;font-weight:500;font-size:.75rem;">${label}</td>
+                        <td style="color:#888;font-size:.7rem;">${ts}</td>
+                        <td style="color:${color};font-weight:700;font-size:.82rem;text-align:right;">${parseFloat(v).toFixed(2)} ${unit}</td>
+                    </tr>`);
+                }
+            });
+            if (!rows.length) return '';
+            return `<div class="rt-station-block">
+                <div class="rt-station-name"><a href="#" style="color:#3699ff;text-decoration:none;">${t.ten_tram||t.ma_tram}</a></div>
+                <table style="width:100%;border-collapse:collapse;">${rows.join('')}</table>
+            </div>`;
+        }
+
+        function tramBomBlock(t) {
+            const ch = t.channels || {};
+            const fields = [
+                ['ap_suat_cai_dat', 'Áp Suất Cài Đặt', '#5a82a8'],
+                ['ap_luc',          'Áp Suất Thực tế',  '#3699ff'],
+                ['chi_so_dien',     'Chỉ số điện',      '#ffa800'],
+                ['cong_suat',       'Công suất',         '#f64e60'],
+                ['luu_luong_nghich','Lưu Lượng Nghịch',  '#8950fc'],
+                ['luu_luong_thuan', 'Lưu Lượng Thuận',  '#1bc5bd'],
+                ['tan_so_bom_1',    'Tần Số Bơm 1',     '#3699ff'],
+                ['tan_so_bom_2',    'Tần Số Bơm 2',     '#00d4ff'],
+            ];
+            const rows = fields.map(([key, label, color]) => {
+                if (ch[key] === undefined) return '';
+                const val = ch[key];
+                const v   = val && val.value !== undefined ? val.value : val;
+                const u   = val && val.unit  ? val.unit : '';
+                const ts  = val && val.timestamp ? val.timestamp.substring(5,16) : (t.timestamp||'').substring(5,16);
+                return `<tr>
+                    <td style="color:#5a8ab5;font-weight:500;font-size:.75rem;">${label}</td>
+                    <td style="color:#888;font-size:.7rem;">${ts}</td>
+                    <td style="color:${color};font-weight:700;font-size:.82rem;text-align:right;">${parseFloat(v).toFixed(2)} ${u}</td>
+                </tr>`;
+            }).join('');
+
+            // Sản lượng ngày từ channels (nếu có last_index)
+            let slNgay = '';
+            const llch = ch['luu_luong_thuan'];
+            if (llch && llch.last_index) {
+                slNgay = `<tr>
+                    <td style="color:#5a8ab5;font-weight:500;font-size:.75rem;">Sản lượng ngày</td>
+                    <td style="color:#888;font-size:.7rem;">${(llch.timestamp||'').substring(5,16)}</td>
+                    <td style="color:#1bc5bd;font-weight:700;font-size:.82rem;text-align:right;">${fmtN(llch.last_index)} m³</td>
+                </tr>`;
+            }
+
+            return `<div class="rt-station-block" style="margin-bottom:10px;">
+                <div class="rt-station-name" style="color:#ffa800;">${t.ten_tram||t.ma_tram}</div>
+                <table style="width:100%;border-collapse:collapse;">${rows}${slNgay}</table>
+            </div>`;
+        }
+
+        // Sort trams áp lực desc
+        const sorted = [...trams].sort((a,b)=>b.ap_luc-a.ap_luc);
+        const top15  = sorted.filter(t=>t.ap_luc>0).slice(0,15);
 
         document.getElementById('sl-content').innerHTML = `
-            <div class="sl-chart-grid">
-                <div class="sl-card" style="max-height:400px;overflow-y:auto;">
-                    <div class="sl-card-title"><span class="dot" style="--dot-color:#1bc5bd;"></span>Trạng thái ${d.trams.length} trạm SCADA (realtime)</div>
-                    <table class="rt-table">
-                        <thead><tr><th>Trạm</th><th>Áp lực</th><th>Lưu lượng</th><th>Cập nhật</th></tr></thead>
-                        <tbody id="rt-tbody"></tbody>
-                    </table>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:14px;align-items:start;">
+
+                <!-- Cột trái: trạm đo chất lượng nước nhóm 1 -->
+                <div class="sl-card" style="max-height:460px;overflow-y:auto;padding:12px;">
+                    <div class="sl-card-title" style="margin-bottom:10px;">
+                        <span class="dot" style="--dot-color:#1bc5bd;"></span>Trạm đo chất lượng nước
+                    </div>
+                    <div id="rt-col-left">
+                        ${tramDo.length ? tramDo.slice(0, Math.ceil(tramDo.length/2)).map(tramDoRow).join('') : '<div style="color:#5a8ab5;font-size:.8rem;padding:10px 0;">Không có dữ liệu trạm đo</div>'}
+                    </div>
                 </div>
-                <div class="sl-card">
-                    <div class="sl-card-title"><span class="dot" style="--dot-color:#3699ff;"></span>Phân bổ áp lực (top 15 trạm)</div>
-                    <div class="sl-canvas-wrap" style="min-height:280px;"><canvas id="slRTBar"></canvas></div>
+
+                <!-- Cột giữa: trạm đo chất lượng nước nhóm 2 -->
+                <div class="sl-card" style="max-height:460px;overflow-y:auto;padding:12px;">
+                    <div class="sl-card-title" style="margin-bottom:10px;">
+                        <span class="dot" style="--dot-color:#00d4ff;"></span>Trạm đo mạng lưới
+                    </div>
+                    <div id="rt-col-mid">
+                        ${tramDo.length > 1 ? tramDo.slice(Math.ceil(tramDo.length/2)).map(tramDoRow).join('') : '<div style="color:#5a8ab5;font-size:.8rem;padding:10px 0;">—</div>'}
+                    </div>
                 </div>
+
+                <!-- Cột phải: trạm bơm + chart áp lực -->
+                <div style="display:flex;flex-direction:column;gap:14px;">
+                    <div class="sl-card" style="padding:12px;">
+                        <div class="sl-card-title" style="margin-bottom:10px;">
+                            <span class="dot" style="--dot-color:#ffa800;"></span>Trạm bơm / Nhà máy
+                        </div>
+                        <div style="max-height:230px;overflow-y:auto;" id="rt-col-right">
+                            ${tramBom.length ? tramBom.map(tramBomBlock).join('') : '<div style="color:#5a8ab5;font-size:.8rem;padding:10px 0;">Không có dữ liệu trạm bơm</div>'}
+                        </div>
+                    </div>
+                    <div class="sl-card" style="padding:12px;">
+                        <div class="sl-card-title" style="margin-bottom:10px;">
+                            <span class="dot" style="--dot-color:#3699ff;"></span>Phân bổ áp lực (Top 15 trạm)
+                        </div>
+                        <div class="sl-canvas-wrap" style="min-height:220px;"><canvas id="slRTBar"></canvas></div>
+                    </div>
+                </div>
+
             </div>`;
 
-        // Render table
-        const tbody = document.getElementById('rt-tbody');
-        sorted.forEach(t => {
-            const ap = t.ap_luc;
-            let cls, lbl;
-            if      (ap >= 25)           { cls='ap-high';  lbl=ap.toFixed(2)+'m'; }
-            else if (ap >= 15)           { cls='ap-med';   lbl=ap.toFixed(2)+'m'; }
-            else if (ap >= 1)            { cls='ap-low';   lbl=ap.toFixed(2)+'m'; }
-            else if (ap > 0)             { cls='ap-alert'; lbl=ap.toFixed(2)+'m'; }
-            else                         { cls='ap-none';  lbl='—'; }
-            tbody.innerHTML += `<tr>
-                <td style="font-weight:600;">${t.ten}</td>
-                <td><span class="ap-badge ${cls}">${lbl}</span></td>
-                <td style="color:#ffa800;">${t.luu_luong>0?t.luu_luong.toFixed(1)+' m³/h':'—'}</td>
-                <td style="color:#3d5a78;font-size:.72rem;">${t.timestamp}</td>
-            </tr>`;
-        });
+        // Nếu không có tramDo, fallback sang bảng cũ (trams từ slData)
+        if (!tramDo.length && trams.length) {
+            document.getElementById('rt-col-left').innerHTML = trams.slice(0,Math.ceil(trams.length/2)).map(t=>`
+                <div class="rt-station-block">
+                    <div class="rt-station-name">${t.ten||t.ten_tram||t.ma_tram}</div>
+                    <table style="width:100%;border-collapse:collapse;">
+                        <tr><td style="color:#5a8ab5;font-size:.75rem;">Áp lực</td><td></td>
+                            <td style="color:#3699ff;font-weight:700;text-align:right;">${t.ap_luc?t.ap_luc.toFixed(2)+' m':'—'}</td></tr>
+                        <tr><td style="color:#5a8ab5;font-size:.75rem;">Lưu lượng</td><td></td>
+                            <td style="color:#ffa800;font-weight:700;text-align:right;">${t.luu_luong?t.luu_luong.toFixed(1)+' m³/h':'—'}</td></tr>
+                    </table>
+                </div>`).join('');
+            document.getElementById('rt-col-mid').innerHTML = trams.slice(Math.ceil(trams.length/2)).map(t=>`
+                <div class="rt-station-block">
+                    <div class="rt-station-name">${t.ten||t.ten_tram||t.ma_tram}</div>
+                    <table style="width:100%;border-collapse:collapse;">
+                        <tr><td style="color:#5a8ab5;font-size:.75rem;">Áp lực</td><td></td>
+                            <td style="color:#3699ff;font-weight:700;text-align:right;">${t.ap_luc?t.ap_luc.toFixed(2)+' m':'—'}</td></tr>
+                        <tr><td style="color:#ffa800;font-size:.75rem;">Lưu lượng</td><td></td>
+                            <td style="color:#ffa800;font-weight:700;text-align:right;">${t.luu_luong?t.luu_luong.toFixed(1)+' m³/h':'—'}</td></tr>
+                    </table>
+                </div>`).join('');
+        }
 
-        // Bar chart top 15
-        const top15 = sorted.filter(t=>t.ap_luc>0).slice(0,15);
+        // Bar chart top 15 áp lực
+        const chartTrams = top15.length ? top15 : sorted.slice(0,15);
         slCharts.rtBar = new Chart(document.getElementById('slRTBar'), {
             type:'bar',
-            data:{ labels:top15.map(t=>t.ten), datasets:[{
+            data:{ labels:chartTrams.map(t=>t.ten||t.ten_tram||t.ma_tram), datasets:[{
                 label:'Áp lực (m)',
-                data:top15.map(t=>t.ap_luc),
-                backgroundColor:top15.map(t=>{
+                data:chartTrams.map(t=>t.ap_luc),
+                backgroundColor:chartTrams.map(t=>{
                     if(t.ap_luc>=25) return 'rgba(54,153,255,.6)';
                     if(t.ap_luc>=15) return 'rgba(27,197,189,.6)';
                     if(t.ap_luc>=1)  return 'rgba(255,168,0,.6)';
                     return 'rgba(246,78,96,.6)';
                 }),
-                borderColor:top15.map(t=>{
+                borderColor:chartTrams.map(t=>{
                     if(t.ap_luc>=25) return '#3699ff';
                     if(t.ap_luc>=15) return '#1bc5bd';
                     if(t.ap_luc>=1)  return '#ffa800';
@@ -984,13 +1329,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 borderWidth:1, borderRadius:4,
             }]},
             options:{ indexAxis:'y', ...darkChartDefaults, responsive:true, maintainAspectRatio:false,
-                plugins:{ legend:{display:false},
-                          tooltip:{backgroundColor:'#0d1829',titleColor:'#7ab8ff',bodyColor:'#fff',callbacks:{label:c=>` ${c.parsed.x.toFixed(2)} m`}} },
+                plugins:{legend:{display:false},
+                         tooltip:{callbacks:{label:c=>` ${c.parsed.x.toFixed(2)} m`}}},
                 scales:{
-                    x:{ticks:{color:'#3d6080',font:{size:10}},grid:{color:'rgba(54,153,255,.07)'},
-                       // Duong nguong ap luc
-                    },
-                    y:{ticks:{color:'#c0d0e8',font:{size:10}},grid:{display:false}}
+                    x:{ticks:{color:'#3d6080',font:{size:10}},grid:{color:'rgba(54,153,255,.07)'}},
+                    y:{ticks:{color:'#c0d0e8',font:{size:9}},grid:{display:false}}
                 }
             }
         });
@@ -1001,19 +1344,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('sl-content').innerHTML = '<div class="sl-loading" style="color:#3d5a78;"><i class="fa-solid fa-database me-2"></i>Chưa có dữ liệu cho kỳ này</div>';
     }
 
-    function updateKPI(nuoc, nuocTrend, dien, dienTrend, flow, flowTrend, ap, apTrend) {
-        if (nuoc  !== null && nuoc  !== undefined) document.getElementById('kpi-nuoc').innerHTML  = nuoc;
-        if (dien  !== null && dien  !== undefined) document.getElementById('kpi-dien').innerHTML  = dien;
-        if (flow  !== null && flow  !== undefined) document.getElementById('kpi-flow').innerHTML  = flow;
-        if (ap    !== null && ap    !== undefined) document.getElementById('kpi-ap').innerHTML    = ap;
-        if (nuocTrend) document.getElementById('kpi-nuoc-trend').innerHTML = nuocTrend;
-        if (dienTrend) document.getElementById('kpi-dien-trend').innerHTML = dienTrend;
-        if (flowTrend) document.getElementById('kpi-flow-trend').innerHTML = flowTrend;
-        if (apTrend)   document.getElementById('kpi-ap-trend').innerHTML   = apTrend;
-    }
-
     // ── Load realtime KPI từ iot_realtime.json ──────────────────
     function loadRealtimeKPI() {
+        if (curTab === 'realtime') return; // tab realtime tự load đủ
         fetch(`${IOT_BASE}?action=get&key=${IOT_KEY}`)
             .then(r => r.json())
             .then(data => {
@@ -1024,9 +1357,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (ap > 0) { sumAp += ap; cntAp++; }
                 });
                 const avgAp = cntAp ? (sumAp/cntAp).toFixed(2) : '—';
-                if (curTab !== 'realtime' && curTab !== 'khachhang') {
-                    document.getElementById('kpi-flow').innerHTML = fmt(totalFlow)+'<span class="sl-kpi-unit">m³/h</span>';
-                    document.getElementById('kpi-ap').innerHTML   = avgAp+'<span class="sl-kpi-unit">m</span>';
+                // Chỉ update KPI flow/ap khi tab không dùng 4 ô đó
+                if (curTab === 'ngay' || curTab === 'thang' || curTab === 'nam') {
+                    // Các tab này dùng cả 4 ô cho hoá chất/nước — không ghi đè
                 }
             })
             .catch(()=>{});
@@ -1036,16 +1369,28 @@ document.addEventListener('DOMContentLoaded', function() {
         curTab = loai;
         document.querySelectorAll('.sl-tab').forEach(b=>b.classList.remove('active'));
         btn.classList.add('active');
-        // Reset KPI labels
-        document.querySelector('.sl-kpi:nth-child(3) .sl-kpi-label').textContent = 'Lưu lượng hiện tại';
-        document.querySelector('.sl-kpi:nth-child(4) .sl-kpi-label').textContent = 'Áp lực TB mạng lưới';
+        // Reset KPI
+        ['kpi-nuoc','kpi-dien','kpi-flow','kpi-ap'].forEach(id=>{
+            document.getElementById(id).innerHTML = '—';
+        });
+        ['kpi-nuoc-trend','kpi-dien-trend','kpi-flow-trend','kpi-ap-trend'].forEach(id=>{
+            document.getElementById(id).innerHTML = '';
+        });
+        if (loai === 'khachhang') {
+            fetch(`${IOT_BASE}?action=sanluong&loai=khachhang&key=${IOT_KEY}`)
+                .then(r=>r.json()).then(renderKhachHang)
+                .catch(()=>{ document.getElementById('sl-content').innerHTML='<div class="sl-loading" style="color:#f64e60;">Lỗi kết nối</div>'; });
+            destroyCharts();
+            document.getElementById('sl-content').innerHTML='<div class="sl-loading"><div class="sl-spinner"></div> Đang tải...</div>';
+            return;
+        }
         loadSLTab(loai);
     };
 
     // Khởi tạo
     loadSLTab('ngay');
     loadRealtimeKPI();
-    setInterval(loadRealtimeKPI, 30000);
+    setInterval(loadRealtimeKPI, 60000);
 
     // ================================================================
     // BẢNG THẤT THOÁT NƯỚC

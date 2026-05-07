@@ -398,7 +398,6 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
                     <button class="sl-tab active" onclick="switchSLTab('ngay',this)">Theo Ngày</button>
                     <button class="sl-tab" onclick="switchSLTab('thang',this)">Theo Tháng</button>
                     <button class="sl-tab" onclick="switchSLTab('nam',this)">Theo Năm</button>
-                    <button class="sl-tab" onclick="switchSLTab('khachhang',this)">Khách Hàng</button>
                     <button class="sl-tab" onclick="switchSLTab('realtime',this)">Realtime</button>
                 </div>
                 <a href="/quanly/nhat-ky/bao-cao" class="tt-report-btn" title="Báo cáo hàng ngày">
@@ -738,7 +737,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Các tab khác dùng loai=ngay/thang/nam/khachhang
+        // Các tab khác dùng loai=ngay/thang/nam
         const apiLoai = (loai === 'ngay' || loai === 'thang') ? 'ngay'
                       : loai === 'nam' ? 'thang'
                       : loai;
@@ -746,13 +745,9 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch(`${IOT_BASE}?action=sanluong&loai=${apiLoai}&key=${IOT_KEY}`)
             .then(r => r.json())
             .then(data => {
-                if      (loai === 'ngay')      renderNgay(data);
-                else if (loai === 'thang')     renderThang(data);
-                else if (loai === 'nam')       renderNam(data);
-                else if (loai === 'khachhang') {
-                    fetch(`${IOT_BASE}?action=sanluong&loai=khachhang&key=${IOT_KEY}`)
-                        .then(r=>r.json()).then(renderKhachHang);
-                }
+                if      (loai === 'ngay')  renderNgay(data);
+                else if (loai === 'thang') renderThang(data);
+                else if (loai === 'nam')   renderNam(data);
             })
             .catch(() => {
                 content.innerHTML = '<div class="sl-loading" style="color:#f64e60;"><i class="fa-solid fa-circle-exclamation me-2"></i>Không kết nối được SCADA server</div>';
@@ -1369,21 +1364,12 @@ document.addEventListener('DOMContentLoaded', function() {
         curTab = loai;
         document.querySelectorAll('.sl-tab').forEach(b=>b.classList.remove('active'));
         btn.classList.add('active');
-        // Reset KPI
         ['kpi-nuoc','kpi-dien','kpi-flow','kpi-ap'].forEach(id=>{
             document.getElementById(id).innerHTML = '—';
         });
         ['kpi-nuoc-trend','kpi-dien-trend','kpi-flow-trend','kpi-ap-trend'].forEach(id=>{
             document.getElementById(id).innerHTML = '';
         });
-        if (loai === 'khachhang') {
-            fetch(`${IOT_BASE}?action=sanluong&loai=khachhang&key=${IOT_KEY}`)
-                .then(r=>r.json()).then(renderKhachHang)
-                .catch(()=>{ document.getElementById('sl-content').innerHTML='<div class="sl-loading" style="color:#f64e60;">Lỗi kết nối</div>'; });
-            destroyCharts();
-            document.getElementById('sl-content').innerHTML='<div class="sl-loading"><div class="sl-spinner"></div> Đang tải...</div>';
-            return;
-        }
         loadSLTab(loai);
     };
 

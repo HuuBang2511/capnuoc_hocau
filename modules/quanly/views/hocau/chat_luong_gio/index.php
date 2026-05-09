@@ -35,7 +35,7 @@ $jNtu  = $jarTest ? $jarTest->getPacNtuArr()  : array_fill(0,6,null);
 $jPh   = $jarTest ? $jarTest->getPacPhArr()   : array_fill(0,6,null);
 $jMin  = $jarTest ? $jarTest->getMinNtuIndex() : -1;
 $jGio  = $jarTest ? date('H:i', strtotime($jarTest->gio_thu)) : ($ca==1?'08:00':'19:00');
-$jChon = $jarTest?->lieu_chon;
+$jChon = ($jarTest !== null ? $jarTest->lieu_chon : null);
 ?>
 <style>
 .hn-wrap { max-width:100%; padding:12px 8px; }

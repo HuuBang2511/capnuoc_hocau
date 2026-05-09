@@ -142,11 +142,11 @@ $COLS = [
                     <td class="ngay-cell">
                         <input type="date"
                                name="rows[<?= $tuanSo ?>][ngay_pt]"
-                               value="<?= Html::encode(($rec !== null ? $rec->ngay_pt : null) ?? $weekInfo['start']) ?>" />
+                               value="<?= Html::encode($rec !== null ? $rec->ngay_pt : $weekInfo['start']) ?>" />
                     </td>
                     <?php foreach ($COLS as [$fnt,$fns,$label,$qc,$step]):
-                        $vnt = ($rec !== null ? $rec->$fnt : null);
-                        $vns = $fns ? ($rec !== null ? $rec->$fns : null) : null;
+                        $vnt = ($rec !== null) ? $rec->$fnt : null;
+                        $vns = ($fns && $rec !== null) ? $rec->$fns : null;
                         $badNs = ($qc !== null && $vns !== null && (float)$vns > $qc && $qc > 0);
                         $badNsZero = ($qc === 0 && $vns !== null && (float)$vns > 0);
                     ?>

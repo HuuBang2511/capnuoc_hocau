@@ -28,6 +28,9 @@ $this->title = 'Sổ giao ca — ' . $tenCa;
                text-decoration:none; font-weight:600; font-size:.9rem;
                background:#f1f5f9; color:#475569; }
 .ca-switch a.active { background:#3b82f6; color:#fff; }
+.gc-subsection { font-size:.78rem; font-weight:600; color:#64748b; padding:3px 8px;
+                 background:#f8fafc; border-radius:5px; margin:8px 0 6px;
+                 border-left:2px solid #94a3b8; }
 @media(max-width:576px) {
     .gc-grid { grid-template-columns:1fr; }
     .gc-grid3 { grid-template-columns:1fr; }
@@ -48,37 +51,77 @@ $this->title = 'Sổ giao ca — ' . $tenCa;
             📋 Sổ giao ca — <?= date('d/m/Y', strtotime($ngay)) ?> — <?= $tenCa ?>
         </div>
 
+        <?php if (Yii::$app->session->hasFlash('success')): ?>
+        <div style="background:#dcfce7;color:#166534;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:.88rem;">
+            ✓ <?= Yii::$app->session->getFlash('success') ?>
+        </div>
+        <?php endif; ?>
+
         <?php $form = ActiveForm::begin(['enableClientValidation'=>false]) ?>
         <?= Html::hiddenInput('NkGiaoCa[ngay]', $ngay) ?>
         <?= Html::hiddenInput('NkGiaoCa[ca]', $ca) ?>
 
-        <!-- Khối lượng nước -->
+        <!-- 1. KHỐI LƯỢNG NƯỚC -->
         <div class="gc-section">1. Khối lượng nước (m³)</div>
+
+        <div class="gc-subsection">Nước cấp (nước sạch)</div>
         <div class="gc-grid" style="margin-bottom:8px;">
             <?php foreach ([
-                ['nuoc_cap_dau', 'Nước cấp — Đầu ca'],
-                ['nuoc_cap_cuoi','Nước cấp — Cuối ca'],
-                ['nuoc_tho_dau', 'Nước thô — Đầu ca'],
-                ['nuoc_tho_cuoi','Nước thô — Cuối ca'],
+                ['nuoc_cap_dau',  'Nước cấp — Đầu ca'],
+                ['nuoc_cap_cuoi', 'Nước cấp — Cuối ca'],
             ] as [$f,$lb]): ?>
             <div class="gc-field">
                 <label><?= $lb ?></label>
                 <input type="number" name="NkGiaoCa[<?= $f ?>]"
                        value="<?= Html::encode($model->$f) ?>"
                        step="0.1" inputmode="decimal"
-                       onchange="calcTong()" id="<?= $f ?>" />
+                       onchange="calcNuoc()" id="<?= $f ?>" />
             </div>
             <?php endforeach; ?>
         </div>
-        <div class="gc-calc" id="calc-nuoc"></div>
+        <div class="gc-calc" id="calc-nuoc-cap"></div>
 
-        <!-- Thiết bị hoạt động -->
+        <div class="gc-subsection" style="margin-top:10px;">Nước thô (trạm bơm chính)</div>
+        <div class="gc-grid" style="margin-bottom:8px;">
+            <?php foreach ([
+                ['nuoc_tho_dau',  'Nước thô — Đầu ca'],
+                ['nuoc_tho_cuoi', 'Nước thô — Cuối ca'],
+            ] as [$f,$lb]): ?>
+            <div class="gc-field">
+                <label><?= $lb ?></label>
+                <input type="number" name="NkGiaoCa[<?= $f ?>]"
+                       value="<?= Html::encode($model->$f) ?>"
+                       step="0.1" inputmode="decimal"
+                       onchange="calcNuoc()" id="<?= $f ?>" />
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <div class="gc-calc" id="calc-nuoc-tho"></div>
+
+        <div class="gc-subsection" style="margin-top:10px;">Nước thô NT5 (trạm bơm tăng áp NT5)</div>
+        <div class="gc-grid" style="margin-bottom:8px;">
+            <?php foreach ([
+                ['nuoc_tho_nt5_dau',  'Nước thô NT5 — Đầu ca'],
+                ['nuoc_tho_nt5_cuoi', 'Nước thô NT5 — Cuối ca'],
+            ] as [$f,$lb]): ?>
+            <div class="gc-field">
+                <label><?= $lb ?></label>
+                <input type="number" name="NkGiaoCa[<?= $f ?>]"
+                       value="<?= Html::encode($model->$f) ?>"
+                       step="0.1" inputmode="decimal"
+                       onchange="calcNuoc()" id="<?= $f ?>" />
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <div class="gc-calc" id="calc-nuoc-nt5"></div>
+
+        <!-- 2. THIẾT BỊ -->
         <div class="gc-section">2. Thiết bị hoạt động</div>
         <div class="gc-grid">
             <?php foreach ([
-                ['bom_nt_chay', 'Bơm NT (A/B/C/D)', 'VD: A,C'],
-                ['bom_th_chay', 'Bơm TH (A/B)',      'VD: A'],
-                ['bom_khi_chay','Bơm khí (A/B)',     'VD: A,B'],
+                ['bom_nt_chay',  'Bơm NT (A/B/C/D)', 'VD: A,C'],
+                ['bom_th_chay',  'Bơm TH (A/B)',      'VD: A'],
+                ['bom_khi_chay', 'Bơm khí (A/B)',     'VD: A,B'],
             ] as [$f,$lb,$ph]): ?>
             <div class="gc-field">
                 <label><?= $lb ?></label>
@@ -89,12 +132,28 @@ $this->title = 'Sổ giao ca — ' . $tenCa;
             <?php endforeach; ?>
         </div>
 
-        <!-- Điện -->
+        <!-- 3. ĐIỆN -->
         <div class="gc-section">3. Điện (KWh)</div>
-        <div class="gc-grid">
+
+        <div class="gc-subsection">Nhà máy</div>
+        <div class="gc-grid" style="margin-bottom:8px;">
             <?php foreach ([
-                ['dien_nha_may_dau',   'Nhà máy — Đầu ca'],
-                ['dien_nha_may_cuoi',  'Nhà máy — Cuối ca'],
+                ['dien_nha_may_dau',  'Nhà máy — Đầu ca'],
+                ['dien_nha_may_cuoi', 'Nhà máy — Cuối ca'],
+            ] as [$f,$lb]): ?>
+            <div class="gc-field">
+                <label><?= $lb ?></label>
+                <input type="number" name="NkGiaoCa[<?= $f ?>]"
+                       value="<?= Html::encode($model->$f) ?>"
+                       step="1" inputmode="numeric"
+                       onchange="calcDien()" id="<?= $f ?>" />
+            </div>
+            <?php endforeach; ?>
+        </div>
+
+        <div class="gc-subsection">Trạm bơm chính</div>
+        <div class="gc-grid" style="margin-bottom:8px;">
+            <?php foreach ([
                 ['dien_tram_bom_dau',  'Trạm bơm — Đầu ca'],
                 ['dien_tram_bom_cuoi', 'Trạm bơm — Cuối ca'],
             ] as [$f,$lb]): ?>
@@ -107,16 +166,32 @@ $this->title = 'Sổ giao ca — ' . $tenCa;
             </div>
             <?php endforeach; ?>
         </div>
+
+        <div class="gc-subsection">Trạm bơm tăng áp NT5</div>
+        <div class="gc-grid" style="margin-bottom:8px;">
+            <?php foreach ([
+                ['dien_nt5_tang_ap_dau',  'TB Tăng áp NT5 — Đầu ca'],
+                ['dien_nt5_tang_ap_cuoi', 'TB Tăng áp NT5 — Cuối ca'],
+            ] as [$f,$lb]): ?>
+            <div class="gc-field">
+                <label><?= $lb ?></label>
+                <input type="number" name="NkGiaoCa[<?= $f ?>]"
+                       value="<?= Html::encode($model->$f) ?>"
+                       step="1" inputmode="numeric"
+                       onchange="calcDien()" id="<?= $f ?>" />
+            </div>
+            <?php endforeach; ?>
+        </div>
         <div class="gc-calc" id="calc-dien"></div>
 
-        <!-- Kiểm tra CLN đầu/cuối ca -->
+        <!-- 4. CLN ĐẦU/CUỐI CA -->
         <div class="gc-section">4. Kiểm tra chất lượng nước</div>
         <div class="gc-grid">
             <?php
             $qfields = [
-                ['ns_ph_dau','pH NS đầu ca','0.01'],['ns_ntu_dau','NTU NS đầu ca','0.001'],
+                ['ns_ph_dau','pH NS đầu ca','0.01'],  ['ns_ntu_dau','NTU NS đầu ca','0.001'],
                 ['clo_du_dau','Clo dư đầu ca','0.01'],
-                ['ns_ph_cuoi','pH NS cuối ca','0.01'],['ns_ntu_cuoi','NTU NS cuối ca','0.001'],
+                ['ns_ph_cuoi','pH NS cuối ca','0.01'], ['ns_ntu_cuoi','NTU NS cuối ca','0.001'],
                 ['clo_du_cuoi','Clo dư cuối ca','0.01'],
             ];
             foreach ($qfields as [$f,$lb,$st]):
@@ -130,7 +205,7 @@ $this->title = 'Sổ giao ca — ' . $tenCa;
             <?php endforeach; ?>
         </div>
 
-        <!-- Hóa chất -->
+        <!-- 5. HÓA CHẤT -->
         <div class="gc-section">5. Hóa chất sử dụng</div>
         <div class="gc-grid3">
             <?php foreach ([
@@ -147,12 +222,12 @@ $this->title = 'Sổ giao ca — ' . $tenCa;
             <?php endforeach; ?>
         </div>
 
-        <!-- Sự cố -->
+        <!-- 6. SỰ CỐ & GIAO CA -->
         <div class="gc-section">6. Sự cố &amp; Giao ca</div>
         <?php foreach ([
-            ['su_co','Sự cố trong ca (để trống nếu không có)'],
+            ['su_co',    'Sự cố trong ca (để trống nếu không có)'],
             ['bien_phap','Biện pháp xử lý'],
-            ['ghi_chu','Ghi chú bàn giao'],
+            ['ghi_chu',  'Ghi chú bàn giao'],
         ] as [$f,$lb]): ?>
         <div class="gc-field" style="margin-bottom:10px;">
             <label><?= $lb ?></label>
@@ -180,25 +255,32 @@ $this->title = 'Sổ giao ca — ' . $tenCa;
 </div>
 
 <script>
-function calcTong() {
-    const dau  = parseFloat(document.getElementById('nuoc_cap_dau')?.value)  || 0;
-    const cuoi = parseFloat(document.getElementById('nuoc_cap_cuoi')?.value) || 0;
-    const el   = document.getElementById('calc-nuoc');
-    if (cuoi > dau && cuoi > 0) {
-        el.textContent = '→ Sản lượng nước cấp trong ca: ' + (cuoi - dau).toFixed(1) + ' m³';
-    } else el.textContent = '';
+function g(id) { return parseFloat(document.getElementById(id)?.value) || 0; }
+
+function calcNuoc() {
+    const cap = g('nuoc_cap_cuoi') - g('nuoc_cap_dau');
+    const tho = g('nuoc_tho_cuoi') - g('nuoc_tho_dau');
+    const nt5 = g('nuoc_tho_nt5_cuoi') - g('nuoc_tho_nt5_dau');
+    const fmt = v => v > 0 ? v.toFixed(1) + ' m³' : '';
+    document.getElementById('calc-nuoc-cap').textContent = cap > 0 ? '→ Sản lượng nước cấp: ' + fmt(cap) : '';
+    document.getElementById('calc-nuoc-tho').textContent = tho > 0 ? '→ Sản lượng nước thô: ' + fmt(tho) : '';
+    document.getElementById('calc-nuoc-nt5').textContent = nt5 > 0 ? '→ Sản lượng nước thô NT5: ' + fmt(nt5) : '';
 }
+
 function calcDien() {
-    const nm_d = parseFloat(document.getElementById('dien_nha_may_dau')?.value)   || 0;
-    const nm_c = parseFloat(document.getElementById('dien_nha_may_cuoi')?.value)  || 0;
-    const tb_d = parseFloat(document.getElementById('dien_tram_bom_dau')?.value)  || 0;
-    const tb_c = parseFloat(document.getElementById('dien_tram_bom_cuoi')?.value) || 0;
-    const el   = document.getElementById('calc-dien');
-    const nm = nm_c - nm_d, tb = tb_c - tb_d;
-    if (nm > 0 || tb > 0) {
-        el.textContent = '→ Điện nhà máy: ' + nm + ' KWh | Trạm bơm: ' + tb + ' KWh | Tổng: ' + (nm+tb) + ' KWh';
+    const nm  = g('dien_nha_may_cuoi')      - g('dien_nha_may_dau');
+    const tb  = g('dien_tram_bom_cuoi')     - g('dien_tram_bom_dau');
+    const nt5 = g('dien_nt5_tang_ap_cuoi')  - g('dien_nt5_tang_ap_dau');
+    const el  = document.getElementById('calc-dien');
+    const parts = [];
+    if (nm  > 0) parts.push('NM: '   + nm  + ' KWh');
+    if (tb  > 0) parts.push('TB: '   + tb  + ' KWh');
+    if (nt5 > 0) parts.push('NT5: '  + nt5 + ' KWh');
+    if (parts.length) {
+        const tong = nm + tb + nt5;
+        el.textContent = '→ ' + parts.join(' | ') + ' | Tổng: ' + tong + ' KWh';
     } else el.textContent = '';
 }
-// Tính khi load trang (nếu đã có data)
-calcTong(); calcDien();
+
+calcNuoc(); calcDien();
 </script>

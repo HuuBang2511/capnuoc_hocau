@@ -98,23 +98,6 @@ $this->title = 'Sổ giao ca — ' . $tenCa;
         </div>
         <div class="gc-calc" id="calc-nuoc-tho"></div>
 
-        <div class="gc-subsection" style="margin-top:10px;">Nước thô NT5 (trạm bơm tăng áp NT5)</div>
-        <div class="gc-grid" style="margin-bottom:8px;">
-            <?php foreach ([
-                ['nuoc_tho_nt5_dau',  'Nước thô NT5 — Đầu ca'],
-                ['nuoc_tho_nt5_cuoi', 'Nước thô NT5 — Cuối ca'],
-            ] as [$f,$lb]): ?>
-            <div class="gc-field">
-                <label><?= $lb ?></label>
-                <input type="number" name="NkGiaoCa[<?= $f ?>]"
-                       value="<?= Html::encode($model->$f) ?>"
-                       step="0.1" inputmode="decimal"
-                       onchange="calcNuoc()" id="<?= $f ?>" />
-            </div>
-            <?php endforeach; ?>
-        </div>
-        <div class="gc-calc" id="calc-nuoc-nt5"></div>
-
         <!-- 2. THIẾT BỊ -->
         <div class="gc-section">2. Thiết bị hoạt động</div>
         <div class="gc-grid">
@@ -260,11 +243,9 @@ function g(id) { return parseFloat(document.getElementById(id)?.value) || 0; }
 function calcNuoc() {
     const cap = g('nuoc_cap_cuoi') - g('nuoc_cap_dau');
     const tho = g('nuoc_tho_cuoi') - g('nuoc_tho_dau');
-    const nt5 = g('nuoc_tho_nt5_cuoi') - g('nuoc_tho_nt5_dau');
     const fmt = v => v > 0 ? v.toFixed(1) + ' m³' : '';
     document.getElementById('calc-nuoc-cap').textContent = cap > 0 ? '→ Sản lượng nước cấp: ' + fmt(cap) : '';
     document.getElementById('calc-nuoc-tho').textContent = tho > 0 ? '→ Sản lượng nước thô: ' + fmt(tho) : '';
-    document.getElementById('calc-nuoc-nt5').textContent = nt5 > 0 ? '→ Sản lượng nước thô NT5: ' + fmt(nt5) : '';
 }
 
 function calcDien() {

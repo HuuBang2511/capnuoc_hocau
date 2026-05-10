@@ -38,19 +38,23 @@ foreach (['s','c'] as $k) {
              background:#f1f5f9; color:#475569; }
 .cln-nav a.active { background:#3b82f6; color:#fff; }
 /* Bảng theo giờ */
-.tbl-gio { width:100%; border-collapse:collapse; font-size:.78rem; }
-.tbl-gio th { background:#1e3a5f; color:#fff; padding:6px 5px; text-align:center; white-space:nowrap; font-weight:600; }
-.tbl-gio th.sub { background:#2d6099; font-weight:400; font-size:.72rem; }
-.tbl-gio td { padding:3px 4px; border-bottom:1px solid #f1f5f9; border-right:1px solid #f1f5f9; text-align:center; }
+.tbl-gio { width:100%; border-collapse:collapse; font-size:.68rem; table-layout:fixed; }
+.tbl-gio th { background:#1e3a5f; color:#fff; padding:4px 2px; text-align:center;
+              white-space:normal; font-weight:600; line-height:1.2; word-break:keep-all; }
+.tbl-gio th.sub { background:#2d6099; font-weight:400; font-size:.65rem; }
+.tbl-gio td { padding:2px 2px; border-bottom:1px solid #f1f5f9; border-right:1px solid #f1f5f9; text-align:center; }
 .tbl-gio tr.ca-dem { background:#f8f9ff; }
-.tbl-gio td.gio-label { font-weight:600; color:#475569; background:#f8fafc; width:38px; }
-.tbl-gio input[type=number] { width:54px; padding:3px 4px; border:1px solid #d1d5db; border-radius:4px;
-                               font-size:.78rem; text-align:center; background:transparent;
-                               -webkit-appearance:none; }
+.tbl-gio td.gio-label { font-weight:600; color:#475569; background:#f8fafc; width:32px; }
+.tbl-gio input[type=number] { width:100%; max-width:54px; min-width:36px; padding:2px 2px;
+                               border:1px solid #d1d5db; border-radius:3px;
+                               font-size:.68rem; text-align:center; background:transparent;
+                               -webkit-appearance:none; box-sizing:border-box; }
 .tbl-gio input[type=number]:focus { border-color:#3b82f6; outline:none; background:#fff; }
 .tbl-gio input.val-bad  { border-color:#ef4444 !important; background:#fef2f2; }
 .tbl-gio input.val-warn { border-color:#f59e0b !important; background:#fffbeb; }
 .tbl-gio tr.ca-dem td { border-right-color:#e0e7ff; }
+/* Wrapper bảng: scroll chỉ khi không đủ chỗ */
+.tbl-gio-wrap { width:100%; overflow-x:auto; }
 /* Jar test */
 .jar-table { width:100%; border-collapse:collapse; font-size:.82rem; }
 .jar-table th { background:#f8fafc; padding:7px 10px; border:1px solid #e2e8f0; text-align:center; font-weight:600; }
@@ -105,7 +109,7 @@ foreach (['s','c'] as $k) {
         <div class="cln-card">
             <div class="cln-title">📋 KẾT QUẢ CHẤT LƯỢNG NƯỚC HÀNG NGÀY — <?= date('d/m/Y', strtotime($ngay)) ?></div>
 
-            <div style="overflow-x:auto;">
+            <div class="tbl-gio-wrap">
             <table class="tbl-gio" id="tbl-main">
                 <thead>
                     <tr>

@@ -281,70 +281,86 @@ class NhatKyController extends QuanlyBaseController
     }
 
     // ─────────────────────────────────────────────────────────────
-    // CL NƯỚC TUẦN (phan_tich_tuan)
+    // CL NƯỚC TUẦN (phan_tich_tuan) — 3 hàng/tuần
     // ─────────────────────────────────────────────────────────────
     public function actionPhanTichTuan($thang = null, $nam = null)
     {
-        $thang = (int)($thang ?? date('m'));
-        $nam   = (int)($nam   ?? date('Y'));
+        $thang = (int)(isset($thang) ? $thang : date('m'));
+        $nam   = (int)(isset($nam)   ? $nam   : date('Y'));
 
         $lichTuan = NkPhanTichTuan::find()
             ->where(['thang' => $thang, 'nam' => $nam])
-            ->orderBy(['tuan_so' => SORT_ASC])
+            ->orderBy(['tuan_so' => SORT_ASC, 'ngay_pt' => SORT_ASC])
             ->all();
 
         if (Yii::$app->request->isPost) {
-            $post  = Yii::$app->request->post();
-            $rows  = $post['rows']  ?? [];
-            $nguoi_pt = trim($post['nguoi_pt'] ?? '');
-            $nguoi_kt = trim($post['nguoi_kt'] ?? '');
+            $post     = Yii::$app->request->post();
+            $rows     = isset($post['rows']) ? $post['rows'] : [];
+            $nguoi_pt = trim(isset($post['nguoi_pt']) ? $post['nguoi_pt'] : '');
+            $nguoi_kt = trim(isset($post['nguoi_kt']) ? $post['nguoi_kt'] : '');
+            $username = Yii::$app->user->identity->username;
 
-            foreach ($rows as $tuanSo => $rowData) {
-                $ngayPt = $rowData['ngay_pt_1'] ?? null;
-                if (!$ngayPt) continue;
+            $numFields = [
+                'nt_do_kiem','nt_do_cung','nt_clorua','nt_tss',
+                'nt_al','nt_fe','nt_mn','nt_amoni','nt_nitrat','nt_nitrit',
+                'nt_sulfat','nt_permanganat','nt_cod','nt_florua',
+                'ns_do_kiem','ns_do_cung','ns_clorua','ns_tss',
+                'ns_al','ns_fe','ns_mn','ns_amoni','ns_nitrat','ns_nitrit',
+                'ns_sulfat','ns_permanganat','ns_cod','ns_florua',
+            ];
 
-                $rec = NkPhanTichTuan::findOne(['ngay_pt' => $ngayPt]);
-                if (!$rec) {
-                    $rec = new NkPhanTichTuan();
-                    $rec->ngay_pt = $ngayPt;
-                }
-                $rec->tuan_so = (int)$tuanSo;
-                $rec->thang   = $thang;
-                $rec->nam     = $nam;
+            foreach ($rows as $tuanSo => $tuanRows) {
+                // tuanRows là array [0=>[...], 1=>[...], 2=>[...]]
+                if (!is_array($tuanRows)) continue;
 
-                $numFields = [
-                    // NT
-                    'nt_do_kiem','nt_do_cung','nt_clorua','nt_tss',
-                    'nt_al','nt_fe','nt_mn','nt_amoni','nt_nitrat','nt_nitrit',
-                    'nt_sulfat','nt_permanganat','nt_cod','nt_florua',
-                    // NS
-                    'ns_do_kiem','ns_do_cung','ns_clorua','ns_tss',
-                    'ns_al','ns_fe','ns_mn','ns_amoni','ns_nitrat','ns_nitrit',
-                    'ns_sulfat','ns_permanganat','ns_cod','ns_florua',
-                ];
-                // coliform là integer
-                foreach (['nt_coliform','ns_coliform'] as $cf) {
-                    $v = $rowData[$cf] ?? null;
-                    $rec->$cf = ($v !== '' && $v !== null) ? (int)$v : null;
+                foreach ($tuanRows as $ri => $rowData) {
+                    if (!is_array($rowData)) continue;
+                    $ngayPt = isset($rowData['ngay_pt']) ? trim($rowData['ngay_pt']) : '';
+                    if (!$ngayPt) continue;
+
+                    // Lookup theo id nếu có (update), không thì tìm theo ngay_pt
+                    $recId = isset($rowData['id']) && $rowData['id'] ? (int)$rowData['id'] : null;
+                    $rec   = null;
+                    if ($recId) {
+                        $rec = NkPhanTichTuan::findOne($recId);
+                    }
+                    if (!$rec) {
+                        $rec = NkPhanTichTuan::findOne(['ngay_pt' => $ngayPt]);
+                    }
+                    if (!$rec) {
+                        $rec = new NkPhanTichTuan();
+                        $rec->ngay_pt = $ngayPt;
+                    } else {
+                        // Nếu ngày thay đổi (người dùng sửa), cập nhật
+                        $rec->ngay_pt = $ngayPt;
+                    }
+
+                    $rec->tuan_so    = (int)$tuanSo;
+                    $rec->thang      = $thang;
+                    $rec->nam        = $nam;
+                    $rec->nguoi_pt   = $nguoi_pt ?: null;
+                    $rec->nguoi_kt   = $nguoi_kt ?: null;
+                    $rec->nguoi_nhap = $username;
+
+                    foreach ($numFields as $f) {
+                        $v = isset($rowData[$f]) ? $rowData[$f] : null;
+                        $rec->$f = ($v !== '' && $v !== null) ? (float)$v : null;
+                    }
+                    foreach (['nt_coliform','ns_coliform'] as $cf) {
+                        $v = isset($rowData[$cf]) ? $rowData[$cf] : null;
+                        $rec->$cf = ($v !== '' && $v !== null) ? (int)$v : null;
+                    }
+                    $rec->save();
                 }
-                foreach ($numFields as $f) {
-                    $v = $rowData[$f] ?? null;
-                    $rec->$f = ($v !== '' && $v !== null) ? (float)$v : null;
-                }
-                $rec->nguoi_pt = $nguoi_pt ?: null;
-                $rec->nguoi_kt = $nguoi_kt ?: null;
-                $rec->nguoi_nhap = Yii::$app->user->identity->username ?? '';
-                $rec->save();
             }
 
             Yii::$app->session->setFlash('success_tuan', 'Đã lưu CL nước tháng ' . $thang . '/' . $nam);
             return $this->redirect(['phan-tich-tuan', 'thang' => $thang, 'nam' => $nam]);
         }
 
-        // Lấy người TH/KT từ bản ghi đầu tiên trong tháng
-        $firstRec  = $lichTuan[0] ?? null;
-        $nguoi_pt  = ($firstRec !== null && $firstRec->nguoi_pt) ? $firstRec->nguoi_pt : '';
-        $nguoi_kt  = ($firstRec !== null && $firstRec->nguoi_kt) ? $firstRec->nguoi_kt : '';
+        $firstRec = isset($lichTuan[0]) ? $lichTuan[0] : null;
+        $nguoi_pt = ($firstRec !== null && $firstRec->nguoi_pt) ? $firstRec->nguoi_pt : '';
+        $nguoi_kt = ($firstRec !== null && $firstRec->nguoi_kt) ? $firstRec->nguoi_kt : '';
 
         return $this->render('/hocau/phan_tich_tuan/index', [
             'lichTuan' => $lichTuan,

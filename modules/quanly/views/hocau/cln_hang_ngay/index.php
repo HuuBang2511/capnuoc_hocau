@@ -84,6 +84,14 @@ foreach (['s','c'] as $k) {
     .tbl-gio { font-size:.8rem; }
     .tbl-gio input[type=number] { min-width:46px; font-size:.82rem; padding:4px 2px; }
     .tbl-gio td.gio-label { font-size:.8rem; }
+/* Thanh lối tắt dùng chung */
+.qnav-bar{display:flex;gap:5px;flex-wrap:wrap;align-items:center;padding:8px 10px;
+          background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:10px}
+.qnav-label{font-size:.7rem;font-weight:700;color:#94a3b8;white-space:nowrap;margin-right:2px}
+.qnav-btn{padding:5px 10px;border-radius:8px;text-decoration:none;font-size:.75rem;font-weight:500;
+          background:#fff;color:#475569;border:1px solid #e2e8f0;white-space:nowrap;transition:all .12s}
+.qnav-btn:hover{border-color:#3b82f6;color:#3b82f6;background:#eff6ff}
+.qnav-active{background:#1e3a5f!important;color:#fff!important;border-color:#1e3a5f!important}
     .jar-table { font-size:.85rem; }
     .jar-table input[type=number] { width:52px; }
 }
@@ -100,6 +108,18 @@ foreach (['s','c'] as $k) {
         <a href="<?= Url::to(['nhat-ky/cln-hang-ngay','ngay'=>$d]) ?>"
            class="<?= $d==$ngay?'active':'' ?>"><?= $lbl ?></a>
         <?php endfor; ?>
+    </div>
+
+    <!-- Thanh lối tắt nhập liệu -->
+    <div class="qnav-bar">
+        <span class="qnav-label">✏ Nhập liệu:</span>
+        <a href="<?= Url::to(['nhat-ky/chat-luong-gio','ca'=>1,'ngay'=>$ngay]) ?>" class="qnav-btn">🧪 HN Ngày</a>
+        <a href="<?= Url::to(['nhat-ky/chat-luong-gio','ca'=>2,'ngay'=>$ngay]) ?>" class="qnav-btn">🌙 HN Đêm</a>
+        <a href="<?= Url::to(['nhat-ky/giao-ca','ca'=>1,'ngay'=>$ngay]) ?>" class="qnav-btn">☀️ VH Ngày</a>
+        <a href="<?= Url::to(['nhat-ky/giao-ca','ca'=>2,'ngay'=>$ngay]) ?>" class="qnav-btn">🌙 VH Đêm</a>
+        <a href="<?= Url::to(['nhat-ky/nuoc-thai-sh','ngay'=>$ngay]) ?>" class="qnav-btn">🧫 Nước thải</a>
+        <a href="<?= Url::to(['nhat-ky/cln-hang-ngay','ngay'=>$ngay]) ?>" class="qnav-btn qnav-active">📋 CLN ngày</a>
+        <a href="<?= Url::to(['nhat-ky/phan-tich-tuan']) ?>" class="qnav-btn">📊 CL Tuần</a>
     </div>
 
     <?php if (Yii::$app->session->hasFlash('success_cln')): ?>

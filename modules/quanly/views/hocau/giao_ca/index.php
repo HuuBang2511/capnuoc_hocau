@@ -28,8 +28,14 @@ $this->title = 'Sổ giao ca — ' . $tenCa;
                text-decoration:none; font-weight:600; font-size:.9rem;
                background:#f1f5f9; color:#475569; }
 .ca-switch a.active { background:#3b82f6; color:#fff; }
-/* Thanh chọn ngày */
-.gc-day-nav { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px; align-items:center; }
+/* Thanh lối tắt dùng chung */
+.qnav-bar{display:flex;gap:5px;flex-wrap:wrap;align-items:center;padding:8px 10px;
+          background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:10px}
+.qnav-label{font-size:.7rem;font-weight:700;color:#94a3b8;white-space:nowrap;margin-right:2px}
+.qnav-btn{padding:5px 10px;border-radius:8px;text-decoration:none;font-size:.75rem;font-weight:500;
+          background:#fff;color:#475569;border:1px solid #e2e8f0;white-space:nowrap;transition:all .12s}
+.qnav-btn:hover{border-color:#3b82f6;color:#3b82f6;background:#eff6ff}
+.qnav-active{background:#1e3a5f!important;color:#fff!important;border-color:#1e3a5f!important}
 .gc-day-nav a { padding:6px 14px; border-radius:99px; text-decoration:none; font-size:.83rem;
                 background:#f1f5f9; color:#475569; }
 .gc-day-nav a.active { background:#1e3a5f; color:#fff; }
@@ -61,6 +67,25 @@ $this->title = 'Sổ giao ca — ' . $tenCa;
                value="<?= Html::encode($ngay) ?>"
                max="<?= date('Y-m-d') ?>"
                onchange="window.location.href='<?= Url::to(['nhat-ky/giao-ca','ca'=>$ca]) ?>&ngay='+this.value" />
+    </div>
+
+    <!-- Thanh lối tắt nhập liệu -->
+    <div class="qnav-bar">
+        <span class="qnav-label">✏ Nhập liệu:</span>
+        <a href="<?= Url::to(['nhat-ky/chat-luong-gio','ca'=>1,'ngay'=>$ngay]) ?>"
+           class="qnav-btn">🧪 HN Ngày</a>
+        <a href="<?= Url::to(['nhat-ky/chat-luong-gio','ca'=>2,'ngay'=>$ngay]) ?>"
+           class="qnav-btn">🌙 HN Đêm</a>
+        <a href="<?= Url::to(['nhat-ky/giao-ca','ca'=>1,'ngay'=>$ngay]) ?>"
+           class="qnav-btn <?= $ca==1?'qnav-active':'' ?>">☀️ VH Ngày</a>
+        <a href="<?= Url::to(['nhat-ky/giao-ca','ca'=>2,'ngay'=>$ngay]) ?>"
+           class="qnav-btn <?= $ca==2?'qnav-active':'' ?>">🌙 VH Đêm</a>
+        <a href="<?= Url::to(['nhat-ky/nuoc-thai-sh','ngay'=>$ngay]) ?>"
+           class="qnav-btn">🧫 Nước thải</a>
+        <a href="<?= Url::to(['nhat-ky/cln-hang-ngay','ngay'=>$ngay]) ?>"
+           class="qnav-btn">📋 CLN ngày</a>
+        <a href="<?= Url::to(['nhat-ky/phan-tich-tuan']) ?>"
+           class="qnav-btn">📊 CL Tuần</a>
     </div>
 
     <div class="ca-switch">

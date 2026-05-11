@@ -22,10 +22,17 @@ $this->title = 'Nước thải sinh hoạt';
 .nts-hint.warn { color:#f59e0b; }
 .nts-btn { width:100%; padding:13px; background:#3b82f6; color:#fff; border:none;
            border-radius:10px; font-size:1rem; font-weight:600; cursor:pointer; margin-top:8px; }
-.nav-day { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+.nav-day { display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
 .nav-day a { padding:6px 14px; border-radius:99px; text-decoration:none;
              font-size:.83rem; background:#f1f5f9; color:#475569; }
 .nav-day a.active { background:#3b82f6; color:#fff; }
+.qnav-bar{display:flex;gap:5px;flex-wrap:wrap;align-items:center;padding:8px 10px;
+          background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:10px}
+.qnav-label{font-size:.7rem;font-weight:700;color:#94a3b8;white-space:nowrap;margin-right:2px}
+.qnav-btn{padding:5px 10px;border-radius:8px;text-decoration:none;font-size:.75rem;font-weight:500;
+          background:#fff;color:#475569;border:1px solid #e2e8f0;white-space:nowrap;transition:all .12s}
+.qnav-btn:hover{border-color:#3b82f6;color:#3b82f6;background:#eff6ff}
+.qnav-active{background:#1e3a5f!important;color:#fff!important;border-color:#1e3a5f!important}
 .nts-table { width:100%; border-collapse:collapse; font-size:.8rem; }
 .nts-table th { background:#f8fafc; padding:8px; text-align:center; border-bottom:2px solid #e2e8f0; }
 .nts-table td { padding:8px; border-bottom:1px solid #f1f5f9; text-align:center; }
@@ -45,6 +52,18 @@ $this->title = 'Nước thải sinh hoạt';
         <a href="<?= Url::to(['nhat-ky/nuoc-thai-sh','ngay'=>$d]) ?>"
            class="<?= $d==$ngay?'active':'' ?>"><?= $lbl ?></a>
         <?php endfor; ?>
+    </div>
+
+    <!-- Thanh lối tắt nhập liệu -->
+    <div class="qnav-bar">
+        <span class="qnav-label">✏ Nhập liệu:</span>
+        <a href="<?= Url::to(['nhat-ky/chat-luong-gio','ca'=>1,'ngay'=>$ngay]) ?>" class="qnav-btn">🧪 HN Ngày</a>
+        <a href="<?= Url::to(['nhat-ky/chat-luong-gio','ca'=>2,'ngay'=>$ngay]) ?>" class="qnav-btn">🌙 HN Đêm</a>
+        <a href="<?= Url::to(['nhat-ky/giao-ca','ca'=>1,'ngay'=>$ngay]) ?>" class="qnav-btn">☀️ VH Ngày</a>
+        <a href="<?= Url::to(['nhat-ky/giao-ca','ca'=>2,'ngay'=>$ngay]) ?>" class="qnav-btn">🌙 VH Đêm</a>
+        <a href="<?= Url::to(['nhat-ky/nuoc-thai-sh','ngay'=>$ngay]) ?>" class="qnav-btn qnav-active">🧫 Nước thải</a>
+        <a href="<?= Url::to(['nhat-ky/cln-hang-ngay','ngay'=>$ngay]) ?>" class="qnav-btn">📋 CLN ngày</a>
+        <a href="<?= Url::to(['nhat-ky/phan-tich-tuan']) ?>" class="qnav-btn">📊 CL Tuần</a>
     </div>
 
     <div class="nts-card">

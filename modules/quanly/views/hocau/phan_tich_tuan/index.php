@@ -45,9 +45,16 @@ $COLS = [
 ?>
 <style>
 .pt-wrap{max-width:100%;padding:12px 8px}
-.pt-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.pt-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
 .pt-nav a{padding:6px 14px;border-radius:99px;text-decoration:none;font-size:.82rem;background:#f1f5f9;color:#475569}
 .pt-nav a.active{background:#3b82f6;color:#fff}
+.qnav-bar{display:flex;gap:5px;flex-wrap:wrap;align-items:center;padding:8px 10px;
+          background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:10px}
+.qnav-label{font-size:.7rem;font-weight:700;color:#94a3b8;white-space:nowrap;margin-right:2px}
+.qnav-btn{padding:5px 10px;border-radius:8px;text-decoration:none;font-size:.75rem;font-weight:500;
+          background:#fff;color:#475569;border:1px solid #e2e8f0;white-space:nowrap;transition:all .12s}
+.qnav-btn:hover{border-color:#3b82f6;color:#3b82f6;background:#eff6ff}
+.qnav-active{background:#1e3a5f!important;color:#fff!important;border-color:#1e3a5f!important}
 .pt-card{border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:14px;background:#fff}
 .pt-title{font-size:.95rem;font-weight:700;color:#1e3a5f;margin-bottom:12px}
 .pt-tbl{width:100%;border-collapse:collapse;font-size:.7rem;table-layout:auto}
@@ -88,6 +95,19 @@ $COLS = [
         <a href="<?= Url::to(['nhat-ky/phan-tich-tuan','thang'=>$m,'nam'=>$y]) ?>"
            class="<?= ($m==$thang&&$y==$nam)?'active':'' ?>">T<?= $m ?>/<?= $y ?></a>
         <?php endfor; ?>
+    </div>
+
+    <!-- Thanh lối tắt nhập liệu -->
+    <?php $todayNav = date('Y-m-d'); ?>
+    <div class="qnav-bar">
+        <span class="qnav-label">✏ Nhập liệu:</span>
+        <a href="<?= Url::to(['nhat-ky/chat-luong-gio','ca'=>1,'ngay'=>$todayNav]) ?>" class="qnav-btn">🧪 HN Ngày</a>
+        <a href="<?= Url::to(['nhat-ky/chat-luong-gio','ca'=>2,'ngay'=>$todayNav]) ?>" class="qnav-btn">🌙 HN Đêm</a>
+        <a href="<?= Url::to(['nhat-ky/giao-ca','ca'=>1,'ngay'=>$todayNav]) ?>" class="qnav-btn">☀️ VH Ngày</a>
+        <a href="<?= Url::to(['nhat-ky/giao-ca','ca'=>2,'ngay'=>$todayNav]) ?>" class="qnav-btn">🌙 VH Đêm</a>
+        <a href="<?= Url::to(['nhat-ky/nuoc-thai-sh','ngay'=>$todayNav]) ?>" class="qnav-btn">🧫 Nước thải</a>
+        <a href="<?= Url::to(['nhat-ky/cln-hang-ngay','ngay'=>$todayNav]) ?>" class="qnav-btn">📋 CLN ngày</a>
+        <a href="<?= Url::to(['nhat-ky/phan-tich-tuan']) ?>" class="qnav-btn qnav-active">📊 CL Tuần</a>
     </div>
 
     <?php if (Yii::$app->session->hasFlash('success_tuan')): ?>

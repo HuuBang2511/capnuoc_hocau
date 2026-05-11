@@ -82,6 +82,13 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
 .hn-ca-sw{display:flex;gap:8px;margin-bottom:12px}
 .hn-ca-sw a{flex:1;text-align:center;padding:9px;border-radius:10px;font-size:.88rem;font-weight:600;text-decoration:none;background:#f1f5f9;color:#475569}
 .hn-ca-sw a.active{background:#1e3a5f;color:#fff}
+/* Nút lối tắt giờ */
+.hn-shortcuts{display:flex;gap:5px;flex-wrap:wrap;padding:10px 12px;background:#f8fafc;border-radius:10px;margin-bottom:12px;align-items:center}
+.hn-shortcuts-label{font-size:.72rem;color:#94a3b8;font-weight:600;margin-right:4px;white-space:nowrap}
+.hn-shortcut-btn{padding:4px 10px;border-radius:99px;border:1.5px solid #e2e8f0;background:#fff;color:#475569;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .15s}
+.hn-shortcut-btn:hover{border-color:#3b82f6;color:#3b82f6;background:#eff6ff}
+.hn-shortcut-btn.filled{background:#dcfce7;border-color:#16a34a;color:#166534}
+.hn-shortcut-btn.current{background:#3b82f6;border-color:#3b82f6;color:#fff}
 .hn-ca-header{background:#1e3a5f;color:#fff;border-radius:10px 10px 0 0;padding:10px 16px;font-weight:700;font-size:.9rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
 .hn-card{border:1px solid #e2e8f0;border-radius:0 0 10px 10px;overflow-x:auto;margin-bottom:16px}
 .hn-tbl{width:100%;border-collapse:collapse;font-size:.72rem}
@@ -140,6 +147,26 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
            class="<?= $ca == 1 ? 'active' : '' ?>">☀️ Ca 1: 07h–18h</a>
         <a href="<?= Url::to(['nhat-ky/chat-luong-gio', 'ngay' => $ngay, 'ca' => 2]) ?>"
            class="<?= $ca == 2 ? 'active' : '' ?>">🌙 Ca 2: 19h–06h</a>
+    </div>
+
+    <!-- Lối tắt nhảy đến giờ -->
+    <div class="hn-shortcuts" id="shortcuts-bar">
+        <span class="hn-shortcuts-label">Đến giờ:</span>
+        <?php foreach ($gioList as $gio):
+            $gLbl = ($gio === 0 ? '24' : $gio) . 'h';
+            $hasFilled = isset($dataByGio[$gio]);
+        ?>
+        <button type="button"
+                class="hn-shortcut-btn <?= $hasFilled ? 'filled' : '' ?>"
+                onclick="jumpToGio(<?= $gio ?>)"
+                id="sc-<?= $gio ?>">
+            <?= $gLbl ?>
+        </button>
+        <?php endforeach; ?>
+        <button type="button"
+                class="hn-shortcut-btn"
+                style="margin-left:auto;background:#f8fafc;color:#3b82f6;border-color:#3b82f6;"
+                onclick="jumpToJar()">🧪 Jar test</button>
     </div>
 
     <div class="hn-ca-header">
@@ -375,5 +402,50 @@ function pickJar() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() { pickJar(); calcBQ(); });
+document.addEventListener('DOMContentLoaded', function() {
+    pickJar();
+    calcBQ();
+
+    // Highlight nút giờ hiện tại
+    var nowH = new Date().getHours();
+    var curBtn = document.getElementById('sc-' + nowH);
+    if (curBtn) curBtn.classList.add('current');
+
+    // Cập nhật filled state khi user nhập liệu
+    document.querySelectorAll('.hn-tbl input[type=number]').forEach(function(inp) {
+        inp.addEventListener('change', function() {
+            var match = this.name.match(/rows\[(\d+)\]/);
+            if (!match) return;
+            var gio = parseInt(match[1]);
+            var btn = document.getElementById('sc-' + gio);
+            if (!btn) return;
+            // Kiểm tra row đó có giá trị nào không
+            var row = document.querySelectorAll('input[name^="rows['+gio+']"]');
+            var hasVal = false;
+            row.forEach(function(r) { if (r.value !== '') hasVal = true; });
+            if (hasVal) btn.classList.add('filled');
+            else btn.classList.remove('filled');
+        });
+    });
+});
+
+function jumpToGio(gio) {
+    var row = document.getElementById('row-' + gio);
+    if (!row) return;
+    row.scrollIntoView({behavior:'smooth', block:'center'});
+    // Focus ô đầu tiên của hàng đó
+    var firstInp = row.querySelector('input[type=number]');
+    if (firstInp) {
+        setTimeout(function() { firstInp.focus(); }, 400);
+    }
+    // Highlight tạm thời
+    row.style.transition = 'background .2s';
+    row.style.background = '#eff6ff';
+    setTimeout(function() { row.style.background = ''; }, 1500);
+}
+
+function jumpToJar() {
+    var jarCard = document.querySelector('.jar-card');
+    if (jarCard) jarCard.scrollIntoView({behavior:'smooth', block:'start'});
+}
 </script>

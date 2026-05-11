@@ -38,23 +38,23 @@ foreach (['s','c'] as $k) {
              background:#f1f5f9; color:#475569; }
 .cln-nav a.active { background:#3b82f6; color:#fff; }
 /* Bảng theo giờ */
-.tbl-gio { width:100%; border-collapse:collapse; font-size:.68rem; table-layout:fixed; }
-.tbl-gio th { background:#1e3a5f; color:#fff; padding:4px 2px; text-align:center;
-              white-space:normal; font-weight:600; line-height:1.2; word-break:keep-all; }
-.tbl-gio th.sub { background:#2d6099; font-weight:400; font-size:.65rem; }
-.tbl-gio td { padding:2px 2px; border-bottom:1px solid #f1f5f9; border-right:1px solid #f1f5f9; text-align:center; }
+.tbl-gio { width:100%; border-collapse:collapse; font-size:.75rem; table-layout:fixed; }
+.tbl-gio th { background:#1e3a5f; color:#fff; padding:5px 3px; text-align:center;
+              white-space:normal; font-weight:600; line-height:1.3; word-break:keep-all; }
+.tbl-gio th.sub { background:#2d6099; font-weight:400; font-size:.7rem; }
+.tbl-gio td { padding:3px 2px; border-bottom:1px solid #f1f5f9; border-right:1px solid #f1f5f9; text-align:center; }
 .tbl-gio tr.ca-dem { background:#f8f9ff; }
-.tbl-gio td.gio-label { font-weight:600; color:#475569; background:#f8fafc; width:32px; }
-.tbl-gio input[type=number] { width:100%; max-width:54px; min-width:36px; padding:2px 2px;
-                               border:1px solid #d1d5db; border-radius:3px;
-                               font-size:.68rem; text-align:center; background:transparent;
+.tbl-gio td.gio-label { font-weight:600; color:#475569; background:#f8fafc; width:34px; font-size:.75rem; }
+.tbl-gio input[type=number] { width:100%; max-width:60px; min-width:42px; padding:3px 2px;
+                               border:1px solid #d1d5db; border-radius:4px;
+                               font-size:.8rem; text-align:center; background:transparent;
                                -webkit-appearance:none; box-sizing:border-box; }
 .tbl-gio input[type=number]:focus { border-color:#3b82f6; outline:none; background:#fff; }
 .tbl-gio input.val-bad  { border-color:#ef4444 !important; background:#fef2f2; }
 .tbl-gio input.val-warn { border-color:#f59e0b !important; background:#fffbeb; }
 .tbl-gio tr.ca-dem td { border-right-color:#e0e7ff; }
 /* Wrapper bảng: scroll chỉ khi không đủ chỗ */
-.tbl-gio-wrap { width:100%; overflow-x:auto; }
+.tbl-gio-wrap { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
 /* Jar test */
 .jar-table { width:100%; border-collapse:collapse; font-size:.82rem; }
 .jar-table th { background:#f8fafc; padding:7px 10px; border:1px solid #e2e8f0; text-align:center; font-weight:600; }
@@ -78,9 +78,14 @@ foreach (['s','c'] as $k) {
 .flash-ok { background:#dcfce7; color:#166534; padding:10px 14px; border-radius:8px;
             margin-bottom:12px; font-size:.88rem; }
 .bq-row td { font-weight:700 !important; background:#fef9c3 !important; }
-@media(max-width:576px) {
+@media(max-width:768px) {
+    .cln-wrap { padding:10px 6px; }
     .nguoi-grid { grid-template-columns:1fr; }
-    .tbl-gio input[type=number] { width:44px; }
+    .tbl-gio { font-size:.8rem; }
+    .tbl-gio input[type=number] { min-width:46px; font-size:.82rem; padding:4px 2px; }
+    .tbl-gio td.gio-label { font-size:.8rem; }
+    .jar-table { font-size:.85rem; }
+    .jar-table input[type=number] { width:52px; }
 }
 </style>
 

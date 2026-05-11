@@ -23,11 +23,19 @@ $this->title = 'Sổ giao ca — ' . $tenCa;
 .gc-btn  { width:100%; padding:14px; background:#3b82f6; color:#fff;
            border:none; border-radius:10px; font-size:1rem; font-weight:600;
            cursor:pointer; margin-top:8px; }
-.ca-switch { display:flex; gap:8px; margin-bottom:16px; }
+.ca-switch { display:flex; gap:8px; margin-bottom:12px; }
 .ca-switch a { flex:1; text-align:center; padding:10px; border-radius:10px;
                text-decoration:none; font-weight:600; font-size:.9rem;
                background:#f1f5f9; color:#475569; }
 .ca-switch a.active { background:#3b82f6; color:#fff; }
+/* Thanh chọn ngày */
+.gc-day-nav { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px; align-items:center; }
+.gc-day-nav a { padding:6px 14px; border-radius:99px; text-decoration:none; font-size:.83rem;
+                background:#f1f5f9; color:#475569; }
+.gc-day-nav a.active { background:#1e3a5f; color:#fff; }
+.gc-day-nav input[type=date] { padding:6px 10px; border:1.5px solid #e2e8f0; border-radius:10px;
+                                font-size:.83rem; outline:none; background:#fff; cursor:pointer; }
+.gc-day-nav input[type=date]:focus { border-color:#3b82f6; }
 .gc-subsection { font-size:.78rem; font-weight:600; color:#64748b; padding:3px 8px;
                  background:#f8fafc; border-radius:5px; margin:8px 0 6px;
                  border-left:2px solid #94a3b8; }
@@ -39,6 +47,22 @@ $this->title = 'Sổ giao ca — ' . $tenCa;
 </style>
 
 <div class="gc-wrap">
+
+    <!-- Thanh chọn ngày -->
+    <div class="gc-day-nav">
+        <?php for ($i = 2; $i >= 0; $i--):
+            $d   = date('Y-m-d', strtotime('-' . $i . ' days'));
+            $lbl = $i == 0 ? 'Hôm nay' : ($i == 1 ? 'Hôm qua' : date('d/m', strtotime('-' . $i . ' days')));
+        ?>
+        <a href="<?= Url::to(['nhat-ky/giao-ca', 'ngay' => $d, 'ca' => $ca]) ?>"
+           class="<?= $d == $ngay ? 'active' : '' ?>"><?= $lbl ?></a>
+        <?php endfor; ?>
+        <input type="date" id="gc-date-pick"
+               value="<?= Html::encode($ngay) ?>"
+               max="<?= date('Y-m-d') ?>"
+               onchange="window.location.href='<?= Url::to(['nhat-ky/giao-ca','ca'=>$ca]) ?>&ngay='+this.value" />
+    </div>
+
     <div class="ca-switch">
         <a href="<?= Url::to(['nhat-ky/giao-ca','ngay'=>$ngay,'ca'=>1]) ?>"
            class="<?= $ca==1?'active':'' ?>">☀️ Ca Ngày</a>

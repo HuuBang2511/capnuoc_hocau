@@ -161,7 +161,7 @@ if ($model->tinhtrangsuco_id == 3) $statusClass = 'success'; // Đã hoàn thàn
         maxZoom: 22
     });
 
-    L.control.layers({ "Vệ tinh": layerGMapSatellite, "Địa giới": layerGmapStreets }, , { "Sự cố" : suco }).addTo(map);
+    L.control.layers({ "Vệ tinh": layerGMapSatellite, "Địa giới": layerGmapStreets }, { "Sự cố" : suco }).addTo(map);
 
     var icon = L.icon({
         iconUrl: '<?= Yii::$app->homeUrl ?>images/icons8-map-marker-96.png',

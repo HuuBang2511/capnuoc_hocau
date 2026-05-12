@@ -602,12 +602,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // ════════════════════════════════════════════════════════════
     const IOT_BASE = '/iot_api.php';
     const IOT_KEY  = 'SCADA_HOCAU_2024_SECRET_KEY';
-    const DB_API   = '/quanly/nhat-ky/api-van-hanh'; // action mới lấy hóa chất từ DB
 
     let slCharts = {};
     let curTab   = 'ngay';
-    // Cache DB data để dùng chung
-    let dbCache  = null;
+    // DB data inject từ PHP (DashboardController::getVanHanhData) — không cần HTTP fetch
+    let dbCache  = <?= $vanHanhData ?>;
 
     const C = {
         blue:   '#3699ff', cyan:  '#00d4ff', green: '#1bc5bd',
@@ -661,14 +660,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('kpi-clo-sub').textContent  = cloSub  || '';
     }
 
-    // ── Fetch DB data (hóa chất + điện từ nk_giao_ca) ──────────
-    function fetchDbData(callback) {
-        if (dbCache !== null) { callback(dbCache); return; }
-        fetch(DB_API)
-            .then(function(r){ return r.json(); })
-            .then(function(d){ dbCache = d; callback(d); })
-            .catch(function(){ dbCache = {}; callback({}); });
-    }
+    // DB data inject từ PHP — không cần HTTP fetch
+    function fetchDbData(callback) { callback(dbCache || {}); }
 
     // ── Merge SCADA data với DB data theo label ngày ─────────────
     // DB trả về: { ngay_data: [{ngay, dien, pac, chlorine, polymer}], thang_data: [...] }
@@ -721,25 +714,19 @@ document.addEventListener('DOMContentLoaded', function() {
         cloM  = mergeWithDb(labels, cloM,  dbNgay, 'chlorine');
         var polyM = mergeWithDb(labels, [], dbNgay, 'polymer');
 
-        var cumNuoc = cumsum(nuocM);
-        var cumDien = cumsum(dienM);
-        var cumPac  = cumsum(pacM);
-        var cumClo  = cumsum(cloM);
-        var cumPoly = cumsum(polyM);
-
-        var totNuoc = cumNuoc[cumNuoc.length-1] || 0;
-        var totDien = cumDien[cumDien.length-1] || 0;
-        var totPac  = cumPac[cumPac.length-1]   || 0;
-        var totClo  = cumClo[cumClo.length-1]   || 0;
+        var totNuoc = nuocM.reduce(function(s,v){return s+(v||0);},0);
+        var totDien = dienM.reduce(function(s,v){return s+(v||0);},0);
+        var totPac  = pacM.reduce(function(s,v){return s+(v||0);},0);
+        var totClo  = cloM.reduce(function(s,v){return s+(v||0);},0);
 
         var now = new Date();
         var monthLabel = 'tháng ' + (now.getMonth()+1) + '/' + now.getFullYear();
 
         setKpiLabels(
-            'Nước sạch lũy kế ' + monthLabel,
-            'Điện năng lũy kế ' + monthLabel,
-            'PAC lũy kế ' + monthLabel,
-            'Chlorine lũy kế ' + monthLabel
+            'Tổng nước sạch ' + monthLabel,
+            'Tổng điện năng ' + monthLabel,
+            'Tổng PAC ' + monthLabel,
+            'Tổng Chlorine ' + monthLabel
         );
         var dienNote = totDien > 0 ? '' : '(từ nhật ký vận hành)';
         updateKPI(
@@ -754,25 +741,24 @@ document.addEventListener('DOMContentLoaded', function() {
             '<div class="sl-chart-grid" style="margin-bottom:14px;">' +
                 '<div class="sl-card">' +
                     '<div class="sl-card-title"><span class="dot" style="--dot-color:#3699ff;"></span>' +
-                        'Lũy kế Nước sạch & Điện năng — ' + monthLabel +
+                        'Nước sạch & Điện năng theo ngày — ' + monthLabel +
                     '</div>' +
                     '<div class="sl-canvas-wrap" style="min-height:200px;"><canvas id="slCumNgay"></canvas></div>' +
                 '</div>' +
                 '<div class="sl-card">' +
                     '<div class="sl-card-title"><span class="dot" style="--dot-color:#1bc5bd;"></span>' +
-                        'Lũy kế Hóa chất xử lý — ' + monthLabel +
+                        'Hóa chất xử lý theo ngày — ' + monthLabel +
                     '</div>' +
                     '<div class="sl-canvas-wrap"><canvas id="slHoaChatNgay"></canvas></div>' +
                 '</div>' +
             '</div>';
 
-        // Chart nước (line) + điện (bar) — đổi lại so với cũ
         slCharts.cumNgay = new Chart(document.getElementById('slCumNgay'), {
             type: 'bar',
             data: { labels: labels, datasets: [
-                { type: 'bar',  label: 'Điện năng (KWh)', data: cumDien,
+                { type: 'bar',  label: 'Điện năng (KWh)', data: dienM,
                   backgroundColor: C.amber2, borderColor: C.amber, borderWidth: 1, borderRadius: 3, yAxisID: 'y1' },
-                { type: 'line', label: 'Nước sạch (m³)',  data: cumNuoc,
+                { type: 'line', label: 'Nước sạch (m³)',  data: nuocM,
                   borderColor: C.blue, backgroundColor: 'transparent', borderWidth: 2.5,
                   tension: .3, pointRadius: 3, pointBackgroundColor: C.blue, yAxisID: 'y' },
             ]},
@@ -847,20 +833,17 @@ document.addEventListener('DOMContentLoaded', function() {
         var mClo  = mLabels.map(function(k){ return monthMap[k].clo;  });
         var mPoly = mLabels.map(function(k){ return monthMap[k].poly || 0; });
 
-        var cumNuoc = cumsum(mNuoc);
-        var cumDien = cumsum(mDien);
-
-        var totNuoc = cumNuoc[cumNuoc.length-1] || 0;
-        var totDien = cumDien[cumDien.length-1] || 0;
-        var totPac  = cumsum(mPac)[mPac.length-1] || 0;
-        var totClo  = cumsum(mClo)[mClo.length-1] || 0;
+        var totNuoc = mNuoc.reduce(function(s,v){return s+(v||0);},0);
+        var totDien = mDien.reduce(function(s,v){return s+(v||0);},0);
+        var totPac  = mPac.reduce(function(s,v){return s+(v||0);},0);
+        var totClo  = mClo.reduce(function(s,v){return s+(v||0);},0);
         var yrLabel = 'năm ' + yr;
 
         setKpiLabels(
-            'Nước sạch lũy kế ' + yrLabel,
-            'Điện năng lũy kế ' + yrLabel,
-            'PAC lũy kế ' + yrLabel,
-            'Chlorine lũy kế ' + yrLabel
+            'Tổng nước sạch ' + yrLabel,
+            'Tổng điện năng ' + yrLabel,
+            'Tổng PAC ' + yrLabel,
+            'Tổng Chlorine ' + yrLabel
         );
         updateKPI(
             fmtN(totNuoc) + '<span class="sl-kpi-unit">m³</span>',
@@ -874,25 +857,24 @@ document.addEventListener('DOMContentLoaded', function() {
             '<div class="sl-chart-grid" style="margin-bottom:14px;">' +
                 '<div class="sl-card">' +
                     '<div class="sl-card-title"><span class="dot" style="--dot-color:#3699ff;"></span>' +
-                        'Lũy kế Nước sạch & Điện năng — ' + yrLabel +
+                        'Nước sạch & Điện năng theo tháng — ' + yrLabel +
                     '</div>' +
                     '<div class="sl-canvas-wrap" style="min-height:220px;"><canvas id="slCumThang"></canvas></div>' +
                 '</div>' +
                 '<div class="sl-card">' +
                     '<div class="sl-card-title"><span class="dot" style="--dot-color:#1bc5bd;"></span>' +
-                        'Lũy kế Hóa chất xử lý — ' + yrLabel +
+                        'Hóa chất xử lý theo tháng — ' + yrLabel +
                     '</div>' +
                     '<div class="sl-canvas-wrap"><canvas id="slHoaChatThang"></canvas></div>' +
                 '</div>' +
             '</div>';
 
-        // Nước (line) + Điện (bar)
         slCharts.cumThang = new Chart(document.getElementById('slCumThang'), {
             type: 'bar',
             data: { labels: mLabels, datasets: [
-                { type: 'bar',  label: 'Điện năng (KWh)', data: cumDien,
+                { type: 'bar',  label: 'Điện năng (KWh)', data: mDien,
                   backgroundColor: C.amber2, borderColor: C.amber, borderWidth: 1, borderRadius: 3, yAxisID: 'y1' },
-                { type: 'line', label: 'Nước sạch (m³)',  data: cumNuoc,
+                { type: 'line', label: 'Nước sạch (m³)',  data: mNuoc,
                   borderColor: C.blue, backgroundColor: 'transparent', borderWidth: 2.5,
                   tension: .3, pointRadius: 4, pointBackgroundColor: C.blue, yAxisID: 'y' },
             ]},
@@ -960,17 +942,17 @@ document.addEventListener('DOMContentLoaded', function() {
         var yNuoc   = yLabels.map(function(k){ return yrMap[k].nuoc; });
         var yDien   = yLabels.map(function(k){ return yrMap[k].dien; });
 
-        var cumNuoc = cumsum(yNuoc);
-        var cumDien = cumsum(yDien);
-        var totNuoc = cumNuoc[cumNuoc.length-1] || 0;
-        var totDien = cumDien[cumDien.length-1] || 0;
+        var totNuoc = yNuoc.reduce(function(s,v){return s+(v||0);},0);
+        var totDien = yDien.reduce(function(s,v){return s+(v||0);},0);
+        var totPacNam = yLabels.reduce(function(s,k){return s+(yrMap[k].pac||0);},0);
+        var totCloNam = yLabels.reduce(function(s,k){return s+(yrMap[k].clo||0);},0);
 
         setKpiLabels('Tổng nước sạch (toàn lịch sử)', 'Tổng điện năng (toàn lịch sử)', 'Tổng PAC (toàn lịch sử)', 'Tổng Chlorine (toàn lịch sử)');
         updateKPI(
-            fmtN(totNuoc) + '<span class="sl-kpi-unit">m³</span>',
-            fmtN(totDien) + '<span class="sl-kpi-unit">KWh</span>',
-            fmt(cumsum(yLabels.map(function(k){ return yrMap[k].pac; }))[yLabels.length-1]) + '<span class="sl-kpi-unit">kg</span>',
-            fmt(cumsum(yLabels.map(function(k){ return yrMap[k].clo; }))[yLabels.length-1]) + '<span class="sl-kpi-unit">kg</span>',
+            fmtN(totNuoc)   + '<span class="sl-kpi-unit">m³</span>',
+            fmtN(totDien)   + '<span class="sl-kpi-unit">KWh</span>',
+            fmt(totPacNam)  + '<span class="sl-kpi-unit">kg</span>',
+            fmt(totCloNam)  + '<span class="sl-kpi-unit">kg</span>',
             '', '', ''
         );
 
@@ -978,7 +960,7 @@ document.addEventListener('DOMContentLoaded', function() {
             '<div class="sl-chart-grid" style="margin-bottom:14px;">' +
                 '<div class="sl-card" style="grid-column:1/3;">' +
                     '<div class="sl-card-title"><span class="dot" style="--dot-color:#3699ff;"></span>' +
-                        'Lũy kế Nước sạch & Điện năng — Toàn bộ dữ liệu' +
+                        'Nước sạch & Điện năng theo năm — Toàn bộ dữ liệu' +
                     '</div>' +
                     '<div class="sl-canvas-wrap" style="min-height:220px;"><canvas id="slCumNam"></canvas></div>' +
                 '</div>' +
@@ -998,13 +980,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 '</div>' +
             '</div>';
 
-        // Lũy kế năm: nước (line) + điện (bar)
+        // Nước sạch + điện theo từng năm
         slCharts.cumNam = new Chart(document.getElementById('slCumNam'), {
             type: 'bar',
             data: { labels: yLabels, datasets: [
-                { type: 'bar',  label: 'Điện năng (KWh)', data: cumDien,
+                { type: 'bar',  label: 'Điện năng (KWh)', data: yDien,
                   backgroundColor: C.amber2, borderColor: C.amber, borderWidth: 1, borderRadius: 4, yAxisID: 'y1' },
-                { type: 'line', label: 'Nước sạch (m³)',  data: cumNuoc,
+                { type: 'line', label: 'Nước sạch (m³)',  data: yNuoc,
                   borderColor: C.blue, backgroundColor: 'transparent', borderWidth: 2.5,
                   tension: .3, pointRadius: 5, pointBackgroundColor: C.blue, yAxisID: 'y' },
             ]},

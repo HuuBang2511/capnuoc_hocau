@@ -605,8 +605,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let slCharts = {};
     let curTab   = 'ngay';
-    // DB data inject từ PHP (DashboardController::getVanHanhData) — không cần HTTP fetch
-    let dbCache  = <?= $vanHanhData ?>;
+    // DB data fetch từ api-van-hanh (điện, hóa chất từ nk_giao_ca)
+    let dbCache  = null;
 
     const C = {
         blue:   '#3699ff', cyan:  '#00d4ff', green: '#1bc5bd',
@@ -660,8 +660,14 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('kpi-clo-sub').textContent  = cloSub  || '';
     }
 
-    // DB data inject từ PHP — không cần HTTP fetch
-    function fetchDbData(callback) { callback(dbCache || {}); }
+    // Fetch điện + hóa chất từ nk_giao_ca qua api-van-hanh
+    function fetchDbData(callback) {
+        if (dbCache !== null) { callback(dbCache); return; }
+        fetch('/quanly/nhat-ky/api-van-hanh')
+            .then(function(r){ return r.json(); })
+            .then(function(d){ dbCache = d; callback(d); })
+            .catch(function(){ dbCache = {}; callback({}); });
+    }
 
     // ── Merge SCADA data với DB data theo label ngày ─────────────
     // DB trả về: { ngay_data: [{ngay, dien, pac, chlorine, polymer}], thang_data: [...] }

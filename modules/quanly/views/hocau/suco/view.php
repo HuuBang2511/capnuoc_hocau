@@ -20,11 +20,10 @@ $this->title = Yii::t('app', $label[$requestedAction->id].' '.$controller->title
 $this->params['breadcrumbs'][] = ['label' => $label['index'].' '.$controller->title, 'url' => Url::to(['index'])];
 $this->params['breadcrumbs'][] = $this->title;
 
-// Định nghĩa màu sắc theo tình trạng sự cố
 $statusClass = 'secondary';
-if ($model->tinhtrangsuco_id == 1) $statusClass = 'danger'; // Chưa xử lý
-if ($model->tinhtrangsuco_id == 2) $statusClass = 'warning'; // Đang xử lý
-if ($model->tinhtrangsuco_id == 3) $statusClass = 'success'; // Đã hoàn thành
+if ($model->tinhtrangsuco_id == 1) $statusClass = 'danger';
+if ($model->tinhtrangsuco_id == 2) $statusClass = 'warning';
+if ($model->tinhtrangsuco_id == 3) $statusClass = 'success';
 ?>
 
 <div class="gd-suco-view container-fluid mt-3">
@@ -89,7 +88,7 @@ if ($model->tinhtrangsuco_id == 3) $statusClass = 'success'; // Đã hoàn thàn
                     <?php if (!empty($files)) : ?>
                         <div class="list-group list-group-flush">
                             <?php foreach ($files as $i => $file) : ?>
-                                <a href="<?= Yii::$app->homeUrl . $file['url'] ?>" target="_blank" class="list-group-item list-group-item-action border-0 px-0 d-flex align-items-center">
+                                <a href="<?= Url::to(['/quanly/hocau/suco/download-file', 'path' => $file['url']]) ?>" target="_blank" class="list-group-item list-group-item-action border-0 px-0 d-flex align-items-center">
                                     <div class="bg-light rounded p-2 me-3 text-center" style="width: 40px;">
                                         
                                     </div>
@@ -147,7 +146,7 @@ if ($model->tinhtrangsuco_id == 3) $statusClass = 'success'; // Đã hoàn thàn
     var layerGMapSatellite = L.tileLayer('http://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
         maxZoom: 20,
         subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
-    }).addTo(map); // Ưu tiên vệ tinh cho sự cố
+    }).addTo(map);
 
     var layerGmapStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
         maxZoom: 20,

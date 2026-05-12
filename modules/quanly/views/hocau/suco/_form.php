@@ -14,27 +14,18 @@ use kartik\file\FileInput;
 
 LeafletMapAsset::register($this);
 
-/* @var $this yii\web\View */
-/* @var $categories app\modules\quanly\models\DonViKinhTe */
-/* @var $form yii\widgets\ActiveForm */
-
 $requestedAction = Yii::$app->requestedAction;
 $controller = $requestedAction->controller;
 $label = $controller->label;
-//dd($controller);
 
-// 1. Gán biến gọn gàng hơn
 $actionId = $controller->action->id;
 $this->title = Yii::t('app', ($controller->label[$actionId] ?? $actionId) . ' ' . $controller->title);
 $this->params['breadcrumbs'][] = ['label' => ($controller->label['search'] ?? 'Search') . ' ' . $controller->title, 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 
-
 ?>
 
-<!-- CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
-<!-- JS -->
 <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
 
 <?php 
@@ -43,11 +34,10 @@ $this->params['breadcrumbs'][] = $this->title;
         $model->file_dinhkem = json_decode($model->file_dinhkem, true);
 
         foreach($model->file_dinhkem as $i => $item){
-            $file[] = Yii::$app->homeUrl.$item;
+            // SỬA Ở ĐÂY: Trỏ đến action tải file từ NAS thay vì homeUrl
+            $file[] = Url::to(['/quanly/hocau/suco/download-file', 'path' => $item]);
         }
     }
-
-    
 ?>
 
 <?php $form = ActiveForm::begin([
@@ -78,7 +68,6 @@ $this->params['breadcrumbs'][] = $this->title;
                             'format' => 'dd/mm/yyyy',
                             'autoclose' => true,
                         ],
-//                        'language' => 'vn',
                         'options' => ['placeholder' => 'Ngày phát hiện'],
                 ]) ?>
             </div>
@@ -88,7 +77,6 @@ $this->params['breadcrumbs'][] = $this->title;
                             'format' => 'dd/mm/yyyy',
                             'autoclose' => true,
                         ],
-//                        'language' => 'vn',
                         'options' => ['placeholder' => 'Ngày xử lý'],
                 ]) ?>
             </div>
@@ -98,7 +86,6 @@ $this->params['breadcrumbs'][] = $this->title;
                             'format' => 'dd/mm/yyyy',
                             'autoclose' => true,
                         ],
-//                        'language' => 'vn',
                         'options' => ['placeholder' => 'Ngày hoàn công'],
                 ]) ?>
             </div>
@@ -109,27 +96,21 @@ $this->params['breadcrumbs'][] = $this->title;
                 <?= $form->field($model, 'nguyennhansuco_id')->widget(Select2::className(), [
                         'data' => ArrayHelper::map($categories['nguyennhansuco'], 'id', 'ten'),
                         'options' => ['placeholder' => 'Nguyên nhân sự cố' ],
-                        'pluginOptions' => [
-                            'allowClear' => true
-                        ],
+                        'pluginOptions' => ['allowClear' => true],
                 ]) ?>
             </div>
             <div class="col-lg-3">
                 <?= $form->field($model, 'tinhtrangsuco_id')->widget(Select2::className(), [
                         'data' => ArrayHelper::map($categories['tinhtrangsuco'], 'id', 'ten'),
                         'options' => ['placeholder' => 'Tình trạng sự cố' ],
-                        'pluginOptions' => [
-                            'allowClear' => true
-                        ],
+                        'pluginOptions' => ['allowClear' => true],
                 ]) ?>
             </div>
             <div class="col-lg-3">
                 <?= $form->field($model, 'loaisuco_id')->widget(Select2::className(), [
                         'data' => ArrayHelper::map($categories['loaisuco'], 'id', 'ten'),
                         'options' => ['placeholder' => 'Loại sự cố' ],
-                        'pluginOptions' => [
-                            'allowClear' => true
-                        ],
+                        'pluginOptions' => ['allowClear' => true],
                 ]) ?>
             </div>
         </div>
@@ -158,9 +139,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     <?php if($model->isNewRecord): ?>
                     <div class="col-lg-12">
                         <?= $form->field($filedinhkem, 'fileupload')->widget(FileInput::className(), [
-                                    'options'=>[
-                                        'multiple'=>true
-                                    ],
+                                    'options'=>['multiple'=>true],
                                     'pluginOptions' => [
                                         'initialPreviewAsData' => true,
                                         'allowedFileExtensions' => ['png', 'jpg', 'jpeg', 'docx', 'pdf', 'xlsx'],
@@ -173,44 +152,40 @@ $this->params['breadcrumbs'][] = $this->title;
                             ?>
                     </div>
                     <?php else: ?>
-                    <?php if($model->file_dinhkem != null): ?>
-                    <div class="col-lg-12">
-                        <?= $form->field($filedinhkem, 'fileupload')->widget(FileInput::className(), [
-                                    'options'=>[
-                                        'multiple'=>true
-                                    ],
-                                    'pluginOptions' => [
-                                        'overwriteInitial' => true,
-                                        'initialPreview' => $file,
-                                        'initialPreviewAsData' => true,
-                                        'initialPreviewFileType' => 'pdf',
-                                        'allowedFileExtensions' => ['png', 'jpg', 'jpeg', 'docx', 'pdf', 'xlsx'],
-                                        'showPreview' => true,
-                                        'showCaption' => true,
-                                        'showRemove' => true,
-                                        'showUpload' => false,
-                                    ]
-                                ])->label('File đính kèm');
-                        ?>
-                    </div>
-                    <?php else: ?>
-                    <div class="col-lg-12">
-                        <?= $form->field($filedinhkem, 'fileupload')->widget(FileInput::className(), [
-                                    'options'=>[
-                                        'multiple'=>true
-                                    ],
-                                    'pluginOptions' => [
-                                        'initialPreviewAsData' => true,
-                                        'allowedFileExtensions' =>['png', 'jpg', 'jpeg', 'docx', 'pdf', 'xlsx'],
-                                        'showPreview' => true,
-                                        'showCaption' => true,
-                                        'showRemove' => true,
-                                        'showUpload' => false,
-                                    ]
-                                ])->label('File đính kèm');
+                        <?php if($model->file_dinhkem != null): ?>
+                        <div class="col-lg-12">
+                            <?= $form->field($filedinhkem, 'fileupload')->widget(FileInput::className(), [
+                                        'options'=>['multiple'=>true],
+                                        'pluginOptions' => [
+                                            'overwriteInitial' => true,
+                                            'initialPreview' => $file,
+                                            'initialPreviewAsData' => true,
+                                            'initialPreviewFileType' => 'pdf', // Thay đổi linh hoạt nếu cần thiết
+                                            'allowedFileExtensions' => ['png', 'jpg', 'jpeg', 'docx', 'pdf', 'xlsx'],
+                                            'showPreview' => true,
+                                            'showCaption' => true,
+                                            'showRemove' => true,
+                                            'showUpload' => false,
+                                        ]
+                                    ])->label('File đính kèm');
                             ?>
-                    </div>
-                    <?php endif; ?>
+                        </div>
+                        <?php else: ?>
+                        <div class="col-lg-12">
+                            <?= $form->field($filedinhkem, 'fileupload')->widget(FileInput::className(), [
+                                        'options'=>['multiple'=>true],
+                                        'pluginOptions' => [
+                                            'initialPreviewAsData' => true,
+                                            'allowedFileExtensions' =>['png', 'jpg', 'jpeg', 'docx', 'pdf', 'xlsx'],
+                                            'showPreview' => true,
+                                            'showCaption' => true,
+                                            'showRemove' => true,
+                                            'showUpload' => false,
+                                        ]
+                                    ])->label('File đính kèm');
+                                ?>
+                        </div>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
             </div>
@@ -244,10 +219,7 @@ $this->params['breadcrumbs'][] = $this->title;
 var map = L.map('map').setView([
     <?= ($model->lat != null) ? $model->lat : 10.737202088 ?>,
     <?= ($model->long != null) ? $model->long : 106.915000047 ?>
-
 ], 16);
-
-// Lớp nền
 
 var googleMap = L.tileLayer('http://{s}.google.com/vt/lyrs=r&x={x}&y={y}&z={z}', {
     maxZoom: 24,
@@ -275,15 +247,12 @@ const overlayers = {
     layers: 'capnuoc_hocau:network_suco',
     format: 'image/png',
     transparent: true,
-    maxZoom: 22 // Đặt maxZoom là 22
+    maxZoom: 22 
 })
 }
 
 L.control.layers(baseLayers, overlayers).addTo(map);
 
-
-
-// Tạo marker
 var icon = L.icon({
     iconUrl: '<?= Yii::$app->homeUrl ?>images/icons8-map-marker-96.png',
     iconSize: [40, 40],
@@ -294,8 +263,6 @@ var icon = L.icon({
 let lastLatLng = null;
 let isManualPosition = false;
 
-
-
 const marker = new L.marker([<?= ($model->lat != null) ? $model->lat : 10.737202088 ?>,
     <?= ($model->long != null) ? $model->long : 106.915000047 ?>
 ], {
@@ -303,60 +270,41 @@ const marker = new L.marker([<?= ($model->lat != null) ? $model->lat : 10.737202
     'icon': icon,
 }).addTo(map);
 
-// Cập nhật input khi kéo marker
 marker.on('dragend', function(event) {
     const position = event.target.getLatLng();
-    isManualPosition = true; // đánh dấu người dùng tự chỉnh
+    isManualPosition = true; 
     $('#geoy-input').val(position.lng);
     $('#geox-input').val(position.lat);
     map.panTo(position);
 });
 
-// Control định vị
 const locateControl = L.control.locate({
     position: 'topleft',
     flyTo: true,
     keepCurrentZoomLevel: true,
     drawCircle: false,
     showPopup: false,
-    strings: {
-        title: "Định vị vị trí của bạn"
-    },
+    strings: { title: "Định vị vị trí của bạn" },
     icon: 'fa fa-location-arrow',
-    locateOptions: {
-        enableHighAccuracy: true,
-        maxZoom: 18,
-        watch: false
-    },
-    clickBehavior: {
-        inView: 'stop',
-        outOfView: 'setView',
-        inViewNotFollowing: 'setView'
-    }
+    locateOptions: { enableHighAccuracy: true, maxZoom: 18, watch: false },
+    clickBehavior: { inView: 'stop', outOfView: 'setView', inViewNotFollowing: 'setView' }
 }).addTo(map);
 
-// Hỗ trợ touchstart trên điện thoại
 setTimeout(() => {
     const btn = document.querySelector('.leaflet-control-locate a');
     if (btn) {
         const handleLocate = function(e) {
             e.preventDefault();
             isManualPosition = false;
-            map.locate({
-                setView: true,
-                maxZoom: 18,
-                enableHighAccuracy: true,
-                watch: false
-            });
+            map.locate({ setView: true, maxZoom: 18, enableHighAccuracy: true, watch: false });
         };
         btn.addEventListener('click', handleLocate);
         btn.addEventListener('touchstart', handleLocate);
     }
 }, 1000);
 
-// Xử lý khi định vị thành công
 map.on("locationfound", function(e) {
-    if (isManualPosition) return; // bỏ qua nếu người dùng tự chỉnh
+    if (isManualPosition) return; 
 
     const current = L.latLng(e.latitude, e.longitude);
     if (!lastLatLng || current.distanceTo(lastLatLng) > 5) {
@@ -371,14 +319,9 @@ map.on("locationfound", function(e) {
         const current = L.latLng(e.latitude, e.longitude);
         lastLatLng = current;
 
-        // Cập nhật vào form
         $('#geoy-input').val(e.latitude);
         $('#geox-input').val(e.longitude);
-
-        // Cập nhật vị trí marker
         marker.setLatLng(current);
-
-        // Đưa map về vị trí
         map.setView(current, 18);
     }
 });

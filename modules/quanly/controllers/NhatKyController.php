@@ -58,7 +58,6 @@ class NhatKyController extends QuanlyBaseController
             $saved = 0;
             foreach ($gioList as $gio) {
                 $rowData = $rows[(string)$gio] ?? [];
-                // Bỏ qua hàng trống hoàn toàn
                 $hasVal = false;
                 foreach ($allFields as $f) {
                     if (isset($rowData[$f]) && $rowData[$f] !== '') { $hasVal = true; break; }
@@ -95,7 +94,6 @@ class NhatKyController extends QuanlyBaseController
             ->orderBy(['thoi_gian' => SORT_ASC])
             ->all();
 
-        // Model dummy chỉ để truyền nguoi_truc/kt vào view
         $model = $lichSu[0] ?? new NkChatLuongGio();
 
         $jarTest = \app\modules\quanly\models\hocau\NkJarTest::findOne([
@@ -123,7 +121,6 @@ class NhatKyController extends QuanlyBaseController
         $ph   = $post['jar_ph']  ?? [];
         $lieu = $post['jar_lieu_chon'] ?? null;
 
-        // Chỉ lưu nếu có ít nhất 1 giá trị
         $hasData = false;
         for ($i=1; $i<=5; $i++) {
             if (!empty($pac[$i]) || !empty($ntu[$i])) { $hasData = true; break; }
@@ -231,10 +228,8 @@ class NhatKyController extends QuanlyBaseController
         if (Yii::$app->request->isPost) {
             $post = Yii::$app->request->post();
 
-            // Load các field thông thường (nguoi_truc_sang, v.v.)
             $model->load($post);
 
-            // Xử lý gio_data từ POST array gio[7][ns_ph], gio[8][ns_ph], ...
             $gioPost = $post['gio'] ?? [];
             $gioData = json_decode($model->gio_data ?? '{}', true);
             $GIO_ALL = NkClnHangNgay::GIO_ALL;
@@ -244,7 +239,6 @@ class NhatKyController extends QuanlyBaseController
                 foreach ($row as $k => $v) {
                     $vals[$k] = ($v !== '' && $v !== null) ? (float)$v : null;
                 }
-                // Chỉ lưu nếu có ít nhất 1 giá trị != null
                 $hasVal = false;
                 foreach ($vals as $_v) { if ($_v !== null) { $hasVal = true; break; } }
                 if ($hasVal) {
@@ -253,7 +247,6 @@ class NhatKyController extends QuanlyBaseController
             }
             $model->gio_data = json_encode($gioData);
 
-            // Jar test arrays
             foreach (['s','c'] as $k) {
                 $prefix = 'jar_' . $k;
                 foreach (['pac','ntu','ph'] as $t) {
@@ -310,7 +303,6 @@ class NhatKyController extends QuanlyBaseController
             ];
 
             foreach ($rows as $tuanSo => $tuanRows) {
-                // tuanRows là array [0=>[...], 1=>[...], 2=>[...]]
                 if (!is_array($tuanRows)) continue;
 
                 foreach ($tuanRows as $ri => $rowData) {
@@ -318,7 +310,6 @@ class NhatKyController extends QuanlyBaseController
                     $ngayPt = isset($rowData['ngay_pt']) ? trim($rowData['ngay_pt']) : '';
                     if (!$ngayPt) continue;
 
-                    // Lookup theo id nếu có (update), không thì tìm theo ngay_pt
                     $recId = isset($rowData['id']) && $rowData['id'] ? (int)$rowData['id'] : null;
                     $rec   = null;
                     if ($recId) {
@@ -331,7 +322,6 @@ class NhatKyController extends QuanlyBaseController
                         $rec = new NkPhanTichTuan();
                         $rec->ngay_pt = $ngayPt;
                     } else {
-                        // Nếu ngày thay đổi (người dùng sửa), cập nhật
                         $rec->ngay_pt = $ngayPt;
                     }
 
@@ -469,8 +459,6 @@ class NhatKyController extends QuanlyBaseController
 
         $ca_ngay = NkGiaoCa::findOne(['ngay' => $ngay, 'ca' => 1]);
         $ca_dem  = NkGiaoCa::findOne(['ngay' => $ngay, 'ca' => 2]);
-
-        // CLN hàng ngày
         $clnNgay = NkClnHangNgay::findOne(['ngay' => $ngay]);
 
         return [
@@ -483,7 +471,7 @@ class NhatKyController extends QuanlyBaseController
     }
 
     // ─────────────────────────────────────────────────────────────
-    // API — Kiểm tra trạng thái nước thải (cho status card bao_cao)
+    // API — Kiểm tra trạng thái nước thải
     // ─────────────────────────────────────────────────────────────
     public function actionApiNuocThai($ngay = null)
     {
@@ -554,7 +542,7 @@ class NhatKyController extends QuanlyBaseController
                 'tb_ngay'   => null,
             ];
 
-            $tongTong = 0;
+            $tongTong  = 0;
             $countNgay = 0;
 
             foreach ($ngayList as $ngay) {
@@ -606,6 +594,81 @@ class NhatKyController extends QuanlyBaseController
     }
 
     // ─────────────────────────────────────────────────────────────
+    // API — Điện năng + Hóa chất từ nk_giao_ca (cho Dashboard)
+    // URL: /quanly/nhat-ky/api-van-hanh
+    //
+    // Response:
+    // {
+    //   "ngay_data":  [ {"ngay":"2026-05-01","dien":618,"pac":399.10,"chlorine":53.60,"polymer":4.00}, ... ]
+    //   "thang_data": [ {"thang":"2026-05","dien":12345,"pac":8901.00,...} ]
+    //   "nam_data":   [ {"nam":"2026","dien":99999,"pac":99999.00,...} ]
+    // }
+    // ─────────────────────────────────────────────────────────────
+    public function actionApiVanHanh()
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        $db = Yii::$app->db; // PostgreSQL
+
+        // ── Từng ngày (365 ngày gần nhất) ──────────────────────────
+        $sqlNgay = "
+            SELECT ngay::text AS ngay,
+                   SUM(COALESCE(dien_nha_may_cuoi,0) - COALESCE(dien_nha_may_dau,0)) AS dien,
+                   SUM(COALESCE(pac_kg,      0)) AS pac,
+                   SUM(COALESCE(chlorine_kg, 0)) AS chlorine,
+                   SUM(COALESCE(polymer_kg,  0)) AS polymer
+            FROM nk_giao_ca
+            WHERE ngay >= CURRENT_DATE - INTERVAL '365 days'
+              AND ngay <= CURRENT_DATE
+            GROUP BY ngay
+            ORDER BY ngay ASC
+        ";
+
+        // ── Theo tháng (24 tháng gần nhất) ────────────────────────
+        $sqlThang = "
+            SELECT TO_CHAR(ngay,'YYYY-MM') AS thang,
+                   SUM(COALESCE(dien_nha_may_cuoi,0) - COALESCE(dien_nha_may_dau,0)) AS dien,
+                   SUM(COALESCE(pac_kg,      0)) AS pac,
+                   SUM(COALESCE(chlorine_kg, 0)) AS chlorine,
+                   SUM(COALESCE(polymer_kg,  0)) AS polymer
+            FROM nk_giao_ca
+            WHERE ngay >= DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '23 months'
+            GROUP BY TO_CHAR(ngay,'YYYY-MM')
+            ORDER BY thang ASC
+        ";
+
+        // ── Theo năm (toàn bộ lịch sử) ────────────────────────────
+        $sqlNam = "
+            SELECT EXTRACT(YEAR FROM ngay)::text AS nam,
+                   SUM(COALESCE(dien_nha_may_cuoi,0) - COALESCE(dien_nha_may_dau,0)) AS dien,
+                   SUM(COALESCE(pac_kg,      0)) AS pac,
+                   SUM(COALESCE(chlorine_kg, 0)) AS chlorine,
+                   SUM(COALESCE(polymer_kg,  0)) AS polymer
+            FROM nk_giao_ca
+            GROUP BY EXTRACT(YEAR FROM ngay)
+            ORDER BY nam ASC
+        ";
+
+        // Cast về float, giữ nguyên key text (ngay/thang/nam)
+        $cast = function($rows, $textKey) {
+            $out = array();
+            foreach ($rows as $row) {
+                $r = array();
+                foreach ($row as $k => $v) {
+                    $r[$k] = ($k === $textKey) ? $v : round(floatval($v), 2);
+                }
+                $out[] = $r;
+            }
+            return $out;
+        };
+
+        return array(
+            'ngay_data'  => $cast($db->createCommand($sqlNgay)->queryAll(),  'ngay'),
+            'thang_data' => $cast($db->createCommand($sqlThang)->queryAll(), 'thang'),
+            'nam_data'   => $cast($db->createCommand($sqlNam)->queryAll(),   'nam'),
+        );
+    }
+
+    // ─────────────────────────────────────────────────────────────
     // XUẤT BÁO CÁO — 5 file riêng biệt
     // ─────────────────────────────────────────────────────────────
 
@@ -654,7 +717,7 @@ class NhatKyController extends QuanlyBaseController
         $builder->download();
     }
 
-    /** Xuất Excel tổng hợp ngày (cũ — giữ lại) */
+    /** Xuất Excel tổng hợp ngày */
     public function actionXuatBaoCaoNgay($ngay = null)
     {
         $ngay = $ngay ?? date('Y-m-d');

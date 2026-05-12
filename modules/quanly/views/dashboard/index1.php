@@ -99,7 +99,8 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
     .sl-tab:hover, .sl-tab.active { background:#3699ff; border-color:#3699ff; color:#fff; }
 
     /* KPI mini */
-    .sl-kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:1.5rem; }
+    /* ĐÃ SỬA: grid-template-columns thành 5 cột */
+    .sl-kpi-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:1.5rem; }
     .sl-kpi {
         background:#f8fafc; border:1px solid #e2e8f0;
         border-radius:10px; padding:14px 16px; position:relative; overflow:hidden;
@@ -114,6 +115,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
     .sl-kpi:nth-child(2){ animation-delay:.1s;  }
     .sl-kpi:nth-child(3){ animation-delay:.15s; }
     .sl-kpi:nth-child(4){ animation-delay:.2s;  }
+    .sl-kpi:nth-child(5){ animation-delay:.25s; }
     .sl-kpi-label { font-size:.7rem; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px; }
     .sl-kpi-val   { font-size:1.55rem; font-weight:800; color:#181c32; line-height:1.1; }
     .sl-kpi-unit  { font-size:.72rem; color:#94a3b8; margin-left:3px; font-weight:400; }
@@ -124,10 +126,12 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
 
     /* Chart cards */
     .sl-chart-grid   { display:grid; grid-template-columns:2fr 1fr; gap:14px; margin-bottom:14px; }
+    /* Lớp CSS mới cho bố cục song song trên dưới */
+    .sl-chart-stack  { display:flex; flex-direction:column; gap:14px; margin-bottom:14px; }
     .sl-chart-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
     .sl-card {
         background:#f8fafc; border:1px solid #e2e8f0;
-        border-radius:12px; padding:16px; display:flex; flex-direction:column;
+        border-radius:12px; padding:16px; display:flex; flex-direction:column; width: 100%;
     }
     .sl-card-title {
         font-size:.78rem; font-weight:700; color:#3699ff; text-transform:uppercase;
@@ -286,7 +290,8 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
     .tt-sum-col    { background:#eff6ff !important; color:#3699ff !important; font-weight:700; }
 
     /* ── RESPONSIVE ─────────────────────────────────────────────── */
-    @media (max-width:1200px) { .kpi-row { grid-template-columns:repeat(3,1fr); } .sl-kpi-grid { grid-template-columns:repeat(2,1fr); } }
+    /* Cập nhật Responsive cho 5 KPI */
+    @media (max-width:1200px) { .kpi-row { grid-template-columns:repeat(3,1fr); } .sl-kpi-grid { grid-template-columns:repeat(3,1fr); } }
     @media (max-width:992px)  { .sl-chart-grid,.sl-chart-grid-3,.rt-grid-top,.rt-grid-bottom { grid-template-columns:1fr; } }
     @media (max-width:768px)  { .kpi-row { grid-template-columns:repeat(2,1fr); } .sl-kpi-grid { grid-template-columns:repeat(2,1fr); } }
     @media (max-width:576px)  { .kpi-row { grid-template-columns:1fr; } }
@@ -354,6 +359,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
         </div>
 
         <!-- KPI mini row -->
+        <!-- Đã thêm ô số 5 cho Polymer -->
         <div class="sl-kpi-grid" id="sl-kpi-row">
             <div class="sl-kpi" style="--kpi-color:#3699ff;">
                 <div class="sl-kpi-label" id="kpi-nuoc-label">Sản lượng nước sạch</div>
@@ -374,6 +380,11 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
                 <div class="sl-kpi-label" id="kpi-clo-label">Chlorine tiêu thụ</div>
                 <div class="sl-kpi-val" id="kpi-clo">—<span class="sl-kpi-unit">kg</span></div>
                 <div class="sl-kpi-sub" id="kpi-clo-sub"></div>
+            </div>
+            <div class="sl-kpi" style="--kpi-color:#f64e60;">
+                <div class="sl-kpi-label" id="kpi-poly-label">Polymer tiêu thụ</div>
+                <div class="sl-kpi-val" id="kpi-poly">—<span class="sl-kpi-unit">kg</span></div>
+                <div class="sl-kpi-sub" id="kpi-poly-sub"></div>
             </div>
         </div>
 
@@ -644,20 +655,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ── Helpers KPI ─────────────────────────────────────────────
-    function setKpiLabels(l1, l2, l3, l4) {
+    // Cập nhật hàm setKpiLabels có thêm biến l5 cho Polymer
+    function setKpiLabels(l1, l2, l3, l4, l5) {
         document.getElementById('kpi-nuoc-label').textContent = l1 || 'Sản lượng nước sạch';
         document.getElementById('kpi-dien-label').textContent = l2 || 'Điện năng tiêu thụ';
         document.getElementById('kpi-pac-label').textContent  = l3 || 'PAC tiêu thụ';
         document.getElementById('kpi-clo-label').textContent  = l4 || 'Chlorine tiêu thụ';
+        if(document.getElementById('kpi-poly-label')) {
+            document.getElementById('kpi-poly-label').textContent = l5 || 'Polymer tiêu thụ';
+        }
     }
-    function updateKPI(nuoc, dien, pac, clo, dienSub, pacSub, cloSub) {
+    
+    // Cập nhật updateKPI có thêm tham số poly và polySub
+    function updateKPI(nuoc, dien, pac, clo, poly, dienSub, pacSub, cloSub, polySub) {
         if (nuoc !== null) document.getElementById('kpi-nuoc').innerHTML = nuoc;
         if (dien !== null) document.getElementById('kpi-dien').innerHTML = dien;
         if (pac  !== null) document.getElementById('kpi-pac').innerHTML  = pac;
         if (clo  !== null) document.getElementById('kpi-clo').innerHTML  = clo;
+        if (poly !== null && document.getElementById('kpi-poly')) document.getElementById('kpi-poly').innerHTML = poly;
+        
         document.getElementById('kpi-dien-sub').textContent = dienSub || '';
         document.getElementById('kpi-pac-sub').textContent  = pacSub  || '';
         document.getElementById('kpi-clo-sub').textContent  = cloSub  || '';
+        if(document.getElementById('kpi-poly-sub')) document.getElementById('kpi-poly-sub').textContent = polySub || '';
     }
 
     // Fetch điện + hóa chất từ nk_giao_ca qua api-van-hanh
@@ -724,6 +744,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var totDien = dienM.reduce(function(s,v){return s+(v||0);},0);
         var totPac  = pacM.reduce(function(s,v){return s+(v||0);},0);
         var totClo  = cloM.reduce(function(s,v){return s+(v||0);},0);
+        var totPoly = polyM.reduce(function(s,v){return s+(v||0);},0); // Đã thêm tổng Poly
 
         var now = new Date();
         var monthLabel = 'tháng ' + (now.getMonth()+1) + '/' + now.getFullYear();
@@ -732,7 +753,8 @@ document.addEventListener('DOMContentLoaded', function() {
             'Tổng nước sạch ' + monthLabel,
             'Tổng điện năng ' + monthLabel,
             'Tổng PAC ' + monthLabel,
-            'Tổng Chlorine ' + monthLabel
+            'Tổng Chlorine ' + monthLabel,
+            'Tổng Polymer ' + monthLabel
         );
         var dienNote = totDien > 0 ? '' : '(từ nhật ký vận hành)';
         updateKPI(
@@ -740,22 +762,25 @@ document.addEventListener('DOMContentLoaded', function() {
             fmtN(totDien) + '<span class="sl-kpi-unit">KWh</span>',
             fmt(totPac)   + '<span class="sl-kpi-unit">kg</span>',
             fmt(totClo)   + '<span class="sl-kpi-unit">kg</span>',
-            dienNote, '', ''
+            fmt(totPoly)  + '<span class="sl-kpi-unit">kg</span>',
+            dienNote, '', '', ''
         );
 
+        // Đổi layout .sl-chart-grid sang .sl-chart-stack (chồng lên nhau)
+        // và tăng min-height cho canvas để nhìn biểu đồ to, đẹp hơn khi ngang
         document.getElementById('sl-content').innerHTML =
-            '<div class="sl-chart-grid" style="margin-bottom:14px;">' +
+            '<div class="sl-chart-stack">' +
                 '<div class="sl-card">' +
                     '<div class="sl-card-title"><span class="dot" style="--dot-color:#3699ff;"></span>' +
                         'Nước sạch & Điện năng theo ngày — ' + monthLabel +
                     '</div>' +
-                    '<div class="sl-canvas-wrap" style="min-height:200px;"><canvas id="slCumNgay"></canvas></div>' +
+                    '<div class="sl-canvas-wrap" style="min-height:300px;"><canvas id="slCumNgay"></canvas></div>' +
                 '</div>' +
                 '<div class="sl-card">' +
                     '<div class="sl-card-title"><span class="dot" style="--dot-color:#1bc5bd;"></span>' +
-                        'Hóa chất xử lý theo ngày — ' + monthLabel +
+                        'Hóa chất xử lý & Nước sạch theo ngày — ' + monthLabel +
                     '</div>' +
-                    '<div class="sl-canvas-wrap"><canvas id="slHoaChatNgay"></canvas></div>' +
+                    '<div class="sl-canvas-wrap" style="min-height:300px;"><canvas id="slHoaChatNgay"></canvas></div>' +
                 '</div>' +
             '</div>';
 
@@ -782,19 +807,27 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Chart hóa chất — 3 cột cạnh nhau mỗi ngày: PAC + Chlorine + Polymer (lũy kế từng ngày delta)
         slCharts.hcNgay = new Chart(document.getElementById('slHoaChatNgay'), {
-            type: 'bar',
             data: { labels: labels, datasets: [
-                { label: 'PAC (kg)',     data: pacM,  backgroundColor: 'rgba(27,197,189,.6)',  borderColor: C.green,  borderWidth: 1, borderRadius: 3 },
-                { label: 'Chlorine (kg)',data: cloM,  backgroundColor: 'rgba(137,80,252,.6)', borderColor: C.purple, borderWidth: 1, borderRadius: 3 },
-                { label: 'Polymer (kg)', data: polyM, backgroundColor: 'rgba(255,168,0,.5)',  borderColor: C.amber,  borderWidth: 1, borderRadius: 3 },
+                { type: 'line', label: 'Nước sạch (m³)', data: nuocM, borderColor: C.blue, backgroundColor: 'transparent', borderWidth: 2.5, tension: .3, pointRadius: 3, pointBackgroundColor: C.blue, yAxisID: 'y1' },
+                { type: 'bar',  label: 'PAC (kg)',       data: pacM,  backgroundColor: 'rgba(27,197,189,.6)',  borderColor: C.green,  borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
+                { type: 'bar',  label: 'Chlorine (kg)',  data: cloM,  backgroundColor: 'rgba(137,80,252,.6)', borderColor: C.purple, borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
+                { type: 'bar',  label: 'Polymer (kg)',   data: polyM, backgroundColor: 'rgba(255,168,0,.5)',  borderColor: C.amber,  borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
             ]},
             options: { ...darkOpts, responsive: true, maintainAspectRatio: false,
                 plugins: { legend: { labels: { color: '#5a82a8', usePointStyle: true, boxWidth: 8, font: { size: 11 } } } },
                 scales: {
                     x: { ticks: { color: '#3d6080', maxTicksLimit: 14, font: { size: 10 } }, grid: { display: false } },
-                    y: { ticks: { color: '#3d6080', font: { size: 10 } }, grid: { color: 'rgba(54,153,255,.07)' } }
+                    y: { 
+                        type: 'linear', display: true, position: 'left',
+                        ticks: { color: '#3d6080', font: { size: 10 } }, grid: { color: 'rgba(54,153,255,.07)' },
+                        title: { display: true, text: 'Hóa chất (kg)', color: '#3d6080', font: { size: 10 } }
+                    },
+                    y1: {
+                        type: 'linear', display: true, position: 'right',
+                        ticks: { color: '#3699ff', font: { size: 10 }, callback: function(v){ return fmt(v); } }, grid: { display: false },
+                        title: { display: true, text: 'Nước sạch (m³)', color: '#3699ff', font: { size: 10 } }
+                    }
                 }
             }
         });
@@ -811,7 +844,7 @@ document.addEventListener('DOMContentLoaded', function() {
         d.labels.forEach(function(lbl, i) {
             var ym = lbl ? lbl.substring(0,7) : null;
             if (!ym) return;
-            if (!monthMap[ym]) monthMap[ym] = { nuoc:0, dien:0, pac:0, clo:0 };
+            if (!monthMap[ym]) monthMap[ym] = { nuoc:0, dien:0, pac:0, clo:0, poly:0 };
             monthMap[ym].nuoc += (d.nuoc_sach[i]||0);
             monthMap[ym].dien += ((d.dien_nang||[])[i]||0);
             monthMap[ym].pac  += ((d.pac||[])[i]||0);
@@ -826,7 +859,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!monthMap[ym].dien && row.dien)     monthMap[ym].dien = parseFloat(row.dien);
             if (!monthMap[ym].pac  && row.pac)      monthMap[ym].pac  = parseFloat(row.pac);
             if (!monthMap[ym].clo  && row.chlorine) monthMap[ym].clo  = parseFloat(row.chlorine);
-            monthMap[ym].poly = row.polymer ? parseFloat(row.polymer) : 0;
+            if (row.polymer !== undefined && row.polymer !== null) monthMap[ym].poly += parseFloat(row.polymer);
         });
 
         var yr = String(new Date().getFullYear());
@@ -843,35 +876,39 @@ document.addEventListener('DOMContentLoaded', function() {
         var totDien = mDien.reduce(function(s,v){return s+(v||0);},0);
         var totPac  = mPac.reduce(function(s,v){return s+(v||0);},0);
         var totClo  = mClo.reduce(function(s,v){return s+(v||0);},0);
+        var totPoly = mPoly.reduce(function(s,v){return s+(v||0);},0); // Đã thêm tổng Poly
         var yrLabel = 'năm ' + yr;
 
         setKpiLabels(
             'Tổng nước sạch ' + yrLabel,
             'Tổng điện năng ' + yrLabel,
             'Tổng PAC ' + yrLabel,
-            'Tổng Chlorine ' + yrLabel
+            'Tổng Chlorine ' + yrLabel,
+            'Tổng Polymer ' + yrLabel
         );
         updateKPI(
             fmtN(totNuoc) + '<span class="sl-kpi-unit">m³</span>',
             fmtN(totDien) + '<span class="sl-kpi-unit">KWh</span>',
             fmt(totPac)   + '<span class="sl-kpi-unit">kg</span>',
             fmt(totClo)   + '<span class="sl-kpi-unit">kg</span>',
-            '', '', ''
+            fmt(totPoly)  + '<span class="sl-kpi-unit">kg</span>',
+            '', '', '', ''
         );
 
+        // Đổi layout .sl-chart-grid sang .sl-chart-stack
         document.getElementById('sl-content').innerHTML =
-            '<div class="sl-chart-grid" style="margin-bottom:14px;">' +
+            '<div class="sl-chart-stack">' +
                 '<div class="sl-card">' +
                     '<div class="sl-card-title"><span class="dot" style="--dot-color:#3699ff;"></span>' +
                         'Nước sạch & Điện năng theo tháng — ' + yrLabel +
                     '</div>' +
-                    '<div class="sl-canvas-wrap" style="min-height:220px;"><canvas id="slCumThang"></canvas></div>' +
+                    '<div class="sl-canvas-wrap" style="min-height:300px;"><canvas id="slCumThang"></canvas></div>' +
                 '</div>' +
                 '<div class="sl-card">' +
                     '<div class="sl-card-title"><span class="dot" style="--dot-color:#1bc5bd;"></span>' +
-                        'Hóa chất xử lý theo tháng — ' + yrLabel +
+                        'Hóa chất xử lý & Nước sạch theo tháng — ' + yrLabel +
                     '</div>' +
-                    '<div class="sl-canvas-wrap"><canvas id="slHoaChatThang"></canvas></div>' +
+                    '<div class="sl-canvas-wrap" style="min-height:300px;"><canvas id="slHoaChatThang"></canvas></div>' +
                 '</div>' +
             '</div>';
 
@@ -898,19 +935,27 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Hóa chất: 3 cột cạnh nhau mỗi tháng
         slCharts.hcThang = new Chart(document.getElementById('slHoaChatThang'), {
-            type: 'bar',
             data: { labels: mLabels, datasets: [
-                { label: 'PAC (kg)',     data: mPac,  backgroundColor: 'rgba(27,197,189,.6)',  borderColor: C.green,  borderWidth: 1, borderRadius: 3 },
-                { label: 'Chlorine (kg)',data: mClo,  backgroundColor: 'rgba(137,80,252,.6)', borderColor: C.purple, borderWidth: 1, borderRadius: 3 },
-                { label: 'Polymer (kg)', data: mPoly, backgroundColor: 'rgba(255,168,0,.5)',  borderColor: C.amber,  borderWidth: 1, borderRadius: 3 },
+                { type: 'line', label: 'Nước sạch (m³)', data: mNuoc, borderColor: C.blue, backgroundColor: 'transparent', borderWidth: 2.5, tension: .3, pointRadius: 3, pointBackgroundColor: C.blue, yAxisID: 'y1' },
+                { type: 'bar',  label: 'PAC (kg)',       data: mPac,  backgroundColor: 'rgba(27,197,189,.6)',  borderColor: C.green,  borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
+                { type: 'bar',  label: 'Chlorine (kg)',  data: mClo,  backgroundColor: 'rgba(137,80,252,.6)', borderColor: C.purple, borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
+                { type: 'bar',  label: 'Polymer (kg)',   data: mPoly, backgroundColor: 'rgba(255,168,0,.5)',  borderColor: C.amber,  borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
             ]},
             options: { ...darkOpts, responsive: true, maintainAspectRatio: false,
                 plugins: { legend: { labels: { color: '#5a82a8', usePointStyle: true, boxWidth: 8, font: { size: 11 } } } },
                 scales: {
                     x: { ticks: { color: '#3d6080', font: { size: 10 } }, grid: { display: false } },
-                    y: { ticks: { color: '#3d6080', font: { size: 10 } }, grid: { color: 'rgba(54,153,255,.07)' } }
+                    y: { 
+                        type: 'linear', display: true, position: 'left',
+                        ticks: { color: '#3d6080', font: { size: 10 } }, grid: { color: 'rgba(54,153,255,.07)' },
+                        title: { display: true, text: 'Hóa chất (kg)', color: '#3d6080', font: { size: 10 } }
+                    },
+                    y1: {
+                        type: 'linear', display: true, position: 'right',
+                        ticks: { color: '#3699ff', font: { size: 10 }, callback: function(v){ return fmt(v); } }, grid: { display: false },
+                        title: { display: true, text: 'Nước sạch (m³)', color: '#3699ff', font: { size: 10 } }
+                    }
                 }
             }
         });
@@ -941,48 +986,46 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!yrMap[yr].dien && row.dien)     yrMap[yr].dien = parseFloat(row.dien);
             if (!yrMap[yr].pac  && row.pac)      yrMap[yr].pac  = parseFloat(row.pac);
             if (!yrMap[yr].clo  && row.chlorine) yrMap[yr].clo  = parseFloat(row.chlorine);
-            if (row.polymer) yrMap[yr].poly = parseFloat(row.polymer);
+            if (row.polymer !== undefined && row.polymer !== null) yrMap[yr].poly += parseFloat(row.polymer);
         });
 
         var yLabels = Object.keys(yrMap).sort();
         var yNuoc   = yLabels.map(function(k){ return yrMap[k].nuoc; });
         var yDien   = yLabels.map(function(k){ return yrMap[k].dien; });
+        var yPac    = yLabels.map(function(k){ return yrMap[k].pac;  });
+        var yClo    = yLabels.map(function(k){ return yrMap[k].clo;  });
+        var yPoly   = yLabels.map(function(k){ return yrMap[k].poly || 0; });
 
         var totNuoc = yNuoc.reduce(function(s,v){return s+(v||0);},0);
         var totDien = yDien.reduce(function(s,v){return s+(v||0);},0);
-        var totPacNam = yLabels.reduce(function(s,k){return s+(yrMap[k].pac||0);},0);
-        var totCloNam = yLabels.reduce(function(s,k){return s+(yrMap[k].clo||0);},0);
+        var totPacNam = yPac.reduce(function(s,v){return s+(v||0);},0);
+        var totCloNam = yClo.reduce(function(s,v){return s+(v||0);},0);
+        var totPolyNam= yPoly.reduce(function(s,v){return s+(v||0);},0); // Đã thêm tổng Poly
 
-        setKpiLabels('Tổng nước sạch (toàn lịch sử)', 'Tổng điện năng (toàn lịch sử)', 'Tổng PAC (toàn lịch sử)', 'Tổng Chlorine (toàn lịch sử)');
+        setKpiLabels('Tổng nước sạch (toàn lịch sử)', 'Tổng điện năng (toàn lịch sử)', 'Tổng PAC (toàn lịch sử)', 'Tổng Chlorine (toàn lịch sử)', 'Tổng Polymer (toàn lịch sử)');
         updateKPI(
             fmtN(totNuoc)   + '<span class="sl-kpi-unit">m³</span>',
             fmtN(totDien)   + '<span class="sl-kpi-unit">KWh</span>',
             fmt(totPacNam)  + '<span class="sl-kpi-unit">kg</span>',
             fmt(totCloNam)  + '<span class="sl-kpi-unit">kg</span>',
-            '', '', ''
+            fmt(totPolyNam) + '<span class="sl-kpi-unit">kg</span>',
+            '', '', '', ''
         );
 
+        // Đổi layout thành 2 chart xếp chồng hệt như Ngày và Tháng
         document.getElementById('sl-content').innerHTML =
-            '<div class="sl-chart-grid" style="margin-bottom:14px;">' +
-                '<div class="sl-card" style="grid-column:1/3;">' +
+            '<div class="sl-chart-stack">' +
+                '<div class="sl-card">' +
                     '<div class="sl-card-title"><span class="dot" style="--dot-color:#3699ff;"></span>' +
                         'Nước sạch & Điện năng theo năm — Toàn bộ dữ liệu' +
                     '</div>' +
-                    '<div class="sl-canvas-wrap" style="min-height:220px;"><canvas id="slCumNam"></canvas></div>' +
-                '</div>' +
-            '</div>' +
-            '<div class="sl-chart-grid-3">' +
-                '<div class="sl-card">' +
-                    '<div class="sl-card-title"><span class="dot" style="--dot-color:#ffa800;"></span>Điện năng / năm</div>' +
-                    '<div class="sl-canvas-wrap"><canvas id="slNamDien"></canvas></div>' +
+                    '<div class="sl-canvas-wrap" style="min-height:300px;"><canvas id="slCumNam"></canvas></div>' +
                 '</div>' +
                 '<div class="sl-card">' +
-                    '<div class="sl-card-title"><span class="dot" style="--dot-color:#1bc5bd;"></span>PAC & Chlorine / năm (kg)</div>' +
-                    '<div class="sl-canvas-wrap"><canvas id="slNamHoaChat"></canvas></div>' +
-                '</div>' +
-                '<div class="sl-card">' +
-                    '<div class="sl-card-title"><span class="dot" style="--dot-color:#3699ff;"></span>Tăng trưởng nước sạch (%)</div>' +
-                    '<div class="sl-canvas-wrap"><canvas id="slNamGrowth"></canvas></div>' +
+                    '<div class="sl-card-title"><span class="dot" style="--dot-color:#1bc5bd;"></span>' +
+                        'Hóa chất & Nước sạch / năm' +
+                    '</div>' +
+                    '<div class="sl-canvas-wrap" style="min-height:300px;"><canvas id="slNamHoaChat"></canvas></div>' +
                 '</div>' +
             '</div>';
 
@@ -1010,45 +1053,29 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Điện năm
-        slCharts.namDien = new Chart(document.getElementById('slNamDien'), {
-            type: 'doughnut',
-            data: { labels: yLabels, datasets: [{ data: yDien, backgroundColor: ['rgba(255,168,0,.4)','rgba(255,168,0,.6)','rgba(255,168,0,.8)',C.amber], borderWidth: 0 }] },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '65%',
-                plugins: { legend: { position: 'bottom', labels: { color: '#5a82a8', usePointStyle: true, boxWidth: 8, font: { size: 11 } } },
-                           tooltip: { callbacks: { label: function(c){ return ' ' + fmt(c.parsed) + ' KWh'; } } } }
-            }
-        });
-
         // Hóa chất năm
-        var yPac  = yLabels.map(function(k){ return yrMap[k].pac;  });
-        var yClo  = yLabels.map(function(k){ return yrMap[k].clo;  });
         slCharts.namHC = new Chart(document.getElementById('slNamHoaChat'), {
-            type: 'bar',
             data: { labels: yLabels, datasets: [
-                { label: 'PAC (kg)',     data: yPac, backgroundColor: 'rgba(27,197,189,.5)',  borderColor: C.green,  borderWidth: 1, borderRadius: 3 },
-                { label: 'Chlorine (kg)',data: yClo, backgroundColor: 'rgba(137,80,252,.5)', borderColor: C.purple, borderWidth: 1, borderRadius: 3 },
+                { type: 'line', label: 'Nước (m³)',     data: yNuoc, borderColor: C.blue, backgroundColor: 'transparent', borderWidth: 2.5, tension: .3, pointRadius: 3, pointBackgroundColor: C.blue, yAxisID: 'y1' },
+                { type: 'bar',  label: 'PAC (kg)',      data: yPac,  backgroundColor: 'rgba(27,197,189,.5)',  borderColor: C.green,  borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
+                { type: 'bar',  label: 'Chlorine (kg)', data: yClo,  backgroundColor: 'rgba(137,80,252,.5)',  borderColor: C.purple, borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
+                { type: 'bar',  label: 'Polymer (kg)',  data: yPoly, backgroundColor: 'rgba(255,168,0,.5)',   borderColor: C.amber,  borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
             ]},
             options: { ...darkOpts, responsive: true, maintainAspectRatio: false,
                 plugins: { legend: { labels: { color: '#5a82a8', usePointStyle: true, boxWidth: 8, font: { size: 11 } } } },
-                scales: { x: { ticks: { color: '#3d6080', font: { size: 10 } }, grid: { display: false } },
-                          y: { ticks: { color: '#3d6080', font: { size: 10 } }, grid: { color: 'rgba(54,153,255,.07)' } } }
-            }
-        });
-
-        // Tăng trưởng
-        var growth = yNuoc.map(function(v, i){ return i===0 ? 0 : (yNuoc[i-1] ? parseFloat(((v-yNuoc[i-1])/yNuoc[i-1]*100).toFixed(1)) : 0); });
-        slCharts.namGrowth = new Chart(document.getElementById('slNamGrowth'), {
-            type: 'bar',
-            data: { labels: yLabels, datasets: [{ label: 'Tăng trưởng (%)', data: growth,
-                backgroundColor: growth.map(function(v){ return v>=0?'rgba(27,197,189,.5)':'rgba(246,78,96,.5)'; }),
-                borderColor: growth.map(function(v){ return v>=0?C.green:C.rose; }),
-                borderWidth: 1, borderRadius: 4,
-            }]},
-            options: { ...darkOpts, responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { x: { ticks: { color: '#3d6080', font: { size: 10 } }, grid: { display: false } },
-                          y: { ticks: { color: '#3d6080', font: { size: 10 }, callback: function(v){ return v+'%'; } }, grid: { color: 'rgba(54,153,255,.07)' } } }
+                scales: { 
+                    x: { ticks: { color: '#3d6080', font: { size: 10 } }, grid: { display: false } },
+                    y: { 
+                        type: 'linear', display: true, position: 'left',
+                        ticks: { color: '#3d6080', font: { size: 10 } }, grid: { color: 'rgba(54,153,255,.07)' },
+                        title: { display: true, text: 'Hóa chất (kg)', color: '#3d6080', font: { size: 10 } }
+                    },
+                    y1: {
+                        type: 'linear', display: true, position: 'right',
+                        ticks: { color: '#3699ff', font: { size: 10 }, callback: function(v){ return fmt(v); } }, grid: { display: false },
+                        title: { display: true, text: 'Nước sạch (m³)', color: '#3699ff', font: { size: 10 } }
+                    }
+                }
             }
         });
     }
@@ -1060,23 +1087,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // ════════════════════════════════════════════════════════════
     function renderRealtime(slData) {
         var trams = (slData && slData.trams) ? slData.trams : [];
-
-        // KPI realtime
-        var totalFlow = 0, sumAp = 0, cntAp = 0;
-        trams.forEach(function(t) {
-            totalFlow += parseFloat(t.luu_luong || 0);
-            var ap = parseFloat(t.ap_luc || 0);
-            if (ap > 0) { sumAp += ap; cntAp++; }
-        });
-        var avgAp = cntAp ? (sumAp/cntAp).toFixed(2) : '—';
-
-        setKpiLabels('Tổng lưu lượng mạng lưới', 'Áp lực TB mạng lưới', 'Số trạm SCADA', '');
-        updateKPI(
-            fmt(totalFlow) + '<span class="sl-kpi-unit">m³/h</span>',
-            avgAp + '<span class="sl-kpi-unit">m</span>',
-            trams.length + '<span class="sl-kpi-unit">trạm</span>',
-            '—', '', '', ''
-        );
+        
+        // Cố tình bỏ phần tính toán và hiển thị cho '#sl-kpi-row'
+        // vì vùng này đã được ẩn bằng hàm switchSLTab() 
 
         // Helper render row cho station card
         function stationRow(label, val, unit, color, ts) {
@@ -1270,9 +1283,19 @@ document.addEventListener('DOMContentLoaded', function() {
         curTab = loai;
         document.querySelectorAll('.sl-tab').forEach(function(b){ b.classList.remove('active'); });
         btn.classList.add('active');
-        ['kpi-nuoc','kpi-dien','kpi-pac','kpi-clo'].forEach(function(id){
-            document.getElementById(id).innerHTML = '—';
+        
+        ['kpi-nuoc','kpi-dien','kpi-pac','kpi-clo','kpi-poly'].forEach(function(id){
+            if(document.getElementById(id)) document.getElementById(id).innerHTML = '—';
         });
+
+        // Ẩn/Hiện dòng KPI 5 ô dựa vào loại Tab
+        const kpiRow = document.getElementById('sl-kpi-row');
+        if (loai === 'realtime') {
+            kpiRow.style.display = 'none'; // Ẩn khi là realtime
+        } else {
+            kpiRow.style.display = ''; // Khôi phục hiển thị cho các Tab khác
+        }
+
         loadSLTab(loai);
     };
 

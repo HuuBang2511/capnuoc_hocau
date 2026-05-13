@@ -32,6 +32,10 @@ class DashboardController extends QuanlyBaseController
     public function actionIndex()
     {
         // --- PHẦN 1: KPI 10 ĐỐI TƯỢNG (STATUS = 1) ---
+        if(Yii::$app->user->identity->id == 12){
+            return $this->redirect('quanly/nhat-ky/bao-cao');
+        }
+
 
         $cntNhaMay     = Nhamaynuoc::find()->where(['status' => 1])->count();
         $urlNhaMay     = Url::to(['hocau/nhamaynuoc/index']);

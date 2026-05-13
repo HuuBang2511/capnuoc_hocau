@@ -50,7 +50,7 @@ CrudAsset::register($this);
                 $fullExportMenu,
                 ['content'=>
                     Html::a('<i class="fa fa-plus"></i> Thêm mới', ['create'],
-                    ['role'=>'modal-remote','title'=> 'Thêm mới ','class'=>'btn btn-success'])
+                    ['title'=> 'Thêm mới ','class'=>'btn btn-success'])
                 ],
             ],          
             'striped' => true,

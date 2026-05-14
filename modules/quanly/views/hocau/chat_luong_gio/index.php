@@ -79,6 +79,8 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
 .hn-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
 .hn-nav a{padding:6px 14px;border-radius:99px;text-decoration:none;font-size:.82rem;background:#f1f5f9;color:#475569}
 .hn-nav a.active{background:#3b82f6;color:#fff}
+.hn-nav input[type=date]{padding:6px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.83rem;outline:none;background:#fff;cursor:pointer}
+.hn-nav input[type=date]:focus{border-color:#3b82f6}
 /* Thanh lối tắt dùng chung */
 .qnav-bar{display:flex;gap:5px;flex-wrap:wrap;align-items:center;padding:8px 10px;
           background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:10px}
@@ -148,6 +150,10 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
         <a href="<?= Url::to(['nhat-ky/chat-luong-gio', 'ngay' => $d, 'ca' => $ca]) ?>"
            class="<?= $d == $ngay ? 'active' : '' ?>"><?= $lbl ?></a>
         <?php endfor; ?>
+        <input type="date" id="hn-date-pick"
+               value="<?= Html::encode($ngay) ?>"
+               max="<?= date('Y-m-d') ?>"
+               onchange="window.location.href='<?= Url::to(['nhat-ky/chat-luong-gio','ca'=>$ca]) ?>&ngay='+this.value" />
     </div>
 
     <!-- Thanh lối tắt nhập liệu -->

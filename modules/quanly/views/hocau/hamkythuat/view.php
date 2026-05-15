@@ -109,7 +109,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                     <td><?= $i + 1 ?></td>
                                     <td><i class="fa fa-file-pdf text-danger me-2"></i><?= Html::encode($file['name']) ?></td>
                                     <td class="text-center">
-                                        <a href="<?= Yii::$app->homeUrl . $file['url'] ?>" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                        <a href="<?= Url::to(['/quanly/hocau/hamkythuat/download-file', 'path' => $file['url']]) ?>" target="_blank" class="btn btn-sm btn-outline-secondary">
                                             <i class="fa fa-download"></i> Xem/Tải về
                                         </a>
                                     </td>

@@ -15,94 +15,76 @@ use app\modules\quanly\base\UploadFile;
 use yii\web\UploadedFile;
 use app\modules\services\CategoriesService;
 
-/**
- * CocmocController implements the CRUD actions for Cocmoc model.
- */
 class CocmocController extends QuanlyBaseController
 {
-
     public $title = "Cọc mốc";
 
-    /**
-     * Lists all Cocmoc models.
-     * @return mixed
-     */
+    private $nasBasePath = '\\\\192.168.31.8\\Gis-Data\\';
+
     public function actionIndex()
     {
         $searchModel = new CocmocSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
-            'searchModel' => $searchModel,
+            'searchModel'  => $searchModel,
             'dataProvider' => $dataProvider,
-            'categories' => CategoriesService::getCategories(),
+            'categories'   => CategoriesService::getCategories(),
         ]);
     }
 
-
-    /**
-     * Displays a single Cocmoc model.
-     * @param integer $id
-     * @return mixed
-     */
     public function actionView($id)
     {
-        $request = Yii::$app->request;
         $model = $this->findModel($id);
 
-        if($model->file_dinhkem != null){
+        if ($model->file_dinhkem != null) {
             $filedinhkem = json_decode($model->file_dinhkem);
-
             $files = [];
-
-            foreach($filedinhkem as $i => $item){
-
-                $filename = basename($item); 
+            foreach ($filedinhkem as $i => $item) {
+                $filename = basename($item);
                 $filename = str_replace(' ', '_', $filename);
-
-                $files[$i]['url'] = $item;
+                $files[$i]['url']  = $item;
                 $files[$i]['name'] = $filename;
-                
             }
-        }else{
+        } else {
             $files = null;
         }
 
         return $this->render('view', [
-            'model' => $this->findModel($id),
+            'model' => $model,
             'files' => $files,
         ]);
     }
 
-    /**
-     * Creates a new Cocmoc model.
-     * For ajax request will return json object
-     * and for non-ajax request if creation is successful, the browser will be redirected to the 'view' page.
-     * @return mixed
-     */
     public function actionCreate()
     {
-        $request = Yii::$app->request;
-        $model = new Cocmoc();
-
+        $request     = Yii::$app->request;
+        $model       = new Cocmoc();
         $filedinhkem = new UploadFile();
 
-        if($model->load($request->post()) && $model->save() && $filedinhkem->load($request->post())){
-            
+        if ($model->load($request->post()) && $model->save() && $filedinhkem->load($request->post())) {
             $filedinhkem->fileupload = UploadedFile::getInstances($filedinhkem, 'fileupload');
 
-            if($filedinhkem->fileupload != null){
-                //dd($filedinhkem->fileupload);
-                $file = [];
-                foreach($filedinhkem->fileupload as $i => $item){
-                    if(strpos($item->name, "'") == true){
-                        $item->name = str_replace("'","_",$item->name);
+            if ($filedinhkem->fileupload != null) {
+                $file        = [];
+                $relative    = 'uploads/cocmoc/' . $model->id . '/';
+                $physicalDir = $this->nasBasePath . str_replace('/', '\\', $relative);
+
+                if (!is_dir($physicalDir)) {
+                    mkdir($physicalDir, 0777, true);
+                }
+
+                foreach ($filedinhkem->fileupload as $item) {
+                    if (strpos($item->name, "'") !== false) {
+                        $item->name = str_replace("'", '_', $item->name);
                     }
+                    $fileName     = $item->baseName . '.' . $item->extension;
+                    $physicalPath = $physicalDir . $fileName;
+                    $dbPath       = $relative . $fileName;
 
-                    $file[] = 'uploads/cocmoc/'.$model->id.'/'.$item->baseName.'.'.$item->extension;
-                    $path = 'uploads/cocmoc/'.$model->id.'/';
-
-                    $filedinhkem->uploadFile($path, $item);
+                    if ($item->saveAs($physicalPath)) {
+                        $file[] = $dbPath;
+                    }
                 }
 
                 $model->file_dinhkem = json_encode($file);
@@ -111,46 +93,43 @@ class CocmocController extends QuanlyBaseController
 
             return $this->redirect(['view', 'id' => $model->id]);
         }
-
 
         return $this->render('create', [
-            'model' => $model,
+            'model'       => $model,
             'filedinhkem' => $filedinhkem,
-            'categories' => CategoriesService::getCategories(),
+            'categories'  => CategoriesService::getCategories(),
         ]);
-
     }
 
-    /**
-     * Updates an existing Cocmoc model.
-     * For ajax request will return json object
-     * and for non-ajax request if update is successful, the browser will be redirected to the 'view' page.
-     * @param integer $id
-     * @return mixed
-     */
     public function actionUpdate($id)
     {
-        $request = Yii::$app->request;
-        $model = $this->findModel($id);
-
+        $request     = Yii::$app->request;
+        $model       = $this->findModel($id);
         $filedinhkem = new UploadFile();
 
-        if($model->load($request->post()) && $model->save() && $filedinhkem->load($request->post())){
-            
+        if ($model->load($request->post()) && $model->save() && $filedinhkem->load($request->post())) {
             $filedinhkem->fileupload = UploadedFile::getInstances($filedinhkem, 'fileupload');
 
-            if($filedinhkem->fileupload != null){
-                //dd($filedinhkem->fileupload);
-                $file = [];
-                foreach($filedinhkem->fileupload as $i => $item){
-                    if(strpos($item->name, "'") == true){
-                        $item->name = str_replace("'","_",$item->name);
+            if ($filedinhkem->fileupload != null) {
+                $file        = [];
+                $relative    = 'uploads/cocmoc/' . $model->id . '/';
+                $physicalDir = $this->nasBasePath . str_replace('/', '\\', $relative);
+
+                if (!is_dir($physicalDir)) {
+                    mkdir($physicalDir, 0777, true);
+                }
+
+                foreach ($filedinhkem->fileupload as $item) {
+                    if (strpos($item->name, "'") !== false) {
+                        $item->name = str_replace("'", '_', $item->name);
                     }
+                    $fileName     = $item->baseName . '.' . $item->extension;
+                    $physicalPath = $physicalDir . $fileName;
+                    $dbPath       = $relative . $fileName;
 
-                    $file[] = 'uploads/cocmoc/'.$model->id.'/'.$item->baseName.'.'.$item->extension;
-                    $path = 'uploads/cocmoc/'.$model->id.'/';
-
-                    $filedinhkem->uploadFile($path, $item);
+                    if ($item->saveAs($physicalPath)) {
+                        $file[] = $dbPath;
+                    }
                 }
 
                 $model->file_dinhkem = json_encode($file);
@@ -160,75 +139,63 @@ class CocmocController extends QuanlyBaseController
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
-
         return $this->render('update', [
-            'model' => $model,
+            'model'       => $model,
             'filedinhkem' => $filedinhkem,
-            'categories' => CategoriesService::getCategories(),
+            'categories'  => CategoriesService::getCategories(),
         ]);
     }
 
-    /**
-     * Delete an existing Cocmoc model.
-     * For ajax request will return json object
-     * and for non-ajax request if deletion is successful, the browser will be redirected to the 'index' page.
-     * @param integer $id
-     * @return mixed
-     */
     public function actionDelete($id)
     {
         $request = Yii::$app->request;
-        $model = $this->findModel($id);
+        $model   = $this->findModel($id);
         $model->status = 0;
 
         if ($request->isAjax) {
-            /*
-            *   Process for ajax request
-            */
             Yii::$app->response->format = Response::FORMAT_JSON;
             if ($request->isGet) {
                 return [
-                    'title' => "Xóa cọc mốc #" . $id,
-                    'content' => $this->renderAjax('delete', [
-                        'model' => $model,
-                    ]),
-                    'footer' => Html::button('Đóng', ['class' => 'btn btn-light float-right', 'data-bs-dismiss' => "modal"]) .
-                        Html::button('Xóa', ['class' => 'btn btn-danger float-left', 'type' => "submit"])
+                    'title'   => "Xóa Cọc mốc #" . $id,
+                    'content' => $this->renderAjax('delete', ['model' => $model]),
+                    'footer'  => Html::button('Đóng', ['class' => 'btn btn-light float-right', 'data-bs-dismiss' => "modal"]) .
+                                 Html::button('Xóa',  ['class' => 'btn btn-danger float-left',  'type' => "submit"]),
                 ];
-            } else if ($request->isPost && $model->save()) {
+            } elseif ($request->isPost && $model->save()) {
                 return [
                     'forceReload' => '#crud-datatable-pjax',
-                    'title' => "Xóa cọc mốc thành công #" . $id,
-                    'content' => '<span class="text-success">Xóa thành công</span>',
-                    'footer' => Html::button('Close', ['class' => 'btn btn-light float-right', 'data-bs-dismiss' => "modal"])
+                    'title'       => "Xóa Cọc mốc thành công #" . $id,
+                    'content'     => '<span class="text-success">Xóa thành công</span>',
+                    'footer'      => Html::button('Close', ['class' => 'btn btn-light float-right', 'data-bs-dismiss' => "modal"]),
                 ];
             } else {
                 return [
-                    'title' => "Update #" . $id,
-                    'content' => $this->renderAjax('delete', [
-                        'model' => $model,
-                    ]),
-                    'footer' => Html::button('Close', ['class' => 'btn btn-light float-right', 'data-bs-dismiss' => "modal"]) .
-                        Html::button('Save', ['class' => 'btn btn-primary', 'type' => "submit"])
+                    'title'   => "Update #" . $id,
+                    'content' => $this->renderAjax('delete', ['model' => $model]),
+                    'footer'  => Html::button('Close', ['class' => 'btn btn-light float-right', 'data-bs-dismiss' => "modal"]) .
+                                 Html::button('Save',  ['class' => 'btn btn-primary', 'type' => "submit"]),
                 ];
             }
         }
     }
 
-    
-    /**
-     * Finds the Cocmoc model based on its primary key value.
-     * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param integer $id
-     * @return Cocmoc the loaded model
-     * @throws NotFoundHttpException if the model cannot be found
-     */
+    public function actionDownloadFile($path)
+    {
+        $cleanPath = str_replace(['..\\', '../', '..'], '', $path);
+        $fullPath  = $this->nasBasePath . str_replace('/', '\\', $cleanPath);
+
+        if (file_exists($fullPath)) {
+            return Yii::$app->response->sendFile($fullPath, basename($fullPath), ['inline' => true]);
+        }
+
+        throw new NotFoundHttpException('File không tồn tại trên hệ thống NAS.');
+    }
+
     protected function findModel($id)
     {
         if (($model = Cocmoc::findOne($id)) !== null) {
             return $model;
-        } else {
-            throw new NotFoundHttpException('The requested page does not exist.');
         }
+        throw new NotFoundHttpException('The requested page does not exist.');
     }
 }

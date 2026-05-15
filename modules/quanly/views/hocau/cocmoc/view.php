@@ -82,7 +82,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                         <tr>
                                             <td class="text-muted"><?= $i + 1 ?></td>
                                             <td>
-                                                <a href="<?= Yii::$app->homeUrl . $file['url'] ?>" target="_blank" class="text-decoration-none text-dark d-flex align-items-center">
+                                                <a href="<?= Url::to(['/quanly/hocau/cocmoc/download-file', 'path' => $file['url']]) ?>" target="_blank" class="text-decoration-none text-dark d-flex align-items-center">
                                                     
                                                     <span class="text-truncate" style="max-width: 200px;"><?= Html::encode($file['name']) ?></span>
                                                 </a>

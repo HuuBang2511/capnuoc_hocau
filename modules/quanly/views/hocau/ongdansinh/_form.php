@@ -39,7 +39,7 @@ $geojson_data = !empty($model->geojson) ? Json::encode($model->geojson) : 'null'
         $model->file_dinhkem = json_decode($model->file_dinhkem, true);
 
         foreach($model->file_dinhkem as $i => $item){
-            $file[] = Yii::$app->homeUrl.$item;
+            $file[] = Url::to(['/quanly/hocau/ongdansinh/download-file', 'path' => $item]);
         }
     }
 ?>

@@ -108,7 +108,7 @@ $statusClass = (strpos(mb_strtolower($statusLabel), 'hỏng') !== false) ? 'dang
                 <div class="card-body py-2">
                     <?php if (!empty($files)) : ?>
                         <?php foreach ($files as $file) : ?>
-                            <a href="<?= Yii::$app->homeUrl . $file['url'] ?>" target="_blank" class="d-flex align-items-center p-2 text-decoration-none border-bottom mb-1 text-dark">
+                            <a href="<?= Url::to(['/quanly/hocau/van/download-file', 'path' => $file['url']]) ?>" target="_blank" class="d-flex align-items-center p-2 text-decoration-none border-bottom mb-1 text-dark">
                                 <i class="fa fa-file-pdf text-danger me-2"></i>
                                 <span class="small text-truncate"><?= Html::encode($file['name']) ?></span>
                             </a>

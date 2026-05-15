@@ -103,7 +103,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                                     <div class="text-truncate" style="max-width: 80%;">
                                         <i class="fa fa-file-alt text-muted me-2"></i>
-                                        <a href="<?= Yii::$app->homeUrl . $file['url'] ?>" target="_blank" class="text-decoration-none text-dark small">
+                                        <a href="<?= Url::to(['/quanly/hocau/dongho-tong/download-file', 'path' => $file['url']]) ?>" target="_blank" class="text-decoration-none text-dark small">
                                             <?= Html::encode($file['name']) ?>
                                         </a>
                                     </div>

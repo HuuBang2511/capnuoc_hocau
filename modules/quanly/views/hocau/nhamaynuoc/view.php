@@ -91,7 +91,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     <?php if (!empty($files)) : ?>
                         <div class="list-group list-group-flush">
                             <?php foreach ($files as $i => $file) : ?>
-                                <a href="<?= Yii::$app->homeUrl . $file['url'] ?>" target="_blank" class="list-group-item list-group-item-action border-0 px-0 d-flex align-items-center">
+                                <a href="<?= Url::to(['/quanly/hocau/nhamaynuoc/download-file', 'path' => $file['url']]) ?>" target="_blank" class="list-group-item list-group-item-action border-0 px-0 d-flex align-items-center">
                                     <div class="bg-light rounded p-2 me-3 text-center" style="width: 40px;">
                                         <i class="fa fa-paperclip text-muted"></i>
                                     </div>

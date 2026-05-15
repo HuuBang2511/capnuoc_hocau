@@ -43,7 +43,7 @@ $this->params['breadcrumbs'][] = $this->title;
         $model->file_dinhkem = json_decode($model->file_dinhkem, true);
 
         foreach($model->file_dinhkem as $i => $item){
-            $file[] = Yii::$app->homeUrl.$item;
+            $file[] = Url::to(['/quanly/hocau/moinoi/download-file', 'path' => $item]);
         }
     }
 

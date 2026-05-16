@@ -197,6 +197,39 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
     .ll-val   { color:#ffa800; font-weight:600; font-size:.75rem; }
     .ll-neg   { color:#f64e60; font-size:.72rem; }
 
+    /* ── GEAR CONFIG DROPDOWN ───────────────────────────────────── */
+    .rt-card-header {
+        display:flex; justify-content:space-between; align-items:center;
+        margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid #e2e8f0;
+    }
+    .rt-gear-wrap { position:relative; }
+    .rt-gear-btn {
+        background:none; border:1px solid #e2e8f0; border-radius:6px;
+        width:26px; height:26px; display:flex; align-items:center; justify-content:center;
+        cursor:pointer; color:#94a3b8; font-size:.75rem; transition:all .2s;
+        padding:0;
+    }
+    .rt-gear-btn:hover { border-color:#3699ff; color:#3699ff; background:#eff6ff; }
+    .rt-gear-dropdown {
+        display:none; position:absolute; right:0; top:30px; z-index:100;
+        background:#fff; border:1px solid #e2e8f0; border-radius:8px;
+        padding:8px 0; min-width:170px;
+        box-shadow:0 4px 20px rgba(0,0,0,.1);
+    }
+    .rt-gear-dropdown.open { display:block; }
+    .rt-gear-item {
+        display:flex; align-items:center; gap:8px;
+        padding:6px 14px; font-size:.75rem; color:#334155;
+        cursor:pointer; transition:background .15s; white-space:nowrap;
+    }
+    .rt-gear-item:hover { background:#f8fafc; }
+    .rt-gear-item input[type=checkbox] { accent-color:#3699ff; cursor:pointer; }
+    .rt-field-row.rt-hidden { display:none; }
+
+    /* ── CỘT MỞ RỘNG BẢNG 24 TRẠM ──────────────────────────────── */
+    .rt-table th.col-extra,
+    .rt-table td.col-extra { text-align:right; }
+
     /* Loading */
     .sl-loading {
         display:flex; align-items:center; justify-content:center;
@@ -1085,23 +1118,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Site 60100 = TB Nước Thô | 60000 = Nhà Máy | NT5 = TB TA NT5
     // 24 trạm mạng lưới + chart top 15
     // ════════════════════════════════════════════════════════════
+    // ── localStorage helpers — dùng chung cho gear toggle ──────
+    var LS_KEY = 'rt_card_cfg';
+    function loadCfg() {
+        try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch(e) { return {}; }
+    }
+    function saveCfg(cfg) {
+        try { localStorage.setItem(LS_KEY, JSON.stringify(cfg)); } catch(e) {}
+    }
+
     function renderRealtime(slData) {
         var trams = (slData && slData.trams) ? slData.trams : [];
         
         // Cố tình bỏ phần tính toán và hiển thị cho '#sl-kpi-row'
         // vì vùng này đã được ẩn bằng hàm switchSLTab() 
-
-        // Helper render row cho station card
-        function stationRow(label, val, unit, color, ts) {
-            var tsStr = ts ? ts.substring(5,16) : '';
-            return '<div class="rt-field-row">' +
-                '<span class="rt-field-label">' + label + '</span>' +
-                '<div style="text-align:right;">' +
-                    '<span class="rt-field-ts">' + tsStr + '</span><br>' +
-                    '<span class="rt-field-val" style="color:' + color + ';">' + val + ' <small style="font-weight:400;color:#94a3b8;">' + unit + '</small></span>' +
-                '</div>' +
-            '</div>';
-        }
 
         // Fetch 3 trạm từ t_Channel_Configurations qua proxy
         fetch('/iot_api.php?action=stations&key=' + IOT_KEY)
@@ -1113,6 +1143,70 @@ document.addEventListener('DOMContentLoaded', function() {
                 renderRealtimeLayout(trams, {});
             });
 
+        // Mỗi card có 1 key trong cfg: { tbn: {ph:1,do_duc:1,luu_luong:1}, nm: {...}, nt5: {...} }
+        var CARD_FIELDS = {
+            tbn: [
+                { key:'ph',        label:'pH' },
+                { key:'do_duc',    label:'Độ Đục' },
+                { key:'luu_luong', label:'Lưu Lượng' }
+            ],
+            nm: [
+                { key:'do_duc',    label:'Độ Đục' },
+                { key:'luu_luong', label:'Lưu Lượng' },
+                { key:'ph',        label:'pH' },
+                { key:'clo',       label:'Clo' },
+                { key:'muc_be',    label:'Mức Bể Chứa' }
+            ],
+            nt5: [
+                { key:'ap_sp',     label:'Áp Suất Cài Đặt' },
+                { key:'ap_pv',     label:'Áp Suất Thực Tế' },
+                { key:'ll_thuan',  label:'Lưu Lượng Thuận' },
+                { key:'ll_nghich', label:'Lưu Lượng Nghịch' },
+                { key:'tan_so_1',  label:'Tần Số Bơm 1' },
+                { key:'tan_so_2',  label:'Tần Số Bơm 2' },
+                { key:'cong_suat', label:'Công Suất' }
+            ]
+        };
+
+        var cfg = loadCfg();
+        // Mặc định: tất cả bật (1) nếu chưa có trong localStorage
+        ['tbn','nm','nt5'].forEach(function(cid) {
+            if (!cfg[cid]) {
+                cfg[cid] = {};
+                CARD_FIELDS[cid].forEach(function(f){ cfg[cid][f.key] = 1; });
+            }
+        });
+
+        // Build gear dropdown HTML cho 1 card
+        function buildGear(cardId) {
+            var items = CARD_FIELDS[cardId].map(function(f) {
+                var checked = cfg[cardId][f.key] !== 0 ? 'checked' : '';
+                return '<label class="rt-gear-item">' +
+                    '<input type="checkbox" ' + checked + ' data-card="' + cardId + '" data-field="' + f.key + '"> ' +
+                    f.label +
+                '</label>';
+            }).join('');
+            return '<div class="rt-gear-wrap">' +
+                '<button class="rt-gear-btn" onclick="rtToggleGear(this)" title="Tùy chỉnh hiển thị">' +
+                    '<i class="fa-solid fa-gear"></i>' +
+                '</button>' +
+                '<div class="rt-gear-dropdown">' + items + '</div>' +
+            '</div>';
+        }
+
+        // Build stationRow có thêm data-card / data-field để ẩn/hiện
+        function stationRowCfg(cardId, fieldKey, label, val, unit, color, ts) {
+            var isHidden = cfg[cardId][fieldKey] === 0 ? ' rt-hidden' : '';
+            var tsStr = ts ? ts.substring(5,16) : '';
+            return '<div class="rt-field-row' + isHidden + '" data-card="' + cardId + '" data-field="' + fieldKey + '">' +
+                '<span class="rt-field-label">' + label + '</span>' +
+                '<div style="text-align:right;">' +
+                    '<span class="rt-field-ts">' + tsStr + '</span><br>' +
+                    '<span class="rt-field-val" style="color:' + color + ';">' + val + ' <small style="font-weight:400;color:#94a3b8;">' + unit + '</small></span>' +
+                '</div>' +
+            '</div>';
+        }
+
         function renderRealtimeLayout(trams, stData) {
             var nm  = stData.nha_may  || {};
             var tbn = stData.tram_bo_nuoc_tho || {};
@@ -1121,55 +1215,88 @@ document.addEventListener('DOMContentLoaded', function() {
             // ── Block TB Nước Thô (site 60100) ──
             var blockTBNT =
                 '<div class="rt-station-card">' +
-                    '<div class="rt-station-card-title" style="color:#60a5fa;">' +
-                        '<span class="dot" style="background:#3699ff;"></span>TB Nước Thô' +
+                    '<div class="rt-card-header">' +
+                        '<div class="rt-station-card-title" style="color:#60a5fa;margin:0;border:none;padding:0;">' +
+                            '<span class="dot" style="background:#3699ff;"></span>TB Nước Thô' +
+                        '</div>' +
+                        buildGear('tbn') +
                     '</div>' +
-                    stationRow('pH',           fmtVal(tbn.ph),         'ph',    '#1bc5bd', tbn.ts) +
-                    stationRow('Độ Đục',       fmtVal(tbn.do_duc),     'ntu',   '#ffa800', tbn.ts) +
-                    stationRow('Lưu Lượng',    fmtVal(tbn.luu_luong),  'm³/h',  '#3699ff', tbn.ts) +
+                    stationRowCfg('tbn','ph',        'pH',         fmtVal(tbn.ph),        'ph',   '#1bc5bd', tbn.ts) +
+                    stationRowCfg('tbn','do_duc',    'Độ Đục',     fmtVal(tbn.do_duc),    'ntu',  '#ffa800', tbn.ts) +
+                    stationRowCfg('tbn','luu_luong', 'Lưu Lượng',  fmtVal(tbn.luu_luong), 'm³/h', '#3699ff', tbn.ts) +
                 '</div>';
 
             // ── Block Nhà Máy (site 60000) ──
             var blockNM =
                 '<div class="rt-station-card">' +
-                    '<div class="rt-station-card-title" style="color:#1bc5bd;">' +
-                        '<span class="dot" style="background:#1bc5bd;"></span>Nhà Máy' +
+                    '<div class="rt-card-header">' +
+                        '<div class="rt-station-card-title" style="color:#1bc5bd;margin:0;border:none;padding:0;">' +
+                            '<span class="dot" style="background:#1bc5bd;"></span>Nhà Máy' +
+                        '</div>' +
+                        buildGear('nm') +
                     '</div>' +
-                    stationRow('Độ Đục',       fmtVal(nm.do_duc),     'ntu',   '#5a82a8', nm.ts) +
-                    stationRow('Lưu Lượng',    fmtVal(nm.luu_luong),  'm³/h',  '#3699ff', nm.ts) +
-                    stationRow('pH',           fmtVal(nm.ph),         'ph',    '#1bc5bd', nm.ts) +
-                    stationRow('Clo',          fmtVal(nm.clo),        'ppm',   '#8950fc', nm.ts) +
-                    stationRow('Mức Bể Chứa',  fmtVal(nm.muc_be),     'm',     '#ffa800', nm.ts) +
+                    stationRowCfg('nm','do_duc',    'Độ Đục',       fmtVal(nm.do_duc),    'ntu',  '#5a82a8', nm.ts) +
+                    stationRowCfg('nm','luu_luong', 'Lưu Lượng',    fmtVal(nm.luu_luong), 'm³/h', '#3699ff', nm.ts) +
+                    stationRowCfg('nm','ph',        'pH',            fmtVal(nm.ph),        'ph',   '#1bc5bd', nm.ts) +
+                    stationRowCfg('nm','clo',       'Clo',           fmtVal(nm.clo),       'ppm',  '#8950fc', nm.ts) +
+                    stationRowCfg('nm','muc_be',    'Mức Bể Chứa',   fmtVal(nm.muc_be),    'm',    '#ffa800', nm.ts) +
                 '</div>';
 
-            // ── Block TB TA NT5 (site NT5) — bỏ điện + sản lượng ngày ──
+            // ── Block TB TA NT5 ──
             var blockNT5 =
                 '<div class="rt-station-card">' +
-                    '<div class="rt-station-card-title" style="color:#ffa800;">' +
-                        '<span class="dot" style="background:#ffa800;"></span>TB TA NT5' +
+                    '<div class="rt-card-header">' +
+                        '<div class="rt-station-card-title" style="color:#ffa800;margin:0;border:none;padding:0;">' +
+                            '<span class="dot" style="background:#ffa800;"></span>TB TA NT5' +
+                        '</div>' +
+                        buildGear('nt5') +
                     '</div>' +
-                    stationRow('Áp Suất Cài Đặt', fmtVal(nt5.ap_sp),       'm',    '#64748b', nt5.ts) +
-                    stationRow('Áp Suất Thực tế',  fmtVal(nt5.ap_pv),       'm',    '#3699ff', nt5.ts) +
-                    stationRow('Lưu Lượng Thuận',  fmtVal(nt5.ll_thuan),    'm³/h', '#1bc5bd', nt5.ts) +
-                    stationRow('Lưu Lượng Nghịch', fmtVal(nt5.ll_nghich),   'm³/h', '#f64e60', nt5.ts) +
-                    stationRow('Tần Số Bơm 1',     fmtVal(nt5.tan_so_1),    'hz',   '#3699ff', nt5.ts) +
-                    stationRow('Tần Số Bơm 2',     fmtVal(nt5.tan_so_2),    'hz',   '#00d4ff', nt5.ts) +
-                    stationRow('Công Suất',         fmtVal(nt5.cong_suat),   'KW',   '#ffa800', nt5.ts) +
+                    stationRowCfg('nt5','ap_sp',     'Áp Suất Cài Đặt', fmtVal(nt5.ap_sp),     'm',    '#64748b', nt5.ts) +
+                    stationRowCfg('nt5','ap_pv',     'Áp Suất Thực Tế', fmtVal(nt5.ap_pv),     'm',    '#3699ff', nt5.ts) +
+                    stationRowCfg('nt5','ll_thuan',  'Lưu Lượng Thuận', fmtVal(nt5.ll_thuan),  'm³/h', '#1bc5bd', nt5.ts) +
+                    stationRowCfg('nt5','ll_nghich', 'Lưu Lượng Nghịch',fmtVal(nt5.ll_nghich), 'm³/h', '#f64e60', nt5.ts) +
+                    stationRowCfg('nt5','tan_so_1',  'Tần Số Bơm 1',    fmtVal(nt5.tan_so_1),  'hz',   '#3699ff', nt5.ts) +
+                    stationRowCfg('nt5','tan_so_2',  'Tần Số Bơm 2',    fmtVal(nt5.tan_so_2),  'hz',   '#00d4ff', nt5.ts) +
+                    stationRowCfg('nt5','cong_suat', 'Công Suất',        fmtVal(nt5.cong_suat), 'KW',   '#ffa800', nt5.ts) +
                 '</div>';
 
-            // ── Bảng 24 trạm (ap_luc + luu_luong + timestamp) ──
+            // ── Bảng 24 trạm — ap_luc, ll_thuan, ll_nghich, ap_truoc, ap_sau (v6.4) ──
             var sorted = trams.slice().sort(function(a,b){ return b.ap_luc - a.ap_luc; });
             var tableRows = sorted.map(function(t) {
-                var ap = parseFloat(t.ap_luc || 0);
-                var ll = parseFloat(t.luu_luong || 0);
+                var ap    = parseFloat(t.ap_luc     || 0);
+                var llT   = parseFloat(t.luu_luong  || 0); // ll_thuan = luu_luong (gateway hiện tại)
+                var llN   = parseFloat(t.ll_nghich || 0);
+                var apTr  = (t.ap_truoc  !== undefined && t.ap_truoc  !== null) ? parseFloat(t.ap_truoc)  : null;
+                var apSau = (t.ap_sau    !== undefined && t.ap_sau    !== null) ? parseFloat(t.ap_sau)    : null;
+
                 var apCls = ap>=40?'ap-high': ap>=25?'ap-med': ap>=10?'ap-low': ap>0?'ap-alert':'ap-none';
-                var apStr = ap > 0 ? '<span class="ap-badge ' + apCls + '">' + ap.toFixed(2) + ' m</span>' : '<span class="ap-badge ap-none">—</span>';
-                var llStr = ll > 0 ? '<span class="ll-val">' + ll.toFixed(1) + ' m³/h</span>' : '<span style="color:#94a3b8;">—</span>';
+                var apStr = ap > 0
+                    ? '<span class="ap-badge ' + apCls + '">' + ap.toFixed(2) + ' m</span>'
+                    : '<span class="ap-badge ap-none">—</span>';
+
+                var llTStr  = llT > 0
+                    ? '<span class="ll-val">' + llT.toFixed(1) + ' m³/h</span>'
+                    : '<span style="color:#94a3b8;">—</span>';
+                var llNStr  = llN > 0
+                    ? '<span class="ll-neg">▼ ' + llN.toFixed(1) + ' m³/h</span>'
+                    : '<span style="color:#94a3b8;">—</span>';
+                var apTrStr = apTr !== null
+                    ? '<span style="color:#60a5fa;font-weight:600;">' + apTr.toFixed(2) + ' m</span>'
+                    : '<span style="color:#94a3b8;">—</span>';
+                var apSauStr= apSau !== null
+                    ? '<span style="color:#1bc5bd;font-weight:600;">' + apSau.toFixed(2) + ' m</span>'
+                    : '<span style="color:#94a3b8;">—</span>';
+
                 var ts = t.timestamp || '';
-                return '<tr><td style="font-weight:600;color:#334155;">' + (t.ten||t.site_id) + '</td>' +
-                    '<td>' + apStr + '</td>' +
-                    '<td>' + llStr + '</td>' +
-                    '<td style="font-size:.7rem;color:#94a3b8;">' + ts.substring(5,16) + '</td></tr>';
+                return '<tr>' +
+                    '<td style="font-weight:600;color:#334155;">' + (t.ten||t.site_id) + '</td>' +
+                    '<td class="col-extra">' + apStr   + '</td>' +
+                    '<td class="col-extra">' + llTStr  + '</td>' +
+                    '<td class="col-extra">' + llNStr  + '</td>' +
+                    '<td class="col-extra">' + apTrStr + '</td>' +
+                    '<td class="col-extra">' + apSauStr+ '</td>' +
+                    '<td style="font-size:.7rem;color:#94a3b8;">' + ts.substring(5,16) + '</td>' +
+                '</tr>';
             }).join('');
 
             var blockTable =
@@ -1177,12 +1304,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     '<div class="sl-card-title"><span class="dot" style="--dot-color:#3699ff;"></span>' +
                         'Trạng Thái 24 Trạm SCADA (Realtime)' +
                     '</div>' +
-                    '<div style="overflow-y:auto;max-height:380px;">' +
-                        '<table class="rt-table">' +
+                    '<div style="overflow-x:auto;overflow-y:auto;max-height:380px;">' +
+                        '<table class="rt-table" style="min-width:620px;">' +
                             '<thead><tr>' +
                                 '<th style="min-width:150px;">Trạm</th>' +
-                                '<th>Áp Lực</th>' +
-                                '<th>Lưu Lượng</th>' +
+                                '<th class="col-extra">Áp Lực</th>' +
+                                '<th class="col-extra">LL Thuận</th>' +
+                                '<th class="col-extra">LL Nghịch</th>' +
+                                '<th class="col-extra">AP Trước</th>' +
+                                '<th class="col-extra">AP Sau</th>' +
                                 '<th>Cập Nhật</th>' +
                             '</tr></thead>' +
                             '<tbody>' + tableRows + '</tbody>' +
@@ -1298,6 +1428,45 @@ document.addEventListener('DOMContentLoaded', function() {
 
         loadSLTab(loai);
     };
+
+    // ── Gear toggle handler ──────────────────────────────────────
+    window.rtToggleGear = function(btn) {
+        var dd = btn.nextElementSibling;
+        dd.classList.toggle('open');
+        // Đóng dropdown khác
+        document.querySelectorAll('.rt-gear-dropdown.open').forEach(function(el) {
+            if (el !== dd) el.classList.remove('open');
+        });
+    };
+
+    // Đóng dropdown khi click ra ngoài
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.rt-gear-wrap')) {
+            document.querySelectorAll('.rt-gear-dropdown.open').forEach(function(el) {
+                el.classList.remove('open');
+            });
+        }
+    });
+
+    // Lắng nghe checkbox change — dùng event delegation vì DOM được render động
+    document.getElementById('sl-content').addEventListener('change', function(e) {
+        var cb = e.target;
+        if (cb.type !== 'checkbox' || !cb.dataset.card) return;
+        var cardId   = cb.dataset.card;
+        var fieldKey = cb.dataset.field;
+        var cfg2 = loadCfg();
+        if (!cfg2[cardId]) cfg2[cardId] = {};
+        cfg2[cardId][fieldKey] = cb.checked ? 1 : 0;
+        saveCfg(cfg2);
+        // Ẩn/hiện row ngay lập tức, không cần re-render
+        document.querySelectorAll('.rt-field-row[data-card="' + cardId + '"][data-field="' + fieldKey + '"]').forEach(function(row) {
+            if (cb.checked) {
+                row.classList.remove('rt-hidden');
+            } else {
+                row.classList.add('rt-hidden');
+            }
+        });
+    });
 
     loadSLTab('ngay');
 

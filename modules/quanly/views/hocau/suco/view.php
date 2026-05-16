@@ -102,7 +102,7 @@ if ($model->tinhtrangsuco_id == 3) $statusClass = 'success';
                                 <a href="<?= $dlUrl ?>" target="_blank" class="d-inline-block">
                                     <img src="<?= $dlUrl ?>"
                                          alt="<?= Html::encode($file['name']) ?>"
-                                         style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0;"
+                                         style="width:130px;height:130px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0;"
                                          title="<?= Html::encode($file['name']) ?>" />
                                 </a>
                             <?php endif; ?>

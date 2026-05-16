@@ -88,16 +88,36 @@ if ($model->tinhtrangsuco_id == 3) $statusClass = 'success';
                     <?php if (!empty($files)) : ?>
                         <div class="list-group list-group-flush">
                             <?php foreach ($files as $i => $file) : ?>
-                                <a href="<?= Url::to(['/quanly/hocau/suco/download-file', 'path' => $file['url']]) ?>" target="_blank" class="list-group-item list-group-item-action border-0 px-0 d-flex align-items-center">
-                                    <div class="bg-light rounded p-2 me-3 text-center" style="width: 40px;">
-                                        
+                            <?php
+                                $ext     = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                                $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                                $dlUrl   = Url::to(['/quanly/hocau/suco/download-file', 'path' => $file['url']]);
+                            ?>
+                            <?php if ($isImage) : ?>
+                                <a href="<?= $dlUrl ?>" target="_blank" class="d-inline-block me-2 mb-2">
+                                    <img src="<?= $dlUrl ?>"
+                                         alt="<?= Html::encode($file['name']) ?>"
+                                         style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0;"
+                                         title="<?= Html::encode($file['name']) ?>" />
+                                </a>
+                            <?php else : ?>
+                                <a href="<?= $dlUrl ?>" target="_blank"
+                                   class="list-group-item list-group-item-action border-0 px-0 d-flex align-items-center">
+                                    <div class="bg-light rounded p-2 me-3 text-center" style="width:40px;">
+                                        <?php
+                                            if (in_array($ext, ['pdf']))            echo '<i class="fa fa-file-pdf text-danger"></i>';
+                                            elseif (in_array($ext, ['doc','docx'])) echo '<i class="fa fa-file-word text-primary"></i>';
+                                            elseif (in_array($ext, ['xls','xlsx'])) echo '<i class="fa fa-file-excel text-success"></i>';
+                                            else                                    echo '<i class="fa fa-file text-muted"></i>';
+                                        ?>
                                     </div>
                                     <div class="flex-grow-1">
                                         <div class="small fw-medium text-dark"><?= Html::encode($file['name']) ?></div>
                                     </div>
                                     <i class="fa fa-external-link-alt text-muted small"></i>
                                 </a>
-                            <?php endforeach; ?>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
                         </div>
                     <?php else : ?>
                         <div class="text-center py-4 text-muted small">Chưa có ảnh hiện trường</div>

@@ -138,7 +138,7 @@ $this->params['breadcrumbs'][] = $this->title;
         subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
     }).addTo(map);
 
-    const moinoi = L.tileLayer.wms('http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
+    const moinoi = L.tileLayer.wms('https://cello.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
         layers: 'capnuoc_hocau:network_moinoi',
         format: 'image/png',
         transparent: true,

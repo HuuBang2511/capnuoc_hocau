@@ -157,7 +157,7 @@ $statusClass = (strpos(mb_strtolower($statusLabel), 'hỏng') !== false) ? 'dang
         maxZoom: 22, subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
     });
 
-    const van = L.tileLayer.wms('http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
+    const van = L.tileLayer.wms('https://cello.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
         layers: 'capnuoc_hocau:network_van',
         format: 'image/png',
         transparent: true,

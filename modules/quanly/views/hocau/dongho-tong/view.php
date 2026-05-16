@@ -163,7 +163,7 @@ $this->params['breadcrumbs'][] = $this->title;
         maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
     });
 
-    const donghotong = L.tileLayer.wms('http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
+    const donghotong = L.tileLayer.wms('https://cello.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
         layers: 'capnuoc_hocau:network_donghotong',
         format: 'image/png',
         transparent: true,

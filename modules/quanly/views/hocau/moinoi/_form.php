@@ -224,7 +224,7 @@ const baseLayers = {
 };
 
 const overlayers = {
-    "Mối nối": L.tileLayer.wms('http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
+    "Mối nối": L.tileLayer.wms('https://cello.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
     layers: 'capnuoc_hocau:network_moinoi',
     format: 'image/png',
     transparent: true,

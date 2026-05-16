@@ -135,7 +135,7 @@ $this->params['breadcrumbs'][] = $this->title;
         };
 
         var overlayers = {
-            "Nhà máy nước": L.tileLayer.wms('http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
+            "Nhà máy nước": L.tileLayer.wms('https://cello.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
                 layers: 'capnuoc_hocau:network_nhamaynuoc',
                 format: 'image/png',
                 transparent: true,

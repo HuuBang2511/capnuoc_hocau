@@ -219,7 +219,7 @@ const baseLayers = {
 
 
 const overlayers = {
-    "Ống truyền dẫn": L.tileLayer.wms('http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
+    "Ống truyền dẫn": L.tileLayer.wms('https://cello.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
     layers: 'capnuoc_hocau:network_ongtruyendan',
     format: 'image/png',
     transparent: true,

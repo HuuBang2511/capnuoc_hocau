@@ -153,7 +153,7 @@ if ($model->tinhtrangsuco_id == 3) $statusClass = 'success';
         subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
     });
 
-    const suco = L.tileLayer.wms('http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
+    const suco = L.tileLayer.wms('https://cello.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
         layers: 'capnuoc_hocau:network_suco',
         format: 'image/png',
         transparent: true,

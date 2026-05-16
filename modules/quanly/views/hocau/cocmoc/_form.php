@@ -198,7 +198,7 @@ const baseLayers = {
 };
 
 const overlayers = {
-    "Cọc mốc": L.tileLayer.wms('http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
+    "Cọc mốc": L.tileLayer.wms('https://cello.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
     layers: 'capnuoc_hocau:network_cocmoc',
     format: 'image/png',
     transparent: true,

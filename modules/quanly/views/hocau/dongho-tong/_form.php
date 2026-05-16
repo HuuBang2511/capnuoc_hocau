@@ -248,7 +248,7 @@ const baseLayers = {
 };
 
 const overlayers = {
-    "Đồng hồ tổng": L.tileLayer.wms('http://gis.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
+    "Đồng hồ tổng": L.tileLayer.wms('https://cello.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
     layers: 'capnuoc_hocau:network_donghotong',
     format: 'image/png',
     transparent: true,

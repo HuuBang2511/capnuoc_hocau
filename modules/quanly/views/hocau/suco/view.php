@@ -45,9 +45,12 @@ if ($model->tinhtrangsuco_id == 3) $statusClass = 'success';
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-xl-5 col-lg-6">
-            <div class="card border-0 shadow-sm mb-4">
+    <div class="row align-items-stretch">
+
+        <!-- CỘT TRÁI -->
+        <div class="col-xl-5 col-lg-6 d-flex flex-column mb-4">
+
+            <div class="card border-0 shadow-sm mb-3">
                 <div class="card-header bg-white py-3 border-bottom">
                     <h5 class="card-title mb-0 fw-bold"><i class="fa fa-info-circle text-primary me-2"></i>Thông tin chi tiết sự cố</h5>
                 </div>
@@ -80,27 +83,40 @@ if ($model->tinhtrangsuco_id == 3) $statusClass = 'success';
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm mb-4">
+            <!-- Card file: flex-grow để lấp đầy chiều cao còn lại -->
+            <div class="card border-0 shadow-sm flex-grow-1 d-flex flex-column" style="min-height: 0;">
                 <div class="card-header bg-white py-3 border-bottom">
                     <h5 class="card-title mb-0 fw-bold"><i class="fa fa-camera text-info me-2"></i>Hình ảnh & Hồ sơ hiện trường</h5>
                 </div>
-                <div class="card-body py-2">
+                <div class="card-body flex-grow-1 overflow-auto py-2" style="max-height: 420px;">
                     <?php if (!empty($files)) : ?>
-                        <div class="list-group list-group-flush">
-                            <?php foreach ($files as $i => $file) : ?>
+                        <!-- Ảnh thumbnail -->
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+                        <?php foreach ($files as $i => $file) : ?>
                             <?php
                                 $ext     = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
                                 $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
                                 $dlUrl   = Url::to(['/quanly/hocau/suco/download-file', 'path' => $file['url']]);
                             ?>
                             <?php if ($isImage) : ?>
-                                <a href="<?= $dlUrl ?>" target="_blank" class="d-inline-block me-2 mb-2">
+                                <a href="<?= $dlUrl ?>" target="_blank" class="d-inline-block">
                                     <img src="<?= $dlUrl ?>"
                                          alt="<?= Html::encode($file['name']) ?>"
                                          style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0;"
                                          title="<?= Html::encode($file['name']) ?>" />
                                 </a>
-                            <?php else : ?>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                        </div>
+                        <!-- File không phải ảnh -->
+                        <div class="list-group list-group-flush">
+                        <?php foreach ($files as $i => $file) : ?>
+                            <?php
+                                $ext     = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                                $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                                $dlUrl   = Url::to(['/quanly/hocau/suco/download-file', 'path' => $file['url']]);
+                            ?>
+                            <?php if (!$isImage) : ?>
                                 <a href="<?= $dlUrl ?>" target="_blank"
                                    class="list-group-item list-group-item-action border-0 px-0 d-flex align-items-center">
                                     <div class="bg-light rounded p-2 me-3 text-center" style="width:40px;">
@@ -124,10 +140,12 @@ if ($model->tinhtrangsuco_id == 3) $statusClass = 'success';
                     <?php endif; ?>
                 </div>
             </div>
+
         </div>
 
-        <div class="col-xl-7 col-lg-6">
-            <div class="card border-0 shadow-sm sticky-top" style="top: 20px; z-index: 1000;">
+        <!-- CỘT PHẢI: bản đồ -->
+        <div class="col-xl-7 col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0 fw-bold"><i class="fa fa-map-marker-alt text-danger me-2"></i>Vị trí sự cố trên bản đồ</h5>
                     <div class="text-muted small"><?= $model->lat ?>, <?= $model->long ?></div>
@@ -140,6 +158,7 @@ if ($model->tinhtrangsuco_id == 3) $statusClass = 'success';
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 

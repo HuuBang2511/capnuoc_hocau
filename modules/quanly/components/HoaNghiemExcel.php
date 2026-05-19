@@ -268,9 +268,9 @@ class HoaNghiemExcel
         }
         $this->styleHeaderGroup($sheet, 'A' . $row . ':G' . $row, self::COLOR_HEADER_LIGHT);
 
-        $pacS = isset($cln->jar_s_pac) ? (is_array($cln->jar_s_pac) ? $cln->jar_s_pac : json_decode($cln->jar_s_pac, true)) : array();
-        $ntuS = isset($cln->jar_s_ntu) ? (is_array($cln->jar_s_ntu) ? $cln->jar_s_ntu : json_decode($cln->jar_s_ntu, true)) : array();
-        $phS  = isset($cln->jar_s_ph)  ? (is_array($cln->jar_s_ph)  ? $cln->jar_s_ph  : json_decode($cln->jar_s_ph, true))  : array();
+        $pacS = $this->toArr(isset($cln->jar_s_pac) ? $cln->jar_s_pac : null);
+        $ntuS = $this->toArr(isset($cln->jar_s_ntu) ? $cln->jar_s_ntu : null);
+        $phS  = $this->toArr(isset($cln->jar_s_ph)  ? $cln->jar_s_ph  : null);
 
         $jarRows = array(
             array('label' => 'PAC (mg/L)', 'data' => $pacS),
@@ -305,9 +305,9 @@ class HoaNghiemExcel
         }
         $this->styleHeaderGroup($sheet, 'A' . $row . ':G' . $row, self::COLOR_HEADER_LIGHT);
 
-        $pacC = isset($cln->jar_c_pac) ? (is_array($cln->jar_c_pac) ? $cln->jar_c_pac : json_decode($cln->jar_c_pac, true)) : array();
-        $ntuC = isset($cln->jar_c_ntu) ? (is_array($cln->jar_c_ntu) ? $cln->jar_c_ntu : json_decode($cln->jar_c_ntu, true)) : array();
-        $phC  = isset($cln->jar_c_ph)  ? (is_array($cln->jar_c_ph)  ? $cln->jar_c_ph  : json_decode($cln->jar_c_ph, true))  : array();
+        $pacC = $this->toArr(isset($cln->jar_c_pac) ? $cln->jar_c_pac : null);
+        $ntuC = $this->toArr(isset($cln->jar_c_ntu) ? $cln->jar_c_ntu : null);
+        $phC  = $this->toArr(isset($cln->jar_c_ph)  ? $cln->jar_c_ph  : null);
 
         $jarRowsC = array(
             array('label' => 'PAC (mg/L)', 'data' => $pacC),
@@ -352,6 +352,20 @@ class HoaNghiemExcel
     private function val($v)
     {
         return ($v !== null && $v !== '') ? $v : '';
+    }
+
+    /**
+     * Normalize PostgreSQL array / JSON string / PHP array về PHP array.
+     * Yii2 + pgsql driver có thể trả về: PHP array, ArrayObject, hoặc JSON string.
+     */
+    private function toArr($v)
+    {
+        if ($v === null || $v === '') return array();
+        if (is_array($v)) return $v;
+        if (is_object($v)) return (array)$v;
+        // string: thử json_decode
+        $decoded = json_decode($v, true);
+        return is_array($decoded) ? $decoded : array();
     }
 
     private function styleTitle($sheet, $range, $size, $bold, $bgColor = null)

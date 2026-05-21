@@ -831,13 +831,13 @@ $this->beginPage();
                     <?php
                     $layerGroups = [
                         'Mạng Lưới Đường Ống' => [
-                            ['id' => 'truyendan', 'layer' => 'capnuoc_hocau:network_ongtruyendan', 'label' => 'Ống truyền dẫn', 'checked' => true, 'z' => 20],
+                            ['id' => 'truyendan', 'layer' => 'capnuoc_hocau:network_ongtruyendan', 'label' => 'Ống nước thô', 'checked' => true, 'z' => 20],
                             ['id' => 'phanphoi', 'layer' => 'capnuoc_hocau:network_ongphanphoi', 'label' => 'Ống phân phối', 'checked' => true, 'z' => 20],
                             ['id' => 'dansinh', 'layer' => 'capnuoc_hocau:network_ongdansinh', 'label' => 'Ống dân sinh', 'checked' => true, 'z' => 20],
                             ['id' => 'moinoi', 'layer' => 'capnuoc_hocau:network_moinoi', 'label' => 'Mối nối', 'checked' => false, 'z' => 30],
                         ],
                         'Thiết Bị & Đồng Hồ' => [
-                            ['id' => 'van', 'layer' => 'capnuoc_hocau:network_van', 'label' => 'Van mạng lưới', 'checked' => true, 'z' => 30],
+                            ['id' => 'van', 'layer' => 'capnuoc_hocau:network_van', 'label' => 'Van', 'checked' => true, 'z' => 30],
                             ['id' => 'dhtong', 'layer' => 'capnuoc_hocau:network_donghotong', 'label' => 'Đồng hồ tổng', 'checked' => true, 'z' => 30],
                             ['id' => 'dhnhamay', 'layer' => 'capnuoc_hocau:network_donghonhamay', 'label' => 'Đồng hồ nhà máy', 'checked' => false, 'z' => 30],
                         ],
@@ -967,7 +967,7 @@ $this->beginPage();
                     </div>
                     <select class="form-select form-select-sm mb-2" id="search-layer">
                         <option value="capnuoc_hocau:network_donghonhamay">Đồng hồ nhà máy</option>
-                        <option value="capnuoc_hocau:network_van">Van mạng lưới</option>
+                        <option value="capnuoc_hocau:network_van">Van</option>
                         <option value="capnuoc_hocau:network_suco">Sự cố</option>
                     </select>
                     <div id="search-res"

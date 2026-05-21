@@ -446,7 +446,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
             </div>
             <div>
                 <span class="kpi-value"><?= number_format($lenTruyenDan,1) ?> <span class="kpi-unit">km</span></span>
-                <div class="kpi-title">Ống truyền dẫn</div>
+                <div class="kpi-title">Ống nước thô</div>
             </div>
         </a>
         <a href="<?= $urlPhanPhoi ?>" class="kpi-card border-purple">
@@ -482,7 +482,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
     <div class="kpi-row">
         <a href="<?= $urlVan ?>" class="kpi-card border-orange">
             <div class="kpi-icon-wrapper"><div class="kpi-icon bg-light-orange"><i class="fa-solid fa-faucet"></i></div></div>
-            <div><span class="kpi-value"><?= number_format($cntVan) ?></span><div class="kpi-title">Van mạng lưới</div></div>
+            <div><span class="kpi-value"><?= number_format($cntVan) ?></span><div class="kpi-title">Van</div></div>
         </a>
         <a href="<?= $urlMoiNoi ?>" class="kpi-card border-orange">
             <div class="kpi-icon-wrapper"><div class="kpi-icon bg-light-orange"><i class="fa-solid fa-link"></i></div></div>

@@ -155,7 +155,7 @@ class APPConfig
                 'hasChild' => false,
             ],
             [
-                'name' => 'ống truyền dẫn',
+                'name' => 'Ống nước thô',
                 'icon' => 'fa fa-list',
                 'url' => 'quanly/hocau/ongtruyendan',
                 'key'=>'quanly.hocau/ongtruyendan.index',
@@ -169,7 +169,7 @@ class APPConfig
                 'hasChild' => false,
             ],
             [
-                'name' => 'Van phân phối',
+                'name' => 'Van',
                 'icon' => 'fa fa-list',
                 'url' => 'quanly/hocau/van',
                 'key'=>'quanly.hocau/van.index',

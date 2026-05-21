@@ -17,7 +17,7 @@ use app\modules\services\CategoriesService;
 
 class VanController extends QuanlyBaseController
 {
-    public $title = "Van phân phối";
+    public $title = "Van";
 
     private $nasBasePath = '\\\\192.168.31.8\\Gis-Data\\';
 
@@ -156,7 +156,7 @@ class VanController extends QuanlyBaseController
             Yii::$app->response->format = Response::FORMAT_JSON;
             if ($request->isGet) {
                 return [
-                    'title'   => "Xóa Van phân phối #" . $id,
+                    'title'   => "Xóa Van #" . $id,
                     'content' => $this->renderAjax('delete', ['model' => $model]),
                     'footer'  => Html::button('Đóng', ['class' => 'btn btn-light float-right', 'data-bs-dismiss' => "modal"]) .
                                  Html::button('Xóa',  ['class' => 'btn btn-danger float-left',  'type' => "submit"]),
@@ -164,7 +164,7 @@ class VanController extends QuanlyBaseController
             } elseif ($request->isPost && $model->save()) {
                 return [
                     'forceReload' => '#crud-datatable-pjax',
-                    'title'       => "Xóa Van phân phối thành công #" . $id,
+                    'title'       => "Xóa Van thành công #" . $id,
                     'content'     => '<span class="text-success">Xóa thành công</span>',
                     'footer'      => Html::button('Close', ['class' => 'btn btn-light float-right', 'data-bs-dismiss' => "modal"]),
                 ];

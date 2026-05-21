@@ -54,7 +54,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js', ['position' => \y
             <div class="block block-themed stat-card text-center">
                 <div class="block-header bg-primary-dark d-flex align-items-center justify-content-center">
                     <i class="fas fa-tint text-white fa-2x me-2"></i>
-                    <h3 class="block-title fs-4 fw-bold text-white">Van phân phối</h3>
+                    <h3 class="block-title fs-4 fw-bold text-white">Van</h3>
                 </div>
                 <div class="block-content p-4">
                     <div class="fs-1 fw-bold text-primary"><?= $thongke['van_mangluoi'] ?></div>
@@ -347,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
     //     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     // }).addTo(map);
     // L.marker([10.7769, 106.7009]).addTo(map).bindPopup('Trạm Bơm Chính');
-    // L.marker([10.7800, 106.7100]).addTo(map).bindPopup('Van Phân Phối');
+    // L.marker([10.7800, 106.7100]).addTo(map).bindPopup('Van');
     // L.marker([10.7700, 106.6900]).addTo(map).bindPopup('Sự cố Rò rỉ');
 
     // Biểu đồ Tiêu thụ Nước

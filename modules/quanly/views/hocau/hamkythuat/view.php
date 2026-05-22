@@ -58,7 +58,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'label' => 'Tình trạng',
                                 'format' => 'raw',
                                 'value' => function($model) {
-                                    $ten = $model->tinhtrang_id != null ? $model->tinhtrang->ten : 'N/A';
+                                    $ten = (isset($model->tinhtrang) && $model->tinhtrang !== null) ? $model->tinhtrang->ten : 'N/A';
                                     return '<span class="badge bg-info text-white">' . $ten . '</span>';
                                 }
                             ],
@@ -66,7 +66,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             [
                                 'label' => 'Loại hầm',
                                 'value' => function($model){
-                                    return ($model->loaiham_id != null) ? $model->loaiham->ten : '(Chưa rõ)';
+                                    return (isset($model->loaiham) && $model->loaiham !== null) ? $model->loaiham->ten : '(Chưa rõ)';
                                 }
                             ],
                             'kichthuoc',

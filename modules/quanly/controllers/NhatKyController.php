@@ -121,8 +121,9 @@ class NhatKyController extends QuanlyBaseController
         $ph   = $post['jar_ph']  ?? [];
         $lieu = $post['jar_lieu_chon'] ?? null;
 
+        // Form dùng 0-based index: jar_pac[0]..jar_pac[5]
         $hasData = false;
-        for ($i=1; $i<=5; $i++) {
+        for ($i = 0; $i < 6; $i++) {
             if (!empty($pac[$i]) || !empty($ntu[$i])) { $hasData = true; break; }
         }
         if (!$hasData) return;
@@ -136,10 +137,12 @@ class NhatKyController extends QuanlyBaseController
         $jar->gio_thu    = $jGio ? $jGio . ':00' : null;
         $jar->lieu_chon  = $lieu ?: null;
         $jar->nguoi_nhap = Yii::$app->user->identity->username ?? '';
-        for ($i=1; $i<=5; $i++) {
-            $jar->{'pac_'.$i.'_lieu'} = isset($pac[$i]) && $pac[$i] !== '' ? (float)$pac[$i] : null;
-            $jar->{'pac_'.$i.'_ntu'}  = isset($ntu[$i]) && $ntu[$i] !== '' ? (float)$ntu[$i] : null;
-            $jar->{'pac_'.$i.'_ph'}   = isset($ph[$i])  && $ph[$i]  !== '' ? (float)$ph[$i]  : null;
+        // Form index 0-based -> DB column 1-based (pac_1_lieu..pac_6_lieu)
+        for ($i = 0; $i < 6; $i++) {
+            $col = $i + 1;
+            $jar->{'pac_'.$col.'_lieu'} = isset($pac[$i]) && $pac[$i] !== '' ? (float)$pac[$i] : null;
+            $jar->{'pac_'.$col.'_ntu'}  = isset($ntu[$i]) && $ntu[$i] !== '' ? (float)$ntu[$i] : null;
+            $jar->{'pac_'.$col.'_ph'}   = isset($ph[$i])  && $ph[$i]  !== '' ? (float)$ph[$i]  : null;
         }
         $jar->save();
     }

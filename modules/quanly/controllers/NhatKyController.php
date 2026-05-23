@@ -122,22 +122,23 @@ class NhatKyController extends QuanlyBaseController
         $lieu = $post['jar_lieu_chon'] ?? null;
 
         $hasData = false;
-        for ($i=0; $i<6; $i++) {
+        for ($i = 0; $i < 6; $i++) {
             if (!empty($pac[$i]) || !empty($ntu[$i])) { $hasData = true; break; }
         }
         if (!$hasData) return;
 
-        $jar = \app\modules\quanly\models\hocau\NkJarTest::findOne(['ngay'=>$ngay,'ca'=>$ca]);
+        $jar = \app\modules\quanly\models\hocau\NkJarTest::findOne(['ngay' => $ngay, 'ca' => $ca]);
         if (!$jar) {
             $jar = new \app\modules\quanly\models\hocau\NkJarTest();
-            $jar->ngay = $ngay;
-            $jar->ca   = $ca;
         }
+        // Re-assign string thuần — tránh validation lỗi format khi Yii2/pgsql trả về object
+        $jar->ngay = (string)$ngay;
+        $jar->ca   = $ca;
         $jar->gio_thu    = $jGio ? $jGio . ':00' : null;
         $jar->lieu_chon  = ($lieu !== null && $lieu !== '') ? (float)$lieu : null;
         $jar->nguoi_nhap = Yii::$app->user->identity->username ?? '';
-        for ($i=0; $i<6; $i++) {
-            $col = $i + 1; // DB column: pac_1_lieu .. pac_6_lieu
+        for ($i = 0; $i < 6; $i++) {
+            $col = $i + 1;
             $jar->{'pac_'.$col.'_lieu'} = isset($pac[$i]) && $pac[$i] !== '' ? (float)$pac[$i] : null;
             $jar->{'pac_'.$col.'_ntu'}  = isset($ntu[$i]) && $ntu[$i] !== '' ? (float)$ntu[$i] : null;
             $jar->{'pac_'.$col.'_ph'}   = isset($ph[$i])  && $ph[$i]  !== '' ? (float)$ph[$i]  : null;

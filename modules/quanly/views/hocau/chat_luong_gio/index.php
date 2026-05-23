@@ -439,11 +439,14 @@ function pickJar() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Nếu ô lieu_chon đã có giá trị từ DB → giữ nguyên, không để pickJar() override
+    var chonInp = document.getElementById('jar-lieu-chon');
+    if (chonInp && chonInp.value !== '') _jarLieuUserEdited = true;
+
     pickJar();
     calcBQ();
 
     // Nếu user tự sửa liều chọn thì không auto-override nữa
-    var chonInp = document.getElementById('jar-lieu-chon');
     if (chonInp) {
         chonInp.addEventListener('input', function() { _jarLieuUserEdited = true; });
         // Reset flag khi user xóa trắng ô (cho phép auto lại)

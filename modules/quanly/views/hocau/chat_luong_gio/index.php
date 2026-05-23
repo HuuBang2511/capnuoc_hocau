@@ -407,6 +407,8 @@ function calcBQ() {
     }
 }
 
+var _jarLieuUserEdited = false;
+
 function pickJar() {
     var minNtu = Infinity, minIdx = -1;
     for (var i = 0; i < 6; i++) {
@@ -425,7 +427,8 @@ function pickJar() {
     if (minIdx >= 0) {
         var pac = document.querySelector('input[name="jar_pac['+minIdx+']"]');
         var chon = document.getElementById('jar-lieu-chon');
-        if (pac && pac.value && chon) chon.value = pac.value;
+        // Chỉ auto-fill nếu user chưa tự nhập
+        if (pac && pac.value && chon && !_jarLieuUserEdited) chon.value = pac.value;
         var pvNtu = document.getElementById('jar-prev-ntu');
         var pvPh  = document.getElementById('jar-prev-ph');
         var nInp  = document.querySelector('input[name="jar_ntu['+minIdx+']"]');
@@ -438,6 +441,16 @@ function pickJar() {
 document.addEventListener('DOMContentLoaded', function() {
     pickJar();
     calcBQ();
+
+    // Nếu user tự sửa liều chọn thì không auto-override nữa
+    var chonInp = document.getElementById('jar-lieu-chon');
+    if (chonInp) {
+        chonInp.addEventListener('input', function() { _jarLieuUserEdited = true; });
+        // Reset flag khi user xóa trắng ô (cho phép auto lại)
+        chonInp.addEventListener('change', function() {
+            if (this.value === '') _jarLieuUserEdited = false;
+        });
+    }
 
     // Highlight nút giờ hiện tại
     var nowH = new Date().getHours();

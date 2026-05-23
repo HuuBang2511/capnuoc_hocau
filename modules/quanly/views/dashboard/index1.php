@@ -229,6 +229,22 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
     /* ── CỘT MỞ RỘNG BẢNG 24 TRẠM ──────────────────────────────── */
     .rt-table th.col-extra,
     .rt-table td.col-extra { text-align:right; }
+    .rt-table th.col-hidden,
+    .rt-table td.col-hidden { display:none; }
+    .rt-tbl-gear-wrap { display:flex; align-items:center; gap:8px; }
+    .rt-tbl-gear-btn {
+        background:none; border:1px solid #e2e8f0; border-radius:6px;
+        padding:3px 7px; cursor:pointer; color:#94a3b8; font-size:.72rem;
+        transition:all .2s; white-space:nowrap;
+    }
+    .rt-tbl-gear-btn:hover { border-color:#3699ff; color:#3699ff; background:#eff6ff; }
+    .rt-tbl-dropdown {
+        display:none; position:absolute; right:0; top:32px; z-index:200;
+        background:#fff; border:1px solid #e2e8f0; border-radius:8px;
+        padding:8px 0; min-width:160px;
+        box-shadow:0 4px 20px rgba(0,0,0,.1);
+    }
+    .rt-tbl-dropdown.open { display:block; }
 
     /* Loading */
     .sl-loading {
@@ -446,7 +462,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
             </div>
             <div>
                 <span class="kpi-value"><?= number_format($lenTruyenDan,1) ?> <span class="kpi-unit">km</span></span>
-                <div class="kpi-title">Ống nước thô</div>
+                <div class="kpi-title">Ống truyền dẫn</div>
             </div>
         </a>
         <a href="<?= $urlPhanPhoi ?>" class="kpi-card border-purple">
@@ -482,7 +498,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
     <div class="kpi-row">
         <a href="<?= $urlVan ?>" class="kpi-card border-orange">
             <div class="kpi-icon-wrapper"><div class="kpi-icon bg-light-orange"><i class="fa-solid fa-faucet"></i></div></div>
-            <div><span class="kpi-value"><?= number_format($cntVan) ?></span><div class="kpi-title">Van</div></div>
+            <div><span class="kpi-value"><?= number_format($cntVan) ?></span><div class="kpi-title">Van mạng lưới</div></div>
         </a>
         <a href="<?= $urlMoiNoi ?>" class="kpi-card border-orange">
             <div class="kpi-icon-wrapper"><div class="kpi-icon bg-light-orange"><i class="fa-solid fa-link"></i></div></div>
@@ -1127,6 +1143,14 @@ document.addEventListener('DOMContentLoaded', function() {
         try { localStorage.setItem(LS_KEY, JSON.stringify(cfg)); } catch(e) {}
     }
 
+    var LS_TBL = 'rt_tbl_cfg';
+    function loadTblCfg() {
+        try { return JSON.parse(localStorage.getItem(LS_TBL)) || {}; } catch(e) { return {}; }
+    }
+    function saveTblCfg(c) {
+        try { localStorage.setItem(LS_TBL, JSON.stringify(c)); } catch(e) {}
+    }
+
     function renderRealtime(slData) {
         var trams = (slData && slData.trams) ? slData.trams : [];
         
@@ -1260,19 +1284,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     stationRowCfg('nt5','cong_suat', 'Công Suất',        fmtVal(nt5.cong_suat), 'KW',   '#ffa800', nt5.ts) +
                 '</div>';
 
-            // ── Bảng 24 trạm — ap_luc, ll_thuan, ll_nghich, ap_truoc, ap_sau (v6.4) ──
+            // ── Bảng 24 trạm — ap_luc (sort only), ll_thuan, ll_nghich, ap_truoc, ap_sau ──
+            // Cột Áp Lực đã bỏ khỏi bảng (chỉ dùng để sort + chart)
+            // User toggle LL Thuận / LL Nghịch / AP Trước / AP Sau qua gear
+            var TBL_COLS = [
+                { key:'ll_thuan',  label:'LL Thuận'  },
+                { key:'ll_nghich', label:'LL Nghịch' },
+                { key:'ap_truoc',  label:'AP Trước'  },
+                { key:'ap_sau',    label:'AP Sau'    },
+            ];
+            var tblCfg = loadTblCfg();
+            TBL_COLS.forEach(function(col) {
+                if (tblCfg[col.key] === undefined) tblCfg[col.key] = 1; // mặc định bật
+            });
+
             var sorted = trams.slice().sort(function(a,b){ return b.ap_luc - a.ap_luc; });
             var tableRows = sorted.map(function(t) {
-                var ap    = parseFloat(t.ap_luc     || 0);
-                var llT   = parseFloat(t.luu_luong  || 0); // ll_thuan = luu_luong (gateway hiện tại)
-                var llN   = parseFloat(t.ll_nghich || 0);
-                var apTr  = (t.ap_truoc  !== undefined && t.ap_truoc  !== null) ? parseFloat(t.ap_truoc)  : null;
-                var apSau = (t.ap_sau    !== undefined && t.ap_sau    !== null) ? parseFloat(t.ap_sau)    : null;
-
-                var apCls = ap>=40?'ap-high': ap>=25?'ap-med': ap>=10?'ap-low': ap>0?'ap-alert':'ap-none';
-                var apStr = ap > 0
-                    ? '<span class="ap-badge ' + apCls + '">' + ap.toFixed(2) + ' m</span>'
-                    : '<span class="ap-badge ap-none">—</span>';
+                var llT   = parseFloat(t.luu_luong  || 0);
+                var llN   = parseFloat(t.ll_nghich  || 0);
+                var apTr  = (t.ap_truoc !== undefined && t.ap_truoc !== null) ? parseFloat(t.ap_truoc)  : null;
+                var apSau = (t.ap_sau   !== undefined && t.ap_sau   !== null) ? parseFloat(t.ap_sau)    : null;
 
                 var llTStr  = llT > 0
                     ? '<span class="ll-val">' + llT.toFixed(1) + ' m³/h</span>'
@@ -1283,36 +1314,52 @@ document.addEventListener('DOMContentLoaded', function() {
                 var apTrStr = apTr !== null
                     ? '<span style="color:#60a5fa;font-weight:600;">' + apTr.toFixed(2) + ' m</span>'
                     : '<span style="color:#94a3b8;">—</span>';
-                var apSauStr= apSau !== null
+                var apSauStr = apSau !== null
                     ? '<span style="color:#1bc5bd;font-weight:600;">' + apSau.toFixed(2) + ' m</span>'
                     : '<span style="color:#94a3b8;">—</span>';
 
                 var ts = t.timestamp || '';
                 return '<tr>' +
                     '<td style="font-weight:600;color:#334155;">' + (t.ten||t.site_id) + '</td>' +
-                    '<td class="col-extra">' + apStr   + '</td>' +
-                    '<td class="col-extra">' + llTStr  + '</td>' +
-                    '<td class="col-extra">' + llNStr  + '</td>' +
-                    '<td class="col-extra">' + apTrStr + '</td>' +
-                    '<td class="col-extra">' + apSauStr+ '</td>' +
+                    '<td class="col-extra' + (tblCfg['ll_thuan']  === 0 ? ' col-hidden' : '') + '" data-col="ll_thuan">'  + llTStr   + '</td>' +
+                    '<td class="col-extra' + (tblCfg['ll_nghich'] === 0 ? ' col-hidden' : '') + '" data-col="ll_nghich">' + llNStr   + '</td>' +
+                    '<td class="col-extra' + (tblCfg['ap_truoc']  === 0 ? ' col-hidden' : '') + '" data-col="ap_truoc">'  + apTrStr  + '</td>' +
+                    '<td class="col-extra' + (tblCfg['ap_sau']    === 0 ? ' col-hidden' : '') + '" data-col="ap_sau">'    + apSauStr + '</td>' +
                     '<td style="font-size:.7rem;color:#94a3b8;">' + ts.substring(5,16) + '</td>' +
                 '</tr>';
             }).join('');
 
+            // Build gear dropdown cho bảng trạm
+            var tblGearItems = TBL_COLS.map(function(col) {
+                var chk = tblCfg[col.key] !== 0 ? 'checked' : '';
+                return '<label class="rt-gear-item">' +
+                    '<input type="checkbox" ' + chk + ' data-tbl-col="' + col.key + '"> ' +
+                    col.label +
+                '</label>';
+            }).join('');
+
             var blockTable =
                 '<div class="sl-card" style="overflow:hidden;">' +
-                    '<div class="sl-card-title"><span class="dot" style="--dot-color:#3699ff;"></span>' +
-                        'Trạng Thái 24 Trạm SCADA (Realtime)' +
+                    '<div class="rt-card-header" style="margin-bottom:10px;">' +
+                        '<div class="sl-card-title" style="margin:0;border:none;padding:0;">' +
+                            '<span class="dot" style="--dot-color:#3699ff;"></span>' +
+                            'Trạng Thái 24 Trạm SCADA (Realtime)' +
+                        '</div>' +
+                        '<div class="rt-gear-wrap">' +
+                            '<button class="rt-gear-btn" onclick="rtToggleGear(this)" title="Tùy chỉnh cột">' +
+                                '<i class="fa-solid fa-gear"></i>' +
+                            '</button>' +
+                            '<div class="rt-gear-dropdown">' + tblGearItems + '</div>' +
+                        '</div>' +
                     '</div>' +
                     '<div style="overflow-x:auto;overflow-y:auto;max-height:380px;">' +
-                        '<table class="rt-table" style="min-width:620px;">' +
+                        '<table class="rt-table" id="rt-tram-table" style="min-width:480px;">' +
                             '<thead><tr>' +
                                 '<th style="min-width:150px;">Trạm</th>' +
-                                '<th class="col-extra">Áp Lực</th>' +
-                                '<th class="col-extra">LL Thuận</th>' +
-                                '<th class="col-extra">LL Nghịch</th>' +
-                                '<th class="col-extra">AP Trước</th>' +
-                                '<th class="col-extra">AP Sau</th>' +
+                                '<th class="col-extra' + (tblCfg['ll_thuan']  === 0 ? ' col-hidden' : '') + '" data-col="ll_thuan">LL Thuận</th>' +
+                                '<th class="col-extra' + (tblCfg['ll_nghich'] === 0 ? ' col-hidden' : '') + '" data-col="ll_nghich">LL Nghịch</th>' +
+                                '<th class="col-extra' + (tblCfg['ap_truoc']  === 0 ? ' col-hidden' : '') + '" data-col="ap_truoc">AP Trước</th>' +
+                                '<th class="col-extra' + (tblCfg['ap_sau']    === 0 ? ' col-hidden' : '') + '" data-col="ap_sau">AP Sau</th>' +
                                 '<th>Cập Nhật</th>' +
                             '</tr></thead>' +
                             '<tbody>' + tableRows + '</tbody>' +
@@ -1451,21 +1498,34 @@ document.addEventListener('DOMContentLoaded', function() {
     // Lắng nghe checkbox change — dùng event delegation vì DOM được render động
     document.getElementById('sl-content').addEventListener('change', function(e) {
         var cb = e.target;
-        if (cb.type !== 'checkbox' || !cb.dataset.card) return;
-        var cardId   = cb.dataset.card;
-        var fieldKey = cb.dataset.field;
-        var cfg2 = loadCfg();
-        if (!cfg2[cardId]) cfg2[cardId] = {};
-        cfg2[cardId][fieldKey] = cb.checked ? 1 : 0;
-        saveCfg(cfg2);
-        // Ẩn/hiện row ngay lập tức, không cần re-render
-        document.querySelectorAll('.rt-field-row[data-card="' + cardId + '"][data-field="' + fieldKey + '"]').forEach(function(row) {
-            if (cb.checked) {
-                row.classList.remove('rt-hidden');
-            } else {
-                row.classList.add('rt-hidden');
-            }
-        });
+        if (cb.type !== 'checkbox') return;
+
+        // Checkbox card TB (3 bảng TB)
+        if (cb.dataset.card) {
+            var cardId   = cb.dataset.card;
+            var fieldKey = cb.dataset.field;
+            var cfg2 = loadCfg();
+            if (!cfg2[cardId]) cfg2[cardId] = {};
+            cfg2[cardId][fieldKey] = cb.checked ? 1 : 0;
+            saveCfg(cfg2);
+            document.querySelectorAll('.rt-field-row[data-card="' + cardId + '"][data-field="' + fieldKey + '"]').forEach(function(row) {
+                if (cb.checked) row.classList.remove('rt-hidden');
+                else            row.classList.add('rt-hidden');
+            });
+        }
+
+        // Checkbox bảng 24 trạm
+        if (cb.dataset.tblCol) {
+            var colKey = cb.dataset.tblCol;
+            var tblC = loadTblCfg();
+            tblC[colKey] = cb.checked ? 1 : 0;
+            saveTblCfg(tblC);
+            // Ẩn/hiện cả th lẫn td theo data-col
+            document.querySelectorAll('#rt-tram-table [data-col="' + colKey + '"]').forEach(function(el) {
+                if (cb.checked) el.classList.remove('col-hidden');
+                else            el.classList.add('col-hidden');
+            });
+        }
     });
 
     loadSLTab('ngay');

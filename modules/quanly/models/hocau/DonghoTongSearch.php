@@ -19,7 +19,7 @@ class DonghoTongSearch extends DonghoTong
     {
         return [
             [['id', 'objectid_1', 'objectid', 'co', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'hieudongho_id'], 'integer'],
-            [['geom', 'tinh_trang', 'madongho', 'vitri', 'hieu', 'mavattu', 'sothan', 'khuvuc', 'ghichu', 'ngaylapdat', 'lat', 'long', 'geojson', 'created_at', 'updated_at', 'file_dinhkem'], 'safe'],
+            [['geom', 'tinh_trang', 'madongho', 'vitri', 'hieu', 'mavattu', 'sothan', 'khuvuc', 'ghichu', 'ngaylapdat', 'lat', 'long', 'geojson', 'created_at', 'updated_at', 'file_dinhkem', 'ten'], 'safe'],
         ];
     }
 

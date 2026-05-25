@@ -55,7 +55,7 @@ class Van extends QuanlyBaseModel
     public function rules()
     {
         return [
-            [['geom', 'lat', 'long', 'geojson', 'file_dinhkem'], 'string'],
+            [['geom', 'lat', 'long', 'geojson', 'file_dinhkem', 'ten'], 'string'],
             [['objectid_1', 'objectid', 'covan', 'cochiakhoa', 'sovong', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaivan_id'], 'default', 'value' => null],
             [['objectid_1', 'objectid', 'covan', 'cochiakhoa', 'sovong', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaivan_id'], 'integer'],
             [['ngaylapdat', 'created_at', 'updated_at'], 'safe'],
@@ -101,6 +101,8 @@ class Van extends QuanlyBaseModel
             'file_dinhkem' => 'File Dinhkem',
             'tinhtrang_id' => 'Tình trạng',
             'loaivan_id' => 'Loại van',
+            'ten' => 'Tên',
+
         ];
     }
 

@@ -19,7 +19,7 @@ class CocmocSearch extends Cocmoc
     {
         return [
             [['id', 'objectid', 'status', 'created_by', 'update_by', 'tinhtrang_id'], 'integer'],
-            [['geom', 'loai', 'vitri', 'created_at', 'updated_at', 'geojson', 'lat', 'long', 'file_dinhkem'], 'safe'],
+            [['geom', 'loai', 'vitri', 'created_at', 'updated_at', 'geojson', 'lat', 'long', 'file_dinhkem', 'ten'], 'safe'],
         ];
     }
 

@@ -59,6 +59,7 @@ if ($model->tinhtrangsuco_id == 3) $statusClass = 'success';
                         'model' => $model,
                         'options' => ['class' => 'table table-hover mb-0 detail-view-custom'],
                         'attributes' => [
+                            'ten',
                             'masuco',
                             'mataisan',
                             [

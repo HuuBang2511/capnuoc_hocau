@@ -19,7 +19,7 @@ class OngdansinhSearch extends Ongdansinh
     {
         return [
             [['id', 'id1', 'status', 'created_by', 'updated_by', 'coong', 'tinhtrang_id'], 'integer'],
-            [['geom', 'created_at', 'updated_at', 'lat', 'long', 'geojson', 'file_dinhkem', 'vatlieu'], 'safe'],
+            [['geom', 'created_at', 'updated_at', 'lat', 'long', 'geojson', 'file_dinhkem', 'vatlieu', 'ten'], 'safe'],
         ];
     }
 

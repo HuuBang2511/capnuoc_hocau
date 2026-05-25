@@ -40,7 +40,7 @@ class Ongdansinh extends QuanlyBaseModel
     public function rules()
     {
         return [
-            [['geom', 'lat', 'long', 'geojson', 'file_dinhkem', 'vatlieu'], 'string'],
+            [['geom', 'lat', 'long', 'geojson', 'file_dinhkem', 'vatlieu', 'ten'], 'string'],
             [['id1', 'status', 'created_by', 'updated_by', 'coong', 'tinhtrang_id'], 'default', 'value' => null],
             [['id1', 'status', 'created_by', 'updated_by', 'coong', 'tinhtrang_id'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
@@ -68,6 +68,7 @@ class Ongdansinh extends QuanlyBaseModel
             'vatlieu' => 'Vật liệu',
             'coong' => 'Cỡ ống',
             'tinhtrang_id' => 'Tình trạng',
+            'ten' => 'Tên',
         ];
     }
 

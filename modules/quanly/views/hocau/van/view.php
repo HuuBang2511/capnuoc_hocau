@@ -64,6 +64,7 @@ $statusClass = (strpos(mb_strtolower($statusLabel), 'hỏng') !== false) ? 'dang
                         'model' => $model,
                         'options' => ['class' => 'table mb-0 detail-view-custom'],
                         'attributes' => [
+                            'ten',
                             [
                                 'attribute' => 'dongmo',
                                 'label' => 'Trạng thái Đóng/Mở',

@@ -19,7 +19,7 @@ class SucoSearch extends Suco
     {
         return [
             [['id', 'objectid_1', 'objectid', 'masuco', 'status', 'created_by', 'updated_by', 'loaisuco_id', 'nguyennhansuco_id', 'tinhtrangsuco_id', 'tinhtrang_id'], 'integer'],
-            [['geom', 'tinh_trang', 'vitri', 'loai', 'n_phathien', 'd_phathien', 'n_xuly', 'd_xuly', 'n_hoancong', 'nguyennhan', 'cachxuly', 'mataisan', 'ghichu', 'lat', 'long', 'geojson', 'created_at', 'updated_at', 'file_dinhkem'], 'safe'],
+            [['geom', 'tinh_trang', 'vitri', 'loai', 'n_phathien', 'd_phathien', 'n_xuly', 'd_xuly', 'n_hoancong', 'nguyennhan', 'cachxuly', 'mataisan', 'ghichu', 'lat', 'long', 'geojson', 'created_at', 'updated_at', 'file_dinhkem', 'ten'], 'safe'],
         ];
     }
 

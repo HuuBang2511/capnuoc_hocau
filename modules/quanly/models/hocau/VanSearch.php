@@ -19,7 +19,7 @@ class VanSearch extends Van
     {
         return [
             [['id', 'objectid_1', 'objectid', 'covan', 'cochiakhoa', 'sovong', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaivan_id'], 'integer'],
-            [['geom', 'tinh_trang', 'mavan', 'vitri', 'loaivan', 'chieudong', 'dongmo', 'ngaylapdat', 'ghichu', 'lat', 'long', 'geojson', 'created_at', 'updated_at', 'file_dinhkem'], 'safe'],
+            [['geom', 'tinh_trang', 'mavan', 'vitri', 'loaivan', 'chieudong', 'dongmo', 'ngaylapdat', 'ghichu', 'lat', 'long', 'geojson', 'created_at', 'updated_at', 'file_dinhkem', 'ten'], 'safe'],
         ];
     }
 

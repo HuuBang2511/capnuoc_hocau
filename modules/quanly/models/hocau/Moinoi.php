@@ -53,7 +53,7 @@ class Moinoi extends QuanlyBaseModel
     public function rules()
     {
         return [
-            [['geom', 'lat', 'long', 'geojson', 'file_dinhkem'], 'string'],
+            [['geom', 'lat', 'long', 'geojson', 'file_dinhkem', 'ten'], 'string'],
             [['objectid_1', 'objectid', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaimoinoi_id'], 'default', 'value' => null],
             [['objectid_1', 'objectid', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaimoinoi_id'], 'integer'],
             [['x', 'y', 'z'], 'number'],
@@ -97,6 +97,7 @@ class Moinoi extends QuanlyBaseModel
             'file_dinhkem' => 'File Dinhkem',
             'tinhtrang_id' => 'Tình trạng',
             'loaimoinoi_id' => 'Loại mối nối',
+            'ten' => 'Tên',
         ];
     }
 

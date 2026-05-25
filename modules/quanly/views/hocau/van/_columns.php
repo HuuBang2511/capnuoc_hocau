@@ -31,6 +31,10 @@ return [
     // ],
     [
         'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'ten',
+    ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
         'attribute'=>'mavan',
     ],
     // [
@@ -95,10 +99,10 @@ return [
         // 'class'=>'\kartik\grid\DataColumn',
         // 'attribute'=>'ngaylapdat',
     // ],
-    // [
-        // 'class'=>'\kartik\grid\DataColumn',
-        // 'attribute'=>'ghichu',
-    // ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'ghichu',
+    ],
     // [
         // 'class'=>'\kartik\grid\DataColumn',
         // 'attribute'=>'lat',

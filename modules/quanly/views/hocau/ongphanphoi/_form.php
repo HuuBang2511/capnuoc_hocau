@@ -60,6 +60,12 @@ $geojson_data = !empty($model->geojson) ? Json::encode($model->geojson) : 'null'
                 </div>
             </div>
 
+            <div class="row mt-3">
+                <div class="col-lg-12">
+                    <?= $form->field($model, 'ten')->textInput(['maxlength' => true]) ?>
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-lg-3">
                     <?= $form->field($model, 'ngaylapdat')->widget(DatePicker::className(), [

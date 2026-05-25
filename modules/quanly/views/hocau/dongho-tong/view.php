@@ -49,6 +49,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'model' => $model,
                         'options' => ['class' => 'table table-hover mb-0 detail-view'],
                         'attributes' => [
+                            'ten',
                             [
                                 'attribute' => 'madongho',
                                 'captionOptions' => ['style' => 'width: 40%'],

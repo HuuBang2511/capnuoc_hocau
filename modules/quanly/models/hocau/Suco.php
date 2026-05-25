@@ -63,7 +63,7 @@ class Suco extends QuanlyBaseModel
     public function rules()
     {
         return [
-            [['geom', 'lat', 'long', 'geojson', 'file_dinhkem'], 'string'],
+            [['geom', 'lat', 'long', 'geojson', 'file_dinhkem', 'ten'], 'string'],
             [['objectid_1', 'objectid', 'masuco', 'status', 'created_by', 'updated_by', 'loaisuco_id', 'nguyennhansuco_id', 'tinhtrangsuco_id', 'tinhtrang_id'], 'default', 'value' => null],
             [['objectid_1', 'objectid', 'masuco', 'status', 'created_by', 'updated_by', 'loaisuco_id', 'nguyennhansuco_id', 'tinhtrangsuco_id', 'tinhtrang_id'], 'integer'],
             [['n_phathien', 'n_xuly', 'n_hoancong', 'created_at', 'updated_at'], 'safe'],
@@ -115,6 +115,8 @@ class Suco extends QuanlyBaseModel
             'nguyennhansuco_id' => 'Nguyên nhân sự cố',
             'tinhtrangsuco_id' => 'Tình trạng sự cố',
             'tinhtrang_id' => 'Tình trạng',
+            'ten' => 'Tên',
+
         ];
     }
 

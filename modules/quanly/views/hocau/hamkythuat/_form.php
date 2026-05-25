@@ -59,6 +59,12 @@ $geojson_data = !empty($model->geojson) ? Json::encode($model->geojson) : 'null'
                     <?= $form->field($model, 'geojson')->hiddenInput(['id' => 'geojson'])->label(false) ?>
                 </div>
             </div>
+
+            <div class="row mt-3">
+                <div class="col-lg-12">
+                    <?= $form->field($model, 'ten')->textInput(['maxlength' => true]) ?>
+                </div>
+            </div>
             
 
             <div class="row">

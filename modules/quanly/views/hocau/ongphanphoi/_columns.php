@@ -31,6 +31,10 @@ return [
     // ],
     [
         'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'ten',
+    ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
         'attribute'=>'vatlieu',
     ],
     [
@@ -76,10 +80,10 @@ return [
         // 'class'=>'\kartik\grid\DataColumn',
         // 'attribute'=>'bvhc',
     // ],
-    // [
-        // 'class'=>'\kartik\grid\DataColumn',
-        // 'attribute'=>'ghichu',
-    // ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'ghichu',
+    ],
     // [
         // 'class'=>'\kartik\grid\DataColumn',
         // 'attribute'=>'shape_leng',

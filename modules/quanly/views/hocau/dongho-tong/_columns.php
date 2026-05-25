@@ -31,6 +31,10 @@ return [
     // ],
     [
         'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'ten',
+    ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
         'attribute'=>'madongho',
     ],
     [
@@ -76,30 +80,30 @@ return [
         // 'class'=>'\kartik\grid\DataColumn',
         // 'attribute'=>'vitri',
     // ],
-    // [
-        // 'class'=>'\kartik\grid\DataColumn',
-        // 'attribute'=>'co',
-    // ],
-    // [
-        // 'class'=>'\kartik\grid\DataColumn',
-        // 'attribute'=>'hieu',
-    // ],
-    // [
-        // 'class'=>'\kartik\grid\DataColumn',
-        // 'attribute'=>'mavattu',
-    // ],
-    // [
-        // 'class'=>'\kartik\grid\DataColumn',
-        // 'attribute'=>'sothan',
-    // ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'co',
+    ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'hieu',
+    ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'mavattu',
+    ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'sothan',
+    ],
     // [
         // 'class'=>'\kartik\grid\DataColumn',
         // 'attribute'=>'khuvuc',
     // ],
-    // [
-        // 'class'=>'\kartik\grid\DataColumn',
-        // 'attribute'=>'ghichu',
-    // ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'ghichu',
+    ],
     // [
         // 'class'=>'\kartik\grid\DataColumn',
         // 'attribute'=>'ngaylapdat',

@@ -15,6 +15,10 @@ return [
     // ],
     [
         'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'ten',
+    ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
         'attribute'=>'vatlieu',
     ],
     [

@@ -56,7 +56,7 @@ class Hamkythuat extends QuanlyBaseModel
     public function rules()
     {
         return [
-            [['geom', 'geojson', 'file_dinhkem'], 'string'],
+            [['geom', 'geojson', 'file_dinhkem', 'ten'], 'string'],
             [['objectid_1', 'objectid', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaiham_id'], 'default', 'value' => null],
             [['objectid_1', 'objectid', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaiham_id'], 'integer'],
             [['ngaylapdat', 'created_at', 'updated_at'], 'safe'],
@@ -103,6 +103,7 @@ class Hamkythuat extends QuanlyBaseModel
             'file_dinhkem' => 'File đính kèm',
             'tinhtrang_id' => 'Tình trạng',
             'loaiham_id' => 'Loại hầm',
+            'ten' => 'Tên',
         ];
     }
 

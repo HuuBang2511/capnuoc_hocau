@@ -56,6 +56,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'model' => $model,
                         'options' => ['class' => 'table table-hover mb-0 detail-view'],
                         'attributes' => [
+                            'ten',
                             [
                                 'attribute' => 'tinhtrang_id',
                                 'label' => 'Tình trạng',

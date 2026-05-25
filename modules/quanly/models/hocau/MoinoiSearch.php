@@ -19,7 +19,7 @@ class MoinoiSearch extends Moinoi
     {
         return [
             [['id', 'objectid_1', 'objectid', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaimoinoi_id'], 'integer'],
-            [['geom', 'tinh_trang', 'loaimoinoi', 'kichthuoc', 'vattu', 'mavitri', 'ghichu', 'lat', 'long', 'geojson', 'created_at', 'updated_at', 'file_dinhkem'], 'safe'],
+            [['geom', 'tinh_trang', 'loaimoinoi', 'kichthuoc', 'vattu', 'mavitri', 'ghichu', 'lat', 'long', 'geojson', 'created_at', 'updated_at', 'file_dinhkem', 'ten'], 'safe'],
             [['x', 'y', 'z'], 'number'],
         ];
     }

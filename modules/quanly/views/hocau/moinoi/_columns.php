@@ -32,7 +32,15 @@ return [
     // [
     //     'class'=>'\kartik\grid\DataColumn',
     //     'attribute'=>'loaimoinoi',
-    // ],
+    // ],\
+    [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'ten',
+    ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'mavitri',
+    ],
     [
         'class'=>'\kartik\grid\DataColumn',
         'attribute'=>'kichthuoc',
@@ -53,10 +61,7 @@ return [
         'class'=>'\kartik\grid\DataColumn',
         'attribute'=>'vattu',
     ],
-    [
-        'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'mavitri',
-    ],
+    
     [
         'class'=>'\kartik\grid\DataColumn',
         'attribute'=>'ghichu',

@@ -19,7 +19,7 @@ class OngphanphoiSearch extends Ongphanphoi
     {
         return [
             [['id', 'objectid_1', 'objectid', 'coong', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaiong_id'], 'integer'],
-            [['geom', 'tinh_trang', 'vatlieu', 'mavattu', 'ngaylapdat', 'congtrinh', 'dvtk', 'dvtc', 'bvhc', 'ghichu', 'lat', 'long', 'geojson', 'created_at', 'updated_at', 'file_dinhkem'], 'safe'],
+            [['geom', 'tinh_trang', 'vatlieu', 'mavattu', 'ngaylapdat', 'congtrinh', 'dvtk', 'dvtc', 'bvhc', 'ghichu', 'lat', 'long', 'geojson', 'created_at', 'updated_at', 'file_dinhkem', 'ten'], 'safe'],
             [['shape_leng'], 'number'],
         ];
     }

@@ -48,6 +48,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'label' => 'Vị trí',
                                 'captionOptions' => ['style' => 'width: 35%'],
                             ],
+                            'ten',
                             [
                                 'label' => 'Tình trạng',
                                 'format' => 'raw',

@@ -53,7 +53,7 @@ class Donghonhamay extends QuanlyBaseModel
     public function rules()
     {
         return [
-            [['geom', 'lat', 'long', 'geojson', 'file_dinhkem'], 'string'],
+            [['geom', 'lat', 'long', 'geojson', 'file_dinhkem', 'ten'], 'string'],
             [['objectid', 'co'], 'number'],
             [['ngaylapdat', 'created_at', 'updated_at'], 'safe'],
             [['status', 'created_by', 'updated_by', 'tinhtrang_id', 'hieudongho_id'], 'default', 'value' => null],
@@ -97,6 +97,7 @@ class Donghonhamay extends QuanlyBaseModel
             'file_dinhkem' => 'File Dinhkem',
             'tinhtrang_id' => 'Tình trạng',
             'hieudongho_id' => 'Hiệu đồng hồ',
+            'ten' => 'Tên',
         ];
     }
 

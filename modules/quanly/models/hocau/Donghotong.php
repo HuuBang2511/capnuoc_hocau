@@ -53,7 +53,7 @@ class Donghotong extends QuanlyBaseModel
     public function rules()
     {
         return [
-            [['geom', 'lat', 'long', 'geojson', 'file_dinhkem'], 'string'],
+            [['geom', 'lat', 'long', 'geojson', 'file_dinhkem', 'ten'], 'string'],
             [['objectid_1', 'objectid', 'co', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'hieudongho_id'], 'default', 'value' => null],
             [['objectid_1', 'objectid', 'co', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'hieudongho_id'], 'integer'],
             [['ngaylapdat', 'created_at', 'updated_at'], 'safe'],
@@ -80,7 +80,7 @@ class Donghotong extends QuanlyBaseModel
             'madongho' => 'Mã đồng hồ',
             'vitri' => 'Vị trí',
             'co' => 'Cỡ',
-            'hieu' => 'Hieu',
+            'hieu' => 'Hiệu',
             'mavattu' => 'Mã vật tư',
             'sothan' => 'Số thân',
             'khuvuc' => 'Khu vực',
@@ -97,6 +97,7 @@ class Donghotong extends QuanlyBaseModel
             'file_dinhkem' => 'File đính kèm',
             'tinhtrang_id' => 'Tình trạng',
             'hieudongho_id' => 'Hiệu đồng hồ',
+            'ten' => 'Tên',
         ];
     }
 

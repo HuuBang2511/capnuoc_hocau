@@ -19,7 +19,7 @@ class HanglangantoanSearch extends Hanglangantoan
     {
         return [
             [['id', 'objectid', 'status', 'created_by', 'updated_by', 'tinhtrang_id'], 'integer'],
-            [['geom', 'hanhlang', 'tinh_trang', 'ghichu', 'lat', 'long', 'geojson', 'created_at', 'updated_at', 'file_dinhkem'], 'safe'],
+            [['geom', 'hanhlang', 'tinh_trang', 'ghichu', 'lat', 'long', 'geojson', 'created_at', 'updated_at', 'file_dinhkem', 'ten'], 'safe'],
             [['shape_leng'], 'number'],
         ];
     }

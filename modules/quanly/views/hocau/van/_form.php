@@ -66,6 +66,12 @@ $this->params['breadcrumbs'][] = $this->title;
     <div class="block-content">
 
         <div class="row mt-3">
+            <div class="col-lg-12">
+                <?= $form->field($model, 'ten')->textInput(['maxlength' => true]) ?>
+            </div>
+        </div>
+
+        <div class="row mt-3">
             <div class="col-lg-3">
                 <?= $form->field($model, 'mavan')->textInput(['maxlength' => true]) ?>
             </div>

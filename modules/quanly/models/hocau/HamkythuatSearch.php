@@ -19,7 +19,7 @@ class HamkythuatSearch extends Hamkythuat
     {
         return [
             [['id', 'objectid_1', 'objectid', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaiham_id'], 'integer'],
-            [['geom', 'tinh_trang', 'maham', 'loai_ham', 'kichthuoc', 'vatlieu', 'sonap', 'vitri', 'ngaylapdat', 'dvtk', 'dvtc', 'bvhc', 'ghichu', 'geojson', 'created_at', 'updated_at', 'file_dinhkem'], 'safe'],
+            [['geom', 'tinh_trang', 'maham', 'loai_ham', 'kichthuoc', 'vatlieu', 'sonap', 'vitri', 'ngaylapdat', 'dvtk', 'dvtc', 'bvhc', 'ghichu', 'geojson', 'created_at', 'updated_at', 'file_dinhkem', 'ten'], 'safe'],
             [['shape_leng', 'shape_area'], 'number'],
         ];
     }

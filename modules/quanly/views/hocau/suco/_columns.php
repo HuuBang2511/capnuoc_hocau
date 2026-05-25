@@ -31,6 +31,10 @@ return [
     // ],
     [
         'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'ten',
+    ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
         'attribute'=>'masuco',
     ],
     [
@@ -49,18 +53,18 @@ return [
         // 'class'=>'\kartik\grid\DataColumn',
         // 'attribute'=>'d_phathien',
     // ],
-    [
-        'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'n_xuly',
-    ],
     // [
-        // 'class'=>'\kartik\grid\DataColumn',
-        // 'attribute'=>'d_xuly',
+    //     'class'=>'\kartik\grid\DataColumn',
+    //     'attribute'=>'n_xuly',
     // ],
-    [
-        'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'n_hoancong',
-    ],
+    // // [
+    //     // 'class'=>'\kartik\grid\DataColumn',
+    //     // 'attribute'=>'d_xuly',
+    // // ],
+    // [
+    //     'class'=>'\kartik\grid\DataColumn',
+    //     'attribute'=>'n_hoancong',
+    // ],
     // [
         // 'class'=>'\kartik\grid\DataColumn',
         // 'attribute'=>'nguyennhan',
@@ -73,10 +77,10 @@ return [
         'class'=>'\kartik\grid\DataColumn',
         'attribute'=>'mataisan',
     ],
-    // [
-        // 'class'=>'\kartik\grid\DataColumn',
-        // 'attribute'=>'ghichu',
-    // ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'ghichu',
+    ],
     // [
         // 'class'=>'\kartik\grid\DataColumn',
         // 'attribute'=>'lat',

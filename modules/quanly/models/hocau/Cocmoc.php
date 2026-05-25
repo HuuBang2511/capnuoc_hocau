@@ -43,10 +43,10 @@ class Cocmoc extends QuanlyBaseModel
     public function rules()
     {
         return [
-            [['geom', 'geojson', 'lat', 'long', 'file_dinhkem', 'ten'], 'string'],
+            [['geom', 'geojson', 'lat', 'long', 'file_dinhkem', 'ten', 'ma'], 'string'],
             [['objectid', 'status', 'created_by', 'update_by', 'tinhtrang_id'], 'default', 'value' => null],
             [['objectid', 'status', 'created_by', 'update_by', 'tinhtrang_id'], 'integer'],
-            [['created_at', 'updated_at'], 'safe'],
+            [['created_at', 'updated_at', 'ghichu'], 'safe'],
             [['loai', 'vitri'], 'string', 'max' => 50],
             [['tinhtrang_id'], 'exist', 'skipOnError' => true, 'targetClass' => DmTinhtrang::className(), 'targetAttribute' => ['tinhtrang_id' => 'id']],
         ];
@@ -74,6 +74,8 @@ class Cocmoc extends QuanlyBaseModel
             'file_dinhkem' => 'File đính kèm',
             'tinhtrang_id' => 'Tình trạng',
             'ten' => 'Tên',
+            'ma' => 'Mã cọc mốc',
+            'ghichu' => 'Ghi chú',
         ];
     }
 

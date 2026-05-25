@@ -27,6 +27,10 @@ return [
     ],
     [
         'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'ma',
+    ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
         'attribute'=>'hanhlang',
     ],
     [
@@ -44,10 +48,10 @@ return [
             ],
         ],
     ],
-    // [
-        // 'class'=>'\kartik\grid\DataColumn',
-        // 'attribute'=>'shape_leng',
-    // ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'ghichu',
+    ],
     // [
         // 'class'=>'\kartik\grid\DataColumn',
         // 'attribute'=>'lat',

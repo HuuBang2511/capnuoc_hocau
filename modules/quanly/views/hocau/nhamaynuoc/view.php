@@ -56,6 +56,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'label' => 'Tên gọi',
                                 'contentOptions' => ['class' => 'fw-bold'],
                             ],
+                            'ma',
                             [
                                 'attribute' => 'shape_area',
                                 'label' => 'Diện tích (m²)',
@@ -78,6 +79,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                     return '<span class="badge bg-soft-primary text-primary border border-primary px-3">' . $text . '</span>';
                                 }
                             ],
+                            'ghichu:ntext',
                         ],
                     ]) ?>
                 </div>

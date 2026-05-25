@@ -19,7 +19,7 @@ class CocmocSearch extends Cocmoc
     {
         return [
             [['id', 'objectid', 'status', 'created_by', 'update_by', 'tinhtrang_id'], 'integer'],
-            [['geom', 'loai', 'vitri', 'created_at', 'updated_at', 'geojson', 'lat', 'long', 'file_dinhkem', 'ten'], 'safe'],
+            [['geom', 'loai', 'vitri', 'created_at', 'updated_at', 'geojson', 'lat', 'long', 'file_dinhkem', 'ten', 'ma', 'ghichu'], 'safe'],
         ];
     }
 
@@ -72,6 +72,9 @@ class CocmocSearch extends Cocmoc
             ->andFilterWhere(['like', 'upper(geojson)', mb_strtoupper($this->geojson)])
             ->andFilterWhere(['like', 'upper(lat)', mb_strtoupper($this->lat)])
             ->andFilterWhere(['like', 'upper(long)', mb_strtoupper($this->long)])
+            ->andFilterWhere(['like', 'upper(ten)', mb_strtoupper($this->ten)])
+            ->andFilterWhere(['like', 'upper(ma)', mb_strtoupper($this->ma)])
+            ->andFilterWhere(['like', 'upper(ghichu)', mb_strtoupper($this->ghichu)])
             ->andFilterWhere(['like', 'upper(file_dinhkem)', mb_strtoupper($this->file_dinhkem)]);
 
         return $dataProvider;

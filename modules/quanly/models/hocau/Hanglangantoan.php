@@ -45,7 +45,7 @@ class Hanglangantoan extends QuanlyBaseModel
     public function rules()
     {
         return [
-            [['geom', 'lat', 'long', 'geojson', 'file_dinhkem', 'ten'], 'string'],
+            [['geom', 'lat', 'long', 'geojson', 'file_dinhkem', 'ten', 'ma'], 'string'],
             [['objectid', 'status', 'created_by', 'updated_by', 'tinhtrang_id'], 'default', 'value' => null],
             [['objectid', 'status', 'created_by', 'updated_by', 'tinhtrang_id'], 'integer'],
             [['shape_leng'], 'number'],
@@ -80,6 +80,7 @@ class Hanglangantoan extends QuanlyBaseModel
             'file_dinhkem' => 'File Dinhkem',
             'tinhtrang_id' => 'Tình trạng',
             'ten' => 'Tên',
+            'ma' => 'Mã hành lang',
         ];
     }
 

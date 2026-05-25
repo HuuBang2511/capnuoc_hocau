@@ -52,6 +52,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'options' => ['class' => 'table table-hover mb-0 detail-view-custom'],
                         'attributes' => [
                             'ten',
+                            'ma',
                             'vatlieu',
                             'coong',
                             [

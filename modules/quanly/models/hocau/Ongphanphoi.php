@@ -55,7 +55,7 @@ class Ongphanphoi extends QuanlyBaseModel
     public function rules()
     {
         return [
-            [['geom', 'lat', 'long', 'geojson', 'file_dinhkem', 'ten'], 'string'],
+            [['geom', 'lat', 'long', 'geojson', 'file_dinhkem', 'ten', 'ma'], 'string'],
             [['objectid_1', 'objectid', 'coong', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaiong_id'], 'default', 'value' => null],
             [['objectid_1', 'objectid', 'coong', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaiong_id'], 'integer'],
             [['ngaylapdat', 'created_at', 'updated_at'], 'safe'],
@@ -102,6 +102,7 @@ class Ongphanphoi extends QuanlyBaseModel
             'tinhtrang_id' => 'Tình trạng',
             'loaiong_id' => 'Loại ống',
             'ten' => 'Tên',
+            'ma' => 'Mã ống',
 
         ];
     }

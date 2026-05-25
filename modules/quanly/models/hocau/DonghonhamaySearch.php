@@ -79,6 +79,7 @@ class DonghonhamaySearch extends Donghonhamay
             ->andFilterWhere(['like', 'upper(sothan)', mb_strtoupper($this->sothan)])
             ->andFilterWhere(['like', 'upper(khuvuc)', mb_strtoupper($this->khuvuc)])
             ->andFilterWhere(['like', 'upper(ghichu)', mb_strtoupper($this->ghichu)])
+            ->andFilterWhere(['like', 'upper(ten)', mb_strtoupper($this->ten)])
             ->andFilterWhere(['like', 'upper(lat)', mb_strtoupper($this->lat)])
             ->andFilterWhere(['like', 'upper(long)', mb_strtoupper($this->long)])
             ->andFilterWhere(['like', 'upper(geojson)', mb_strtoupper($this->geojson)])

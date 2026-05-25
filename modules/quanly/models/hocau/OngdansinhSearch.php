@@ -19,7 +19,7 @@ class OngdansinhSearch extends Ongdansinh
     {
         return [
             [['id', 'id1', 'status', 'created_by', 'updated_by', 'coong', 'tinhtrang_id'], 'integer'],
-            [['geom', 'created_at', 'updated_at', 'lat', 'long', 'geojson', 'file_dinhkem', 'vatlieu', 'ten'], 'safe'],
+            [['geom', 'created_at', 'updated_at', 'lat', 'long', 'geojson', 'file_dinhkem', 'vatlieu', 'ten', 'ma'], 'safe'],
         ];
     }
 
@@ -72,6 +72,8 @@ class OngdansinhSearch extends Ongdansinh
             ->andFilterWhere(['like', 'upper(long)', mb_strtoupper($this->long)])
             ->andFilterWhere(['like', 'upper(geojson)', mb_strtoupper($this->geojson)])
             ->andFilterWhere(['like', 'upper(file_dinhkem)', mb_strtoupper($this->file_dinhkem)])
+            ->andFilterWhere(['like', 'upper(ma)', mb_strtoupper($this->ma)])
+            ->andFilterWhere(['like', 'upper(ten)', mb_strtoupper($this->ten)])
             ->andFilterWhere(['like', 'upper(vatlieu)', mb_strtoupper($this->vatlieu)]);
 
         return $dataProvider;

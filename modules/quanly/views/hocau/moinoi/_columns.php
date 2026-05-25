@@ -39,6 +39,10 @@ return [
     ],
     [
         'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'ma',
+    ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
         'attribute'=>'mavitri',
     ],
     [

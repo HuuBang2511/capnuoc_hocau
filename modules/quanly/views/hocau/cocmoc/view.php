@@ -49,6 +49,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'captionOptions' => ['style' => 'width: 35%'],
                             ],
                             'ten',
+                            'ma',
                             [
                                 'label' => 'Tình trạng',
                                 'format' => 'raw',
@@ -57,6 +58,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                     return '<span class="badge bg-soft-info text-info border border-info px-2 py-1">' . $text . '</span>';
                                 }
                             ],
+                            'ghichu:ntext',
                             'lat',
                             'long',
                         ],

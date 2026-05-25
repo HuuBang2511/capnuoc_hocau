@@ -70,6 +70,11 @@ $this->params['breadcrumbs'][] = $this->title;
             </div>
         </div>
         <div class="row mt-3">
+            <div class="col-lg-12">
+                <?= $form->field($model, 'ma')->textInput(['maxlength' => true]) ?>
+            </div>
+        </div>
+        <div class="row mt-3">
             <div class="col-lg-9">
                 <?= $form->field($model, 'vitri')->textInput(['maxlength' => true]) ?>
             </div>
@@ -81,6 +86,11 @@ $this->params['breadcrumbs'][] = $this->title;
                             'allowClear' => true
                         ],
                 ]) ?>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <?= $form->field($model, 'ghichu')->textArea(['rows' => 3]) ?>
             </div>
         </div>
 

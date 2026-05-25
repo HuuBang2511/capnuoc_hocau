@@ -84,6 +84,7 @@ class HamkythuatSearch extends Hamkythuat
             ->andFilterWhere(['like', 'upper(dvtc)', mb_strtoupper($this->dvtc)])
             ->andFilterWhere(['like', 'upper(bvhc)', mb_strtoupper($this->bvhc)])
             ->andFilterWhere(['like', 'upper(ghichu)', mb_strtoupper($this->ghichu)])
+            ->andFilterWhere(['like', 'upper(ten)', mb_strtoupper($this->ten)])
             ->andFilterWhere(['like', 'upper(geojson)', mb_strtoupper($this->geojson)])
             ->andFilterWhere(['like', 'upper(file_dinhkem)', mb_strtoupper($this->file_dinhkem)]);
 

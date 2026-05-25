@@ -34,6 +34,10 @@ return [
         'attribute'=>'ten',
     ],
     [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'ma',
+    ],
+    [
         'class' => '\kartik\grid\DataColumn',
         'attribute' => 'loainhamay_id',
         'format' => 'raw',
@@ -47,6 +51,10 @@ return [
                 'allowClear' => true,
             ],
         ],
+    ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'ghichu',
     ],
     // [
         // 'class'=>'\kartik\grid\DataColumn',

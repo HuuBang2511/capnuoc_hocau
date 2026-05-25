@@ -19,7 +19,7 @@ class MoinoiSearch extends Moinoi
     {
         return [
             [['id', 'objectid_1', 'objectid', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaimoinoi_id'], 'integer'],
-            [['geom', 'tinh_trang', 'loaimoinoi', 'kichthuoc', 'vattu', 'mavitri', 'ghichu', 'lat', 'long', 'geojson', 'created_at', 'updated_at', 'file_dinhkem', 'ten'], 'safe'],
+            [['geom', 'tinh_trang', 'loaimoinoi', 'kichthuoc', 'vattu', 'mavitri', 'ghichu', 'lat', 'long', 'geojson', 'created_at', 'updated_at', 'file_dinhkem', 'ten', 'ma'], 'safe'],
             [['x', 'y', 'z'], 'number'],
         ];
     }
@@ -82,6 +82,8 @@ class MoinoiSearch extends Moinoi
             ->andFilterWhere(['like', 'upper(lat)', mb_strtoupper($this->lat)])
             ->andFilterWhere(['like', 'upper(long)', mb_strtoupper($this->long)])
             ->andFilterWhere(['like', 'upper(geojson)', mb_strtoupper($this->geojson)])
+            ->andFilterWhere(['like', 'upper(ma)', mb_strtoupper($this->ma)])
+            ->andFilterWhere(['like', 'upper(ten)', mb_strtoupper($this->ten)])
             ->andFilterWhere(['like', 'upper(file_dinhkem)', mb_strtoupper($this->file_dinhkem)]);
 
         return $dataProvider;

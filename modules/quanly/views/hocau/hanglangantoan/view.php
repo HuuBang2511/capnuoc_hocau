@@ -51,6 +51,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'options' => ['class' => 'table table-hover mb-0 detail-view-table'],
                         'attributes' => [
                             'ten',
+                            'ma',
                             [
                                 'attribute' => 'hanhlang',
                                 'label' => 'Hành lang',

@@ -19,7 +19,7 @@ class OngphanphoiSearch extends Ongphanphoi
     {
         return [
             [['id', 'objectid_1', 'objectid', 'coong', 'status', 'created_by', 'updated_by', 'tinhtrang_id', 'loaiong_id'], 'integer'],
-            [['geom', 'tinh_trang', 'vatlieu', 'mavattu', 'ngaylapdat', 'congtrinh', 'dvtk', 'dvtc', 'bvhc', 'ghichu', 'lat', 'long', 'geojson', 'created_at', 'updated_at', 'file_dinhkem', 'ten'], 'safe'],
+            [['geom', 'tinh_trang', 'vatlieu', 'mavattu', 'ngaylapdat', 'congtrinh', 'dvtk', 'dvtc', 'bvhc', 'ghichu', 'lat', 'long', 'geojson', 'created_at', 'updated_at', 'file_dinhkem', 'ten', 'ma'], 'safe'],
             [['shape_leng'], 'number'],
         ];
     }
@@ -84,6 +84,8 @@ class OngphanphoiSearch extends Ongphanphoi
             ->andFilterWhere(['like', 'upper(lat)', mb_strtoupper($this->lat)])
             ->andFilterWhere(['like', 'upper(long)', mb_strtoupper($this->long)])
             ->andFilterWhere(['like', 'upper(geojson)', mb_strtoupper($this->geojson)])
+            ->andFilterWhere(['like', 'upper(ma)', mb_strtoupper($this->ma)])
+            ->andFilterWhere(['like', 'upper(ten)', mb_strtoupper($this->ten)])
             ->andFilterWhere(['like', 'upper(file_dinhkem)', mb_strtoupper($this->file_dinhkem)]);
 
         return $dataProvider;

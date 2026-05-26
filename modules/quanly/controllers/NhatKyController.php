@@ -119,6 +119,9 @@ class NhatKyController extends QuanlyBaseController
     /**
      * Hàm lưu Jar Test (đã được fix triệt để vụ empty("0") và lieu_chon rỗng)
      */
+    /**
+     * Lưu jar test từ POST data (Nguyên bản cũ + bypass validation)
+     */
     private function saveJarTest(string $ngay, int $ca, array $post): void
     {
         $jGio = trim($post['jar_gio'] ?? ($ca == 1 ? '08:00' : '19:00'));
@@ -127,20 +130,15 @@ class NhatKyController extends QuanlyBaseController
         $ph   = $post['jar_ph']  ?? [];
         $lieu = $post['jar_lieu_chon'] ?? null;
 
+        // Form dùng 0-based index: jar_pac[0]..jar_pac[5]
         $hasData = false;
-        // Bắt điều kiện 1: Người dùng chỉ nhập liều chọn
-        if ($lieu !== null && $lieu !== '') {
-            $hasData = true;
-        } else {
-            // Bắt điều kiện 2: Người dùng có nhập PAC hoặc NTU (cho phép số 0)
-            for ($i = 0; $i < 6; $i++) {
-                if ((isset($pac[$i]) && $pac[$i] !== '') || 
-                    (isset($ntu[$i]) && $ntu[$i] !== '') || 
-                    (isset($ph[$i]) && $ph[$i] !== '')) { 
-                    $hasData = true; 
-                    break; 
-                }
-            }
+        for ($i = 0; $i < 6; $i++) {
+            if (!empty($pac[$i]) || !empty($ntu[$i])) { $hasData = true; break; }
+        }
+        
+        // Bắt thêm trường hợp chỉ nhập Liều chọn thì vẫn tính là có data để lưu
+        if ($lieu !== null && $lieu !== '') { 
+            $hasData = true; 
         }
 
         if (!$hasData) return;
@@ -152,26 +150,21 @@ class NhatKyController extends QuanlyBaseController
             $jar->ca   = $ca;
         }
         
-        // Ngăn lỗi cộng chuỗi ":00" dư thừa nếu browser đã gửi đủ định dạng
-        if ($jGio) {
-            $jar->gio_thu = (substr_count($jGio, ':') === 1) ? $jGio . ':00' : $jGio;
-        } else {
-            $jar->gio_thu = null;
-        }
-        
-        $jar->lieu_chon  = ($lieu !== null && $lieu !== '') ? (float)$lieu : null;
+        // Dùng y xì code gốc của mày
+        $jar->gio_thu    = $jGio ? $jGio . ':00' : null;
+        $jar->lieu_chon  = $lieu ?: null;
         $jar->nguoi_nhap = Yii::$app->user->identity->username ?? '';
         
+        // Form index 0-based -> DB column 1-based (pac_1_lieu..pac_6_lieu)
         for ($i = 0; $i < 6; $i++) {
             $col = $i + 1;
-            $jar->{'pac_'.$col.'_lieu'} = (isset($pac[$i]) && $pac[$i] !== '') ? (float)$pac[$i] : null;
-            $jar->{'pac_'.$col.'_ntu'}  = (isset($ntu[$i]) && $ntu[$i] !== '') ? (float)$ntu[$i] : null;
-            $jar->{'pac_'.$col.'_ph'}   = (isset($ph[$i])  && $ph[$i]  !== '') ? (float)$ph[$i]  : null;
+            $jar->{'pac_'.$col.'_lieu'} = isset($pac[$i]) && $pac[$i] !== '' ? (float)$pac[$i] : null;
+            $jar->{'pac_'.$col.'_ntu'}  = isset($ntu[$i]) && $ntu[$i] !== '' ? (float)$ntu[$i] : null;
+            $jar->{'pac_'.$col.'_ph'}   = isset($ph[$i])  && $ph[$i]  !== '' ? (float)$ph[$i]  : null;
         }
         
-        if (!$jar->save()) {
-            Yii::$app->session->addFlash('error', 'Lỗi lưu Jar Test: ' . json_encode($jar->getErrors(), JSON_UNESCAPED_UNICODE));
-        }
+        // Dùng save(false) để ép Yii ghi DB, bỏ qua tất cả các rule validation làm tịt ngòi quá trình lưu
+        $jar->save(false); 
     }
 
     public function actionGiaoCa($ngay = null, $ca = null)

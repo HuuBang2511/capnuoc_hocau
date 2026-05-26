@@ -52,11 +52,11 @@ class NhatKyController extends QuanlyBaseController
             $nguoi_kt   = trim($post['nguoi_kt'] ?? '');
             $username   = Yii::$app->user->identity->username ?? '';
 
-            // Lấy thêm thông số bảng tính Clo từ POST
-            $clo_mat_ban_dau      = $post['clo_mat_ban_dau'] !== '' ? (float)$post['clo_mat_ban_dau'] : null;
-            $clo_mat_trong_be     = $post['clo_mat_trong_be'] !== '' ? (float)$post['clo_mat_trong_be'] : null;
-            $clo_khoi_luong_cham   = $post['clo_khoi_luong_cham'] !== '' ? (float)$post['clo_khoi_luong_cham'] : null;
-            $clo_ll_nuoc_tho      = $post['clo_ll_nuoc_tho'] !== '' ? (float)$post['clo_ll_nuoc_tho'] : null;
+            // Bảng tính Clo từ POST
+            $clo_mat_ban_dau      = (isset($post['clo_mat_ban_dau']) && $post['clo_mat_ban_dau'] !== '') ? (float)$post['clo_mat_ban_dau'] : null;
+            $clo_mat_trong_be     = (isset($post['clo_mat_trong_be']) && $post['clo_mat_trong_be'] !== '') ? (float)$post['clo_mat_trong_be'] : null;
+            $clo_khoi_luong_cham  = (isset($post['clo_khoi_luong_cham']) && $post['clo_khoi_luong_cham'] !== '') ? (float)$post['clo_khoi_luong_cham'] : null;
+            $clo_ll_nuoc_tho      = (isset($post['clo_ll_nuoc_tho']) && $post['clo_ll_nuoc_tho'] !== '') ? (float)$post['clo_ll_nuoc_tho'] : null;
 
             $saved = 0;
             foreach ($gioList as $gio) {
@@ -82,10 +82,9 @@ class NhatKyController extends QuanlyBaseController
                 $model->nguoi_truc = $nguoi_truc ?: null;
                 $model->nguoi_kt   = $nguoi_kt   ?: null;
 
-                // Lưu các thông số bảng tính Clo vào các dòng dữ liệu để đồng bộ theo ca
                 $model->clo_mat_ban_dau      = $clo_mat_ban_dau;
                 $model->clo_mat_trong_be     = $clo_mat_trong_be;
-                $model->clo_khoi_luong_cham   = $clo_khoi_luong_cham;
+                $model->clo_khoi_luong_cham  = $clo_khoi_luong_cham;
                 $model->clo_ll_nuoc_tho      = $clo_ll_nuoc_tho;
 
                 $model->save();
@@ -117,6 +116,9 @@ class NhatKyController extends QuanlyBaseController
         ]);
     }
 
+    /**
+     * Hàm lưu Jar Test (đã được fix triệt để vụ empty("0") và lieu_chon rỗng)
+     */
     private function saveJarTest(string $ngay, int $ca, array $post): void
     {
         $jGio = trim($post['jar_gio'] ?? ($ca == 1 ? '08:00' : '19:00'));
@@ -126,9 +128,21 @@ class NhatKyController extends QuanlyBaseController
         $lieu = $post['jar_lieu_chon'] ?? null;
 
         $hasData = false;
-        for ($i = 0; $i < 6; $i++) {
-            if (!empty($pac[$i]) || !empty($ntu[$i])) { $hasData = true; break; }
+        // Bắt điều kiện 1: Người dùng chỉ nhập liều chọn
+        if ($lieu !== null && $lieu !== '') {
+            $hasData = true;
+        } else {
+            // Bắt điều kiện 2: Người dùng có nhập PAC hoặc NTU (cho phép số 0)
+            for ($i = 0; $i < 6; $i++) {
+                if ((isset($pac[$i]) && $pac[$i] !== '') || 
+                    (isset($ntu[$i]) && $ntu[$i] !== '') || 
+                    (isset($ph[$i]) && $ph[$i] !== '')) { 
+                    $hasData = true; 
+                    break; 
+                }
+            }
         }
+
         if (!$hasData) return;
 
         $jar = \app\modules\quanly\models\hocau\NkJarTest::findOne(['ngay'=>$ngay,'ca'=>$ca]);
@@ -137,16 +151,27 @@ class NhatKyController extends QuanlyBaseController
             $jar->ngay = $ngay;
             $jar->ca   = $ca;
         }
-        $jar->gio_thu    = $jGio ? $jGio . ':00' : null;
-        $jar->lieu_chon  = $lieu ?: null;
+        
+        // Ngăn lỗi cộng chuỗi ":00" dư thừa nếu browser đã gửi đủ định dạng
+        if ($jGio) {
+            $jar->gio_thu = (substr_count($jGio, ':') === 1) ? $jGio . ':00' : $jGio;
+        } else {
+            $jar->gio_thu = null;
+        }
+        
+        $jar->lieu_chon  = ($lieu !== null && $lieu !== '') ? (float)$lieu : null;
         $jar->nguoi_nhap = Yii::$app->user->identity->username ?? '';
+        
         for ($i = 0; $i < 6; $i++) {
             $col = $i + 1;
-            $jar->{'pac_'.$col.'_lieu'} = isset($pac[$i]) && $pac[$i] !== '' ? (float)$pac[$i] : null;
-            $jar->{'pac_'.$col.'_ntu'}  = isset($ntu[$i]) && $ntu[$i] !== '' ? (float)$ntu[$i] : null;
-            $jar->{'pac_'.$col.'_ph'}   = isset($ph[$i])  && $ph[$i]  !== '' ? (float)$ph[$i]  : null;
+            $jar->{'pac_'.$col.'_lieu'} = (isset($pac[$i]) && $pac[$i] !== '') ? (float)$pac[$i] : null;
+            $jar->{'pac_'.$col.'_ntu'}  = (isset($ntu[$i]) && $ntu[$i] !== '') ? (float)$ntu[$i] : null;
+            $jar->{'pac_'.$col.'_ph'}   = (isset($ph[$i])  && $ph[$i]  !== '') ? (float)$ph[$i]  : null;
         }
-        $jar->save();
+        
+        if (!$jar->save()) {
+            Yii::$app->session->addFlash('error', 'Lỗi lưu Jar Test: ' . json_encode($jar->getErrors(), JSON_UNESCAPED_UNICODE));
+        }
     }
 
     public function actionGiaoCa($ngay = null, $ca = null)

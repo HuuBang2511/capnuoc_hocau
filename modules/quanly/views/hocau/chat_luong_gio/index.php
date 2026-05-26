@@ -202,6 +202,9 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
     <?php if (Yii::$app->session->hasFlash('success')): ?>
     <div class="flash-ok">✓ <?= Yii::$app->session->getFlash('success') ?></div>
     <?php endif; ?>
+    <?php if (Yii::$app->session->hasFlash('error')): ?>
+    <div class="flash-ok" style="background:#fef2f2;color:#991b1b;border:1px solid #fca5a5;margin-top:8px;">❌ <?= Yii::$app->session->getFlash('error') ?></div>
+    <?php endif; ?>
 
     <form method="post" id="form-hn">
         <?= Html::hiddenInput(Yii::$app->request->csrfParam, Yii::$app->request->csrfToken) ?>
@@ -476,7 +479,7 @@ function pickJar() {
     if (minIdx >= 0) {
         var pac = document.querySelector('input[name="jar_pac['+minIdx+']"]');
         var chon = document.getElementById('jar-lieu-chon');
-        if (pac && pac.value && chon && !_jarLieuUserEdited) chon.value = pac.value;
+        if (pac && pac.value !== "" && chon && !_jarLieuUserEdited) chon.value = pac.value;
         var pvNtu = document.getElementById('jar-prev-ntu');
         var pvPh  = document.getElementById('jar-prev-ph');
         var nInp  = document.querySelector('input[name="jar_ntu['+minIdx+']"]');

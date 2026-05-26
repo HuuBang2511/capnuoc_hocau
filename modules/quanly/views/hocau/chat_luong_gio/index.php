@@ -333,7 +333,7 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
                         <?php endfor; ?>
                         <td style="background:#eff6ff;">
                             <?php if ($jkey === 'pac'): ?>
-                            <input type="number" step="0.1" name="jar_lieu_chon" id="jar-lieu-chon" value="<?= $jChon !== null ? Html::encode($jChon) : '' ?>" style="width:60px;padding:3px 5px;border:1.5px solid #3b82f6;border-radius:5px;font-weight:700;color:#3b82f6;" inputmode="decimal" /> mg/L
+                            <input type="text" name="jar_lieu_chon" id="jar-lieu-chon" value="<?= $jChon !== null ? Html::encode($jChon) : '' ?>" style="width:60px;padding:3px 5px;border:1.5px solid #3b82f6;border-radius:5px;font-weight:700;color:#3b82f6;" inputmode="decimal" /> mg/L
                             <?php else: ?>
                             <span id="jar-prev-<?= $jkey ?>">—</span>
                             <?php endif; ?>
@@ -467,7 +467,7 @@ function runCloCalculation() {
     document.getElementById('out-clo-cham-nc').textContent = cloChamNc.toFixed(2);
 }
 
-var _jarLieuUserEdited = false;
+var _jarLieuUserEdited = <?= ($jChon !== null && $jChon !== '') ? 'true' : 'false' ?>;
 function pickJar() {
     var minNtu = Infinity, minIdx = -1;
     for (var i = 0; i < 6; i++) {

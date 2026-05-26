@@ -1528,7 +1528,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    loadSLTab('realtime'); // Mặc định mở tab realtime  
+    loadSLTab('ngay');
 
     setInterval(function() {
         if (!document.hidden) {

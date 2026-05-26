@@ -396,11 +396,11 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
             </h4>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                 <div class="sl-tabs">
-    <button class="sl-tab" onclick="switchSLTab('ngay',this)">Theo Ngày</button>
-    <button class="sl-tab" onclick="switchSLTab('thang',this)">Theo Tháng</button>
-    <button class="sl-tab" onclick="switchSLTab('nam',this)">Theo Năm</button>
-    <button class="sl-tab active" onclick="switchSLTab('realtime',this)">Realtime</button>
-</div>
+                    <button class="sl-tab active" onclick="switchSLTab('ngay',this)">Theo Ngày</button>
+                    <button class="sl-tab" onclick="switchSLTab('thang',this)">Theo Tháng</button>
+                    <button class="sl-tab" onclick="switchSLTab('nam',this)">Theo Năm</button>
+                    <button class="sl-tab" onclick="switchSLTab('realtime',this)">Realtime</button>
+                </div>
                 <a href="/quanly/nhat-ky/bao-cao" class="tt-report-btn" title="Báo cáo hàng ngày">
                     <i class="fa-solid fa-file-excel"></i><span>Báo cáo</span>
                 </a>
@@ -1528,7 +1528,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    loadSLTab('realtime');
+    loadSLTab('ngay');
 
     setInterval(function() {
         if (!document.hidden) {

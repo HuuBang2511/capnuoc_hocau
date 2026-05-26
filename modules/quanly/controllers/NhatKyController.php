@@ -14,17 +14,11 @@ use app\modules\quanly\components\SanLuongDongHoExcel;
 
 class NhatKyController extends QuanlyBaseController
 {
-    // ─────────────────────────────────────────────────────────────
-    // BÁO CÁO HÀNG NGÀY
-    // ─────────────────────────────────────────────────────────────
     public function actionBaoCao()
     {
         return $this->render('/hocau/bao_cao/index');
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // NHẬP CHẤT LƯỢNG NƯỚC THEO GIỜ (ca ngày / ca đêm)
-    // ─────────────────────────────────────────────────────────────
     public function actionChatLuongGio($ngay = null, $ca = null)
     {
         $ngay = $ngay ?? date('Y-m-d');
@@ -42,6 +36,9 @@ class NhatKyController extends QuanlyBaseController
             'clo_du',
             'ns_clo_nong_do','nt_clo_nong_do','nc_clo_cham','pac_cham',
             'nt_do_mau','ns_do_mau',
+            'ns_do_kiem','nt_do_kiem',
+            'ns_do_cung','nt_do_cung',
+            'ns_clorua','nt_clorua',
             'ngoai_ho_ph','ngoai_ho_ntu',
             'muong_pu_thu_hoi','muong_lang_nl1','muong_pu_ns','dau_be_ns',
             'ho_xi_phong_1_ntu','ho_xi_phong_2_ntu',
@@ -54,6 +51,12 @@ class NhatKyController extends QuanlyBaseController
             $nguoi_truc = trim($post['nguoi_truc'] ?? '');
             $nguoi_kt   = trim($post['nguoi_kt'] ?? '');
             $username   = Yii::$app->user->identity->username ?? '';
+
+            // Lấy thêm thông số bảng tính Clo từ POST
+            $clo_mat_ban_dau      = $post['clo_mat_ban_dau'] !== '' ? (float)$post['clo_mat_ban_dau'] : null;
+            $clo_mat_trong_be     = $post['clo_mat_trong_be'] !== '' ? (float)$post['clo_mat_trong_be'] : null;
+            $clo_khoi_luong_cham   = $post['clo_khoi_luong_cham'] !== '' ? (float)$post['clo_khoi_luong_cham'] : null;
+            $clo_ll_nuoc_tho      = $post['clo_ll_nuoc_tho'] !== '' ? (float)$post['clo_ll_nuoc_tho'] : null;
 
             $saved = 0;
             foreach ($gioList as $gio) {
@@ -78,6 +81,13 @@ class NhatKyController extends QuanlyBaseController
                 }
                 $model->nguoi_truc = $nguoi_truc ?: null;
                 $model->nguoi_kt   = $nguoi_kt   ?: null;
+
+                // Lưu các thông số bảng tính Clo vào các dòng dữ liệu để đồng bộ theo ca
+                $model->clo_mat_ban_dau      = $clo_mat_ban_dau;
+                $model->clo_mat_trong_be     = $clo_mat_trong_be;
+                $model->clo_khoi_luong_cham   = $clo_khoi_luong_cham;
+                $model->clo_ll_nuoc_tho      = $clo_ll_nuoc_tho;
+
                 $model->save();
                 $saved++;
             }
@@ -95,10 +105,7 @@ class NhatKyController extends QuanlyBaseController
             ->all();
 
         $model = $lichSu[0] ?? new NkChatLuongGio();
-
-        $jarTest = \app\modules\quanly\models\hocau\NkJarTest::findOne([
-            'ngay' => $ngay, 'ca' => $ca
-        ]);
+        $jarTest = \app\modules\quanly\models\hocau\NkJarTest::findOne(['ngay' => $ngay, 'ca' => $ca]);
 
         return $this->render('/hocau/chat_luong_gio/index', [
             'model'   => $model,
@@ -110,9 +117,6 @@ class NhatKyController extends QuanlyBaseController
         ]);
     }
 
-    /**
-     * Lưu jar test từ POST data
-     */
     private function saveJarTest(string $ngay, int $ca, array $post): void
     {
         $jGio = trim($post['jar_gio'] ?? ($ca == 1 ? '08:00' : '19:00'));
@@ -127,15 +131,14 @@ class NhatKyController extends QuanlyBaseController
         }
         if (!$hasData) return;
 
-        $jar = \app\modules\quanly\models\hocau\NkJarTest::findOne(['ngay' => $ngay, 'ca' => $ca]);
+        $jar = \app\modules\quanly\models\hocau\NkJarTest::findOne(['ngay'=>$ngay,'ca'=>$ca]);
         if (!$jar) {
             $jar = new \app\modules\quanly\models\hocau\NkJarTest();
+            $jar->ngay = $ngay;
+            $jar->ca   = $ca;
         }
-        // Re-assign string thuần — tránh validation lỗi format khi Yii2/pgsql trả về object
-        $jar->ngay = (string)$ngay;
-        $jar->ca   = $ca;
         $jar->gio_thu    = $jGio ? $jGio . ':00' : null;
-        $jar->lieu_chon  = ($lieu !== null && $lieu !== '') ? (float)$lieu : null;
+        $jar->lieu_chon  = $lieu ?: null;
         $jar->nguoi_nhap = Yii::$app->user->identity->username ?? '';
         for ($i = 0; $i < 6; $i++) {
             $col = $i + 1;
@@ -146,9 +149,6 @@ class NhatKyController extends QuanlyBaseController
         $jar->save();
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // SỔ GIAO CA
-    // ─────────────────────────────────────────────────────────────
     public function actionGiaoCa($ngay = null, $ca = null)
     {
         $ngay = $ngay ?? date('Y-m-d');
@@ -177,9 +177,6 @@ class NhatKyController extends QuanlyBaseController
         ]);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // NƯỚC THẢI SINH HOẠT
-    // ─────────────────────────────────────────────────────────────
     public function actionNuocThaiSh($ngay = null)
     {
         $ngay = $ngay ?? date('Y-m-d');
@@ -212,9 +209,6 @@ class NhatKyController extends QuanlyBaseController
         ]);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // CLN HÀNG NGÀY (tab mới — bảng đầy đủ 24h)
-    // ─────────────────────────────────────────────────────────────
     public function actionClnHangNgay($ngay = null)
     {
         $ngay = $ngay ?? date('Y-m-d');
@@ -275,9 +269,6 @@ class NhatKyController extends QuanlyBaseController
         ]);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // CL NƯỚC TUẦN (phan_tich_tuan) — 3 hàng/tuần
-    // ─────────────────────────────────────────────────────────────
     public function actionPhanTichTuan($thang = null, $nam = null)
     {
         $thang = (int)(isset($thang) ? $thang : date('m'));
@@ -363,9 +354,6 @@ class NhatKyController extends QuanlyBaseController
         ]);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // SẢN LƯỢNG ĐỒNG HỒ
-    // ─────────────────────────────────────────────────────────────
     public function actionSanLuongDongHo($tu_ngay = null, $den_ngay = null)
     {
         $den_ngay = $den_ngay ?? date('Y-m-d');
@@ -378,9 +366,6 @@ class NhatKyController extends QuanlyBaseController
         ]);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // CẤU HÌNH ĐỒNG HỒ KHÁCH HÀNG
-    // ─────────────────────────────────────────────────────────────
     public function actionDongHoConfig()
     {
         $danhSach = NkDongHoKhachHang::find()
@@ -432,9 +417,6 @@ class NhatKyController extends QuanlyBaseController
         return ['success'=>true];
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // API — CLN cho trang báo cáo
-    // ─────────────────────────────────────────────────────────────
     public function actionApiCln($ngay = null)
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
@@ -472,9 +454,6 @@ class NhatKyController extends QuanlyBaseController
         ];
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // API — Kiểm tra trạng thái nước thải
-    // ─────────────────────────────────────────────────────────────
     public function actionApiNuocThai($ngay = null)
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
@@ -493,9 +472,6 @@ class NhatKyController extends QuanlyBaseController
         ];
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // API — Sản lượng đồng hồ
-    // ─────────────────────────────────────────────────────────────
     public function actionApiSanLuong($tu_ngay = null, $den_ngay = null)
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
@@ -595,23 +571,11 @@ class NhatKyController extends QuanlyBaseController
         return $result;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // API — Điện năng + Hóa chất từ nk_giao_ca (cho Dashboard)
-    // URL: /quanly/nhat-ky/api-van-hanh
-    //
-    // Response:
-    // {
-    //   "ngay_data":  [ {"ngay":"2026-05-01","dien":618,"pac":399.10,"chlorine":53.60,"polymer":4.00}, ... ]
-    //   "thang_data": [ {"thang":"2026-05","dien":12345,"pac":8901.00,...} ]
-    //   "nam_data":   [ {"nam":"2026","dien":99999,"pac":99999.00,...} ]
-    // }
-    // ─────────────────────────────────────────────────────────────
     public function actionApiVanHanh()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-        $db = Yii::$app->db; // PostgreSQL
+        $db = Yii::$app->db;
 
-        // ── Từng ngày (365 ngày gần nhất) ──────────────────────────
         $sqlNgay = "
             SELECT ngay::text AS ngay,
                    SUM(COALESCE(dien_nha_may_cuoi,0) - COALESCE(dien_nha_may_dau,0)) AS dien,
@@ -625,7 +589,6 @@ class NhatKyController extends QuanlyBaseController
             ORDER BY ngay ASC
         ";
 
-        // ── Theo tháng (24 tháng gần nhất) ────────────────────────
         $sqlThang = "
             SELECT TO_CHAR(ngay,'YYYY-MM') AS thang,
                    SUM(COALESCE(dien_nha_may_cuoi,0) - COALESCE(dien_nha_may_dau,0)) AS dien,
@@ -638,7 +601,6 @@ class NhatKyController extends QuanlyBaseController
             ORDER BY thang ASC
         ";
 
-        // ── Theo năm (toàn bộ lịch sử) ────────────────────────────
         $sqlNam = "
             SELECT EXTRACT(YEAR FROM ngay)::text AS nam,
                    SUM(COALESCE(dien_nha_may_cuoi,0) - COALESCE(dien_nha_may_dau,0)) AS dien,
@@ -650,7 +612,6 @@ class NhatKyController extends QuanlyBaseController
             ORDER BY nam ASC
         ";
 
-        // Cast về float, giữ nguyên key text (ngay/thang/nam)
         $cast = function($rows, $textKey) {
             $out = array();
             foreach ($rows as $row) {
@@ -670,11 +631,6 @@ class NhatKyController extends QuanlyBaseController
         );
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // XUẤT BÁO CÁO — 5 file riêng biệt
-    // ─────────────────────────────────────────────────────────────
-
-    /** Xuất Excel hoá nghiệm (CLN theo giờ + CLN hàng ngày) */
     public function actionXuatHoaNghiem($ngay = null)
     {
         $ngay = $ngay ?? date('Y-m-d');
@@ -688,7 +644,6 @@ class NhatKyController extends QuanlyBaseController
         $builder->download();
     }
 
-    /** Xuất Excel vận hành (giao ca ngày + đêm) */
     public function actionXuatVanHanh($ngay = null)
     {
         $ngay = $ngay ?? date('Y-m-d');
@@ -698,7 +653,6 @@ class NhatKyController extends QuanlyBaseController
         $builder->download();
     }
 
-    /** Xuất Excel nước thải SH */
     public function actionXuatNuocThai($ngay = null)
     {
         $ngay = $ngay ?? date('Y-m-d');
@@ -707,7 +661,6 @@ class NhatKyController extends QuanlyBaseController
         $builder->download();
     }
 
-    /** Xuất Excel CL Nước Tuần */
     public function actionXuatClnTuan($thang = null, $nam = null)
     {
         $thang = (int)($thang ?? date('m'));
@@ -719,7 +672,6 @@ class NhatKyController extends QuanlyBaseController
         $builder->download();
     }
 
-    /** Xuất Excel tổng hợp ngày */
     public function actionXuatBaoCaoNgay($ngay = null)
     {
         $ngay = $ngay ?? date('Y-m-d');
@@ -733,7 +685,6 @@ class NhatKyController extends QuanlyBaseController
         $builder->download();
     }
 
-    /** Xuất Excel sản lượng đồng hồ */
     public function actionXuatSanLuong($tu_ngay = null, $den_ngay = null)
     {
         $den_ngay = $den_ngay ?? date('Y-m-d');
@@ -744,7 +695,6 @@ class NhatKyController extends QuanlyBaseController
         $builder->download();
     }
 
-    /** Helper: lấy scada data cho 1 ngày */
     private function getScadaForNgay(string $ngay): array
     {
         $scadaData = [];

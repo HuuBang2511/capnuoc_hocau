@@ -16,7 +16,7 @@ foreach ($lichSu as $r) {
     $dataByGio[$h] = $r;
 }
 
-// Tất cả fields theo thứ tự cột
+// Tất cả fields theo thứ tự cột chuẩn UI
 $allFields = [
     'ns_ph','ns_ntu',
     'nt_ph','nt_ntu',
@@ -25,6 +25,9 @@ $allFields = [
     'clo_du',
     'ns_clo_nong_do','nt_clo_nong_do','nc_clo_cham','pac_cham',
     'nt_do_mau','ns_do_mau',
+    'ns_do_kiem','nt_do_kiem',
+    'ns_do_cung','nt_do_cung',
+    'ns_clorua','nt_clorua',
     'ngoai_ho_ph','ngoai_ho_ntu',
     'muong_pu_thu_hoi','muong_lang_nl1','muong_pu_ns','dau_be_ns',
     'ho_xi_phong_1_ntu','ho_xi_phong_2_ntu',
@@ -54,15 +57,18 @@ $steps = [
     'ns_clo_nong_do'=>'0.01','nt_clo_nong_do'=>'0.01',
     'nc_clo_cham'=>'0.01','pac_cham'=>'0.1',
     'nt_do_mau'=>'1','ns_do_mau'=>'1',
+    'ns_do_kiem'=>'1','nt_do_kiem'=>'1',
+    'ns_do_cung'=>'1','nt_do_cung'=>'1',
+    'ns_clorua'=>'1','nt_clorua'=>'1',
     'ngoai_ho_ph'=>'0.01','ngoai_ho_ntu'=>'0.01',
     'muong_pu_thu_hoi'=>'0.01','muong_lang_nl1'=>'0.01',
     'muong_pu_ns'=>'0.01','dau_be_ns'=>'0.01',
     'ho_xi_phong_1_ntu'=>'0.001','ho_xi_phong_2_ntu'=>'0.001',
     'pac_ty_trong'=>'0.001',
 ];
-$qcvnFields = ['ns_ph','ns_ntu','clo_du','nl1_ntu','nl2_ntu','ns_do_mau'];
+$qcvnFields = ['ns_ph','ns_ntu','clo_du','nl1_ntu','nl2_ntu','ns_do_mau','ns_do_cung','ns_clorua'];
 
-// Jar test — PHP 7: không dùng ?->
+// Jar test
 $jPac  = $jarTest ? $jarTest->getPacLieuArr() : array_fill(0, 6, null);
 $jNtu  = $jarTest ? $jarTest->getPacNtuArr()  : array_fill(0, 6, null);
 $jPh   = $jarTest ? $jarTest->getPacPhArr()   : array_fill(0, 6, null);
@@ -70,7 +76,12 @@ $jMin  = $jarTest ? $jarTest->getMinNtuIndex() : -1;
 $jGio  = $jarTest ? date('H:i', strtotime($jarTest->gio_thu)) : ($ca == 1 ? '08:00' : '19:00');
 $jChon = $jarTest ? $jarTest->lieu_chon : null;
 
-// Người trực — model là record đầu tiên hoặc object rỗng
+// Khởi tạo các giá trị bảng tính Clo từ Model dòng đầu tiên nếu có
+$valMatBanDau    = ($model && $model->clo_mat_ban_dau !== null) ? $model->clo_mat_ban_dau : 0.6;
+$valMatTrongBe   = ($model && $model->clo_mat_trong_be !== null) ? $model->clo_mat_trong_be : 0.1;
+$valKhoiLuong    = ($model && $model->clo_khoi_luong_cham !== null) ? $model->clo_khoi_luong_cham : 3.0;
+$valLlNuocTho    = ($model && $model->clo_ll_nuoc_tho !== null) ? $model->clo_ll_nuoc_tho : 4500.0;
+
 $nguoiTruc = ($model && $model->nguoi_truc) ? $model->nguoi_truc : '';
 $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
 ?>
@@ -81,18 +92,14 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
 .hn-nav a.active{background:#3b82f6;color:#fff}
 .hn-nav input[type=date]{padding:6px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.83rem;outline:none;background:#fff;cursor:pointer}
 .hn-nav input[type=date]:focus{border-color:#3b82f6}
-/* Thanh lối tắt dùng chung */
-.qnav-bar{display:flex;gap:5px;flex-wrap:wrap;align-items:center;padding:8px 10px;
-          background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:10px}
+.qnav-bar{display:flex;gap:5px;flex-wrap:wrap;align-items:center;padding:8px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:10px}
 .qnav-label{font-size:.7rem;font-weight:700;color:#94a3b8;white-space:nowrap;margin-right:2px}
-.qnav-btn{padding:5px 10px;border-radius:8px;text-decoration:none;font-size:.75rem;font-weight:500;
-          background:#fff;color:#475569;border:1px solid #e2e8f0;white-space:nowrap;transition:all .12s}
+.qnav-btn{padding:5px 10px;border-radius:8px;text-decoration:none;font-size:.75rem;font-weight:500;background:#fff;color:#475569;border:1px solid #e2e8f0;white-space:nowrap;transition:all .12s}
 .qnav-btn:hover{border-color:#3b82f6;color:#3b82f6;background:#eff6ff}
 .qnav-active{background:#1e3a5f!important;color:#fff!important;border-color:#1e3a5f!important}
 .hn-ca-sw{display:flex;gap:8px;margin-bottom:12px}
 .hn-ca-sw a{flex:1;text-align:center;padding:9px;border-radius:10px;font-size:.88rem;font-weight:600;text-decoration:none;background:#f1f5f9;color:#475569}
 .hn-ca-sw a.active{background:#1e3a5f;color:#fff}
-/* Nút lối tắt giờ */
 .hn-shortcuts{display:flex;gap:5px;flex-wrap:wrap;padding:10px 12px;background:#f8fafc;border-radius:10px;margin-bottom:12px;align-items:center}
 .hn-shortcuts-label{font-size:.72rem;color:#94a3b8;font-weight:600;margin-right:4px;white-space:nowrap}
 .hn-shortcut-btn{padding:4px 10px;border-radius:99px;border:1.5px solid #e2e8f0;background:#fff;color:#475569;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .15s}
@@ -130,6 +137,14 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
 .jar-tbl input:focus{border-color:#3b82f6;outline:none}
 .jar-active{background:#eff6ff!important}
 .jar-active input{border-color:#3b82f6}
+
+/* CSS Bảng tính Clo mới */
+.cl-calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.cl-calc-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.cl-calc-table td{padding:6px 10px;border:1px solid #e2e8f0;text-align:left}
+.cl-calc-table input[type=number]{width:80px;padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;text-align:center;font-weight:600}
+.cl-calc-output{font-weight:700;color:#1e3a5f;background:#f1f5f9;text-align:center!important;font-size:.88rem}
+
 .nguoi-card{border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:16px}
 .ng-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .nk-field label{font-size:.78rem;color:#64748b;margin-bottom:3px;display:block}
@@ -137,11 +152,10 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
 .nk-field input:focus{border-color:#3b82f6}
 .btn-save{width:100%;padding:13px;background:#3b82f6;color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:600;cursor:pointer}
 .flash-ok{background:#dcfce7;color:#166534;padding:9px 14px;margin-bottom:0;font-size:.85rem}
-@media(max-width:576px){.ng-grid{grid-template-columns:1fr}}
+@media(max-width:768px){.cl-calc-grid{grid-template-columns:1fr}.ng-grid{grid-template-columns:1fr}}
 </style>
 
 <div class="hn-wrap">
-
     <div class="hn-nav">
         <?php for ($i = 2; $i >= 0; $i--):
             $d   = date('Y-m-d', strtotime('-' . $i . ' days'));
@@ -150,56 +164,34 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
         <a href="<?= Url::to(['nhat-ky/chat-luong-gio', 'ngay' => $d, 'ca' => $ca]) ?>"
            class="<?= $d == $ngay ? 'active' : '' ?>"><?= $lbl ?></a>
         <?php endfor; ?>
-        <input type="date" id="hn-date-pick"
-               value="<?= Html::encode($ngay) ?>"
-               max="<?= date('Y-m-d') ?>"
-               onchange="window.location.href='<?= Url::to(['nhat-ky/chat-luong-gio','ca'=>$ca]) ?>&ngay='+this.value" />
+        <input type="date" id="hn-date-pick" value="<?= Html::encode($ngay) ?>" max="<?= date('Y-m-d') ?>" onchange="window.location.href='<?= Url::to(['nhat-ky/chat-luong-gio','ca'=>$ca]) ?>&ngay='+this.value" />
     </div>
 
-    <!-- Thanh lối tắt nhập liệu -->
     <div class="qnav-bar">
         <span class="qnav-label">✏ Nhập liệu:</span>
-        <a href="<?= Url::to(['nhat-ky/chat-luong-gio','ca'=>1,'ngay'=>$ngay]) ?>"
-           class="qnav-btn <?= (strpos(Yii::$app->request->url,'chat-luong-gio')!==false && $ca==1)?'qnav-active':'' ?>">🧪 HN Ngày</a>
-        <a href="<?= Url::to(['nhat-ky/chat-luong-gio','ca'=>2,'ngay'=>$ngay]) ?>"
-           class="qnav-btn <?= (strpos(Yii::$app->request->url,'chat-luong-gio')!==false && $ca==2)?'qnav-active':'' ?>">🌙 HN Đêm</a>
-        <a href="<?= Url::to(['nhat-ky/giao-ca','ca'=>1,'ngay'=>$ngay]) ?>"
-           class="qnav-btn">☀️ VH Ngày</a>
-        <a href="<?= Url::to(['nhat-ky/giao-ca','ca'=>2,'ngay'=>$ngay]) ?>"
-           class="qnav-btn">🌙 VH Đêm</a>
-        <a href="<?= Url::to(['nhat-ky/nuoc-thai-sh','ngay'=>$ngay]) ?>"
-           class="qnav-btn">🧫 Nước thải</a>
-        <a href="<?= Url::to(['nhat-ky/cln-hang-ngay','ngay'=>$ngay]) ?>"
-           class="qnav-btn">📋 CLN ngày</a>
-        <a href="<?= Url::to(['nhat-ky/phan-tich-tuan']) ?>"
-           class="qnav-btn">📊 CL Tuần</a>
+        <a href="<?= Url::to(['nhat-ky/chat-luong-gio','ca'=>1,'ngay'=>$ngay]) ?>" class="qnav-btn <?= (strpos(Yii::$app->request->url,'chat-luong-gio')!==false && $ca==1)?'qnav-active':'' ?>">🧪 HN Ngày</a>
+        <a href="<?= Url::to(['nhat-ky/chat-luong-gio','ca'=>2,'ngay'=>$ngay]) ?>" class="qnav-btn <?= (strpos(Yii::$app->request->url,'chat-luong-gio')!==false && $ca==2)?'qnav-active':'' ?>">🌙 HN Đêm</a>
+        <a href="<?= Url::to(['nhat-ky/giao-ca','ca'=>1,'ngay'=>$ngay]) ?>" class="qnav-btn">☀️ VH Ngày</a>
+        <a href="<?= Url::to(['nhat-ky/giao-ca','ca'=>2,'ngay'=>$ngay]) ?>" class="qnav-btn">🌙 VH Đêm</a>
+        <a href="<?= Url::to(['nhat-ky/nuoc-thai-sh','ngay'=>$ngay]) ?>" class="qnav-btn">🧫 Nước thải</a>
+        <a href="<?= Url::to(['nhat-ky/cln-hang-ngay','ngay'=>$ngay]) ?>" class="qnav-btn">📋 CLN ngày</a>
+        <a href="<?= Url::to(['nhat-ky/phan-tich-tuan']) ?>" class="qnav-btn">📊 CL Tuần</a>
     </div>
 
     <div class="hn-ca-sw">
-        <a href="<?= Url::to(['nhat-ky/chat-luong-gio', 'ngay' => $ngay, 'ca' => 1]) ?>"
-           class="<?= $ca == 1 ? 'active' : '' ?>">☀️ Ca 1: 07h–18h</a>
-        <a href="<?= Url::to(['nhat-ky/chat-luong-gio', 'ngay' => $ngay, 'ca' => 2]) ?>"
-           class="<?= $ca == 2 ? 'active' : '' ?>">🌙 Ca 2: 19h–06h</a>
+        <a href="<?= Url::to(['nhat-ky/chat-luong-gio', 'ngay' => $ngay, 'ca' => 1]) ?>" class="<?= $ca == 1 ? 'active' : '' ?>">☀️ Ca 1: 07h–18h</a>
+        <a href="<?= Url::to(['nhat-ky/chat-luong-gio', 'ngay' => $ngay, 'ca' => 2]) ?>" class="<?= $ca == 2 ? 'active' : '' ?>">🌙 Ca 2: 19h–06h</a>
     </div>
 
-    <!-- Lối tắt nhảy đến giờ -->
     <div class="hn-shortcuts" id="shortcuts-bar">
         <span class="hn-shortcuts-label">Đến giờ:</span>
         <?php foreach ($gioList as $gio):
             $gLbl = ($gio === 0 ? '24' : $gio) . 'h';
             $hasFilled = isset($dataByGio[$gio]);
         ?>
-        <button type="button"
-                class="hn-shortcut-btn <?= $hasFilled ? 'filled' : '' ?>"
-                onclick="jumpToGio(<?= $gio ?>)"
-                id="sc-<?= $gio ?>">
-            <?= $gLbl ?>
-        </button>
+        <button type="button" class="hn-shortcut-btn <?= $hasFilled ? 'filled' : '' ?>" onclick="jumpToGio(<?= $gio ?>)" id="sc-<?= $gio ?>"><?= $gLbl ?></button>
         <?php endforeach; ?>
-        <button type="button"
-                class="hn-shortcut-btn"
-                style="margin-left:auto;background:#f8fafc;color:#3b82f6;border-color:#3b82f6;"
-                onclick="jumpToJar()">🧪 Jar test</button>
+        <button type="button" class="hn-shortcut-btn" style="margin-left:auto;background:#f8fafc;color:#3b82f6;border-color:#3b82f6;" onclick="jumpToJar()">🧪 Jar test</button>
     </div>
 
     <div class="hn-ca-header">
@@ -228,6 +220,9 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
                     <th class="g5" rowspan="3">Clor dư<br>TB/PS<br><small>0.2–1.0<br>mg/L</small></th>
                     <th class="g6" colspan="4">Clo / PAC châm</th>
                     <th class="g7" colspan="2">Độ màu<br><small>Pt-Co</small></th>
+                    <th class="g2" colspan="2">Độ kiềm<br><small>CaCO3</small></th>
+                    <th class="g2" colspan="2">Độ cứng<br><small>CaCO3 &lt;300</small></th>
+                    <th class="g2" colspan="2">Clorua<br><small>mg/L &lt;250</small></th>
                     <th class="g8" colspan="2">Nước ngoài hồ</th>
                     <th class="g9" colspan="6">Mương / Bể — Clor dư Residual Cl</th>
                     <th class="g0" rowspan="3">PAC Pha<br>Tỷ trọng</th>
@@ -238,7 +233,7 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
                     <th class="g2" rowspan="2">pH</th>
                     <th class="g2" rowspan="2">NTU</th>
                     <th class="g3" rowspan="2">pH</th>
-                    <th class="g3" rowspan="2">NTU<br><small>&lt;0.5</small></th>
+                    <th class="g3" rowspan="2">NTU<br><small>&lt;5</small></th>
                     <th class="g4" rowspan="2">pH</th>
                     <th class="g4" rowspan="2">NTU<br><small>&lt;5</small></th>
                     <th class="g6" rowspan="2">NC<br>nồng độ<br>clo (ppm)</th>
@@ -247,6 +242,12 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
                     <th class="g6" rowspan="2">PAC châm<br>(mg/L)</th>
                     <th class="g7" rowspan="2">NT RW</th>
                     <th class="g7" rowspan="2">NS<br><small>&lt;15</small></th>
+                    <th class="g2" rowspan="2">NS</th>
+                    <th class="g2" rowspan="2">NT</th>
+                    <th class="g2" rowspan="2">NS<br><small>&lt;300</small></th>
+                    <th class="g2" rowspan="2">NT</th>
+                    <th class="g2" rowspan="2">NS<br><small>&lt;250</small></th>
+                    <th class="g2" rowspan="2">NT</th>
                     <th class="g8" rowspan="2">pH</th>
                     <th class="g8" rowspan="2">NTU</th>
                     <th class="g9" rowspan="2">Mương PƯ<br>(Thu hồi)</th>
@@ -263,7 +264,7 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
                 $rec  = isset($dataByGio[$gio]) ? $dataByGio[$gio] : null;
                 $gLbl = ($gio === 0 ? '24' : $gio) . 'h';
             ?>
-            <tr>
+            <tr id="row-<?= $gio ?>">
                 <td class="gio-cell"><?= $gLbl ?></td>
                 <?php foreach ($allFields as $f):
                     $v   = ($rec !== null && $rec->$f !== null) ? $rec->$f : null;
@@ -274,13 +275,7 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
                     }
                 ?>
                 <td>
-                    <input type="number"
-                           name="rows[<?= $gio ?>][<?= $f ?>]"
-                           value="<?= $v !== null ? Html::encode($v) : '' ?>"
-                           step="<?= isset($steps[$f]) ? $steps[$f] : '0.01' ?>"
-                           inputmode="decimal"
-                           <?= $cls ? 'class="' . $cls . '"' : '' ?>
-                           onchange="checkVal(this,'<?= $f ?>')" />
+                    <input type="number" name="rows[<?= $gio ?>][<?= $f ?>]" value="<?= $v !== null ? Html::encode($v) : '' ?>" step="<?= isset($steps[$f]) ? $steps[$f] : '0.01' ?>" inputmode="decimal" <?= $cls ? 'class="' . $cls . '"' : '' ?> onchange="checkVal(this,'<?= $f ?>')" />
                 </td>
                 <?php endforeach; ?>
             </tr>
@@ -295,92 +290,120 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
         </table>
         </div>
 
-        <!-- JAR TEST -->
-        <div class="jar-card">
-            <div class="jar-title">
-                🧪 Jar Test PAC —
-                Giờ: <input type="time" name="jar_gio" value="<?= Html::encode($jGio) ?>"
-                            style="border:1px solid #e2e8f0;border-radius:5px;padding:3px 7px;font-size:.82rem;" />
-            </div>
-            <div style="overflow-x:auto;">
-            <table class="jar-tbl">
-                <thead>
-                    <tr>
-                        <th class="rl"></th>
-                        <?php for ($i = 1; $i <= 6; $i++): ?><th><?= $i ?></th><?php endfor; ?>
-                        <th style="background:#eff6ff;color:#1e40af;min-width:90px;">Liều chọn</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <?php
-                $jarDef = [
-                    ['pac','PAC (mg/L)','0.1',$jPac],
-                    ['ntu','Độ đục (NTU)','0.001',$jNtu],
-                    ['ph','pH','0.01',$jPh],
-                ];
-                foreach ($jarDef as $jd):
-                    list($jkey,$jlabel,$jstep,$jarArr) = $jd;
-                ?>
-                <tr>
-                    <td class="rl"><?= $jlabel ?></td>
-                    <?php for ($i = 0; $i < 6; $i++):
-                        $isMin = ($jkey === 'ntu' && $i === $jMin && $jMin >= 0);
+        <div class="cl-calc-grid">
+            <div class="jar-card" style="margin-bottom:0;">
+                <div class="jar-title">🧪 Jar Test PAC — Giờ: <input type="time" name="jar_gio" value="<?= Html::encode($jGio) ?>" style="border:1px solid #e2e8f0;border-radius:5px;padding:3px 7px;font-size:.82rem;" /></div>
+                <div style="overflow-x:auto;">
+                <table class="jar-tbl">
+                    <thead>
+                        <tr>
+                            <th class="rl"></th>
+                            <?php for ($i = 1; $i <= 6; $i++): ?><th><?= $i ?></th><?php endfor; ?>
+                            <th style="background:#eff6ff;color:#1e40af;min-width:90px;">Liều chọn</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php
+                    $jarDef = [
+                        ['pac','PAC (mg/L)','0.1',$jPac],
+                        ['ntu','Độ đục (NTU)','0.001',$jNtu],
+                        ['ph','pH','0.01',$jPh],
+                    ];
+                    foreach ($jarDef as $jd):
+                        list($jkey,$jlabel,$jstep,$jarArr) = $jd;
                     ?>
-                    <td class="<?= $isMin ? 'jar-active' : '' ?>" id="jc-<?= $i ?>-<?= $jkey ?>">
-                        <input type="number" step="<?= $jstep ?>"
-                               name="jar_<?= $jkey ?>[<?= $i ?>]"
-                               value="<?= (isset($jarArr[$i]) && $jarArr[$i] !== null) ? Html::encode($jarArr[$i]) : '' ?>"
-                               inputmode="decimal" onchange="pickJar()" />
-                    </td>
-                    <?php endfor; ?>
-                    <td style="background:#eff6ff;">
-                        <?php if ($jkey === 'pac'): ?>
-                        <input type="number" step="0.1" name="jar_lieu_chon" id="jar-lieu-chon"
-                               value="<?= $jChon !== null ? Html::encode($jChon) : '' ?>"
-                               style="width:60px;padding:3px 5px;border:1.5px solid #3b82f6;border-radius:5px;font-weight:700;color:#3b82f6;"
-                               inputmode="decimal" /> mg/L
-                        <?php else: ?>
-                        <span id="jar-prev-<?= $jkey ?>">—</span>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-                </tbody>
-            </table>
+                    <tr>
+                        <td class="rl"><?= $jlabel ?></td>
+                        <?php for ($i = 0; $i < 6; $i++):
+                            $isMin = ($jkey === 'ntu' && $i === $jMin && $jMin >= 0);
+                        ?>
+                        <td class="<?= $isMin ? 'jar-active' : '' ?>" id="jc-<?= $i ?>-<?= $jkey ?>">
+                            <input type="number" step="<?= $jstep ?>" name="jar_<?= $jkey ?>[<?= $i ?>]" value="<?= (isset($jarArr[$i]) && $jarArr[$i] !== null) ? Html::encode($jarArr[$i]) : '' ?>" inputmode="decimal" onchange="pickJar()" />
+                        </td>
+                        <?php endfor; ?>
+                        <td style="background:#eff6ff;">
+                            <?php if ($jkey === 'pac'): ?>
+                            <input type="number" step="0.1" name="jar_lieu_chon" id="jar-lieu-chon" value="<?= $jChon !== null ? Html::encode($jChon) : '' ?>" style="width:60px;padding:3px 5px;border:1.5px solid #3b82f6;border-radius:5px;font-weight:700;color:#3b82f6;" inputmode="decimal" /> mg/L
+                            <?php else: ?>
+                            <span id="jar-prev-<?= $jkey ?>">—</span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+
+            <div class="jar-card" style="margin-bottom:0; background:#fff;">
+                <div class="jar-title" style="color:#047857;">📈 Bảng Tính Toán Nồng Độ Clo (mg/L)</div>
+                <table class="cl-calc-table">
+                    <tr>
+                        <td>Lượng clo mất đi ban đầu</td>
+                        <td><input type="number" step="0.01" name="clo_mat_ban_dau" id="clo_mat_ban_dau" value="<?= Html::encode($valMatBanDau) ?>" oninput="runCloCalculation()" /></td>
+                        <td rowspan="2" style="background:#eff6ff; font-weight:600; text-align:center; vertical-align:middle; color:#1e3a5f; width:70px;">SẠCH</td>
+                    </tr>
+                    <tr>
+                        <td>Lượng clo mất trong bể</td>
+                        <td><input type="number" step="0.01" name="clo_mat_trong_be" id="clo_mat_trong_be" value="<?= Html::encode($valMatTrongBe) ?>" oninput="runCloCalculation()" /></td>
+                    </tr>
+                    <tr style="border-top:2px solid #cbd5e1;">
+                        <td>Khối lượng Châm (kg/h)</td>
+                        <td><input type="number" step="0.1" name="clo_khoi_luong_cham" id="clo_khoi_luong_cham" value="<?= Html::encode($valKhoiLuong) ?>" oninput="runCloCalculation()" /></td>
+                        <td rowspan="4" style="background:#f0fdf4; font-weight:600; text-align:center; vertical-align:middle; color:#166534;">THÔ</td>
+                    </tr>
+                    <tr>
+                        <td>LL Nước Thô (m³/h)</td>
+                        <td><input type="number" step="1" name="clo_ll_nuoc_tho" id="clo_ll_nuoc_tho" value="<?= Html::encode($valLlNuocTho) ?>" oninput="runCloCalculation()" /></td>
+                    </tr>
+                    <tr style="background:#fef9c3;">
+                        <td>Lượng Clo dư bình quân (Đo được)</td>
+                        <td id="calc-clo-du-bq" style="font-weight:700; text-align:center; color:#b45309;">0.00</td>
+                    </tr>
+                    <tr style="background:#ecfdf5;">
+                        <td style="font-weight:600; color:#065f46;">Nước thô Nồng độ clo</td>
+                        <td id="out-clo-nuoc-tho" class="cl-calc-output">0.00</td>
+                    </tr>
+                    <tr style="background:#eff6ff;">
+                        <td style="font-weight:600; color:#1e40af;">Nồng độ clo châm nước cấp</td>
+                        <td id="out-clo-cham-nc" class="cl-calc-output" style="border:2px solid #3b82f6;">0.00</td>
+                    </tr>
+                </table>
             </div>
         </div>
 
-        <!-- NGƯỜI TRỰC / KIỂM TRA -->
-        <div class="nguoi-card">
+        <div class="nguoi-card" style="margin-top:16px;">
             <div style="font-size:.85rem;font-weight:700;color:#334155;margin-bottom:10px;">👤 Người thực hiện</div>
             <div class="ng-grid">
                 <div class="nk-field">
                     <label>Người trực ca <?= $ca == 1 ? 'sáng' : 'đêm' ?></label>
-                    <input type="text" name="nguoi_truc"
-                           value="<?= Html::encode($nguoiTruc) ?>" placeholder="Họ và tên..." />
+                    <input type="text" name="nguoi_truc" value="<?= Html::encode($nguoiTruc) ?>" placeholder="Họ và tên..." />
                 </div>
                 <div class="nk-field">
                     <label>Người kiểm tra (Checked by)</label>
-                    <input type="text" name="nguoi_kt"
-                           value="<?= Html::encode($nguoiKt) ?>" placeholder="Họ và tên..." />
+                    <input type="text" name="nguoi_kt" value="<?= Html::encode($nguoiKt) ?>" placeholder="Họ và tên..." />
                 </div>
             </div>
         </div>
 
-        <button type="submit" class="btn-save">💾 Lưu nhật ký phân tích</button>
+        <button type="submit" class="btn-save">💾 Lưu nhật ký phân tích & Bảng tính Clo</button>
     </form>
 </div>
 
 <script>
 var QCVN_JS = {
     ns_ph:{min:6.5,max:8.5},ns_ntu:{min:0,max:0.4},
-    nl1_ntu:{min:0,max:0.5},nl2_ntu:{min:0,max:5.0},
-    clo_du:{min:0.2,max:1.0},ns_do_mau:{min:0,max:15.0}
+    nl1_ntu:{min:0,max:5.0},nl2_ntu:{min:0,max:5.0}, // Sửa thành 5.0
+    clo_du:{min:0.2,max:1.0},ns_do_mau:{min:0,max:15.0},
+    ns_do_cung:{min:0,max:300.0}, ns_clorua:{min:0,max:250.0}
 };
 var GIO_LIST  = <?= json_encode($gioList) ?>;
 var BQ_FIELDS = ['ns_ph','ns_ntu','nt_ph','nt_ntu','nl1_ph','nl1_ntu','nl2_ph','nl2_ntu',
                  'clo_du','ns_clo_nong_do','nt_clo_nong_do','nc_clo_cham','pac_cham',
-                 'nt_do_mau','ns_do_mau'];
+                 'nt_do_mau','ns_do_mau',
+                 'ns_do_kiem','nt_do_kiem','ns_do_cung','nt_do_cung','ns_clorua','nt_clorua',
+                 'ngoai_ho_ph','ngoai_ho_ntu','muong_pu_thu_hoi','muong_lang_nl1',
+                 'muong_pu_ns','dau_be_ns','ho_xi_phong_1_ntu','ho_xi_phong_2_ntu'];
 
 function checkVal(inp, field) {
     inp.classList.remove('bad','warn');
@@ -392,6 +415,7 @@ function checkVal(inp, field) {
         if (r > 0 && (v < q.min + r*0.05 || v > q.max - r*0.05)) inp.classList.add('warn');
     }
     calcBQ();
+    runCloCalculation(); // Tính lại Clo khi có giờ thay đổi
 }
 
 function calcBQ() {
@@ -407,8 +431,33 @@ function calcBQ() {
     }
 }
 
-var _jarLieuUserEdited = false;
+// HÀM TÍNH TOÁN CLO TỰ ĐỘNG THEO ẢNH MẪU
+function runCloCalculation() {
+    var matBanDau   = parseFloat(document.getElementById('clo_mat_ban_dau').value) || 0;
+    var matTrongBe  = parseFloat(document.getElementById('clo_mat_trong_be').value) || 0;
+    var khoiLuong   = parseFloat(document.getElementById('clo_khoi_luong_cham').value) || 0;
+    var llNuocTho   = parseFloat(document.getElementById('clo_ll_nuoc_tho').value) || 0;
+    
+    // Lấy Clo dư BQ hiện tại trên lưới giao diện
+    var cloDuBqEl = document.getElementById('bq-clo_du');
+    var cloDuBq   = cloDuBqEl ? parseFloat(cloDuBqEl.textContent) : 0;
+    if (isNaN(cloDuBq)) cloDuBq = 0;
+    
+    document.getElementById('calc-clo-du-bq').textContent = cloDuBq.toFixed(2);
 
+    // 1. Nước thô Nồng độ clo = (Khối lượng châm / LL Nước thô) * 1000
+    var cloNuocTho = 0;
+    if (llNuocTho > 0) {
+        cloNuocTho = (khoiLuong / llNuocTho) * 1000;
+    }
+    document.getElementById('out-clo-nuoc-tho').textContent = cloNuocTho.toFixed(2);
+
+    // 2. Nồng độ clo châm nước cấp = Clo dư bình quân + mất ban đầu + mất trong bể
+    var cloChamNc = cloDuBq + matBanDau + matTrongBe;
+    document.getElementById('out-clo-cham-nc').textContent = cloChamNc.toFixed(2);
+}
+
+var _jarLieuUserEdited = false;
 function pickJar() {
     var minNtu = Infinity, minIdx = -1;
     for (var i = 0; i < 6; i++) {
@@ -427,7 +476,6 @@ function pickJar() {
     if (minIdx >= 0) {
         var pac = document.querySelector('input[name="jar_pac['+minIdx+']"]');
         var chon = document.getElementById('jar-lieu-chon');
-        // Chỉ auto-fill nếu user chưa tự nhập
         if (pac && pac.value && chon && !_jarLieuUserEdited) chon.value = pac.value;
         var pvNtu = document.getElementById('jar-prev-ntu');
         var pvPh  = document.getElementById('jar-prev-ph');
@@ -439,28 +487,22 @@ function pickJar() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Nếu ô lieu_chon đã có giá trị từ DB → giữ nguyên, không để pickJar() override
-    var chonInp = document.getElementById('jar-lieu-chon');
-    if (chonInp && chonInp.value !== '') _jarLieuUserEdited = true;
-
     pickJar();
     calcBQ();
+    runCloCalculation();
 
-    // Nếu user tự sửa liều chọn thì không auto-override nữa
+    var chonInp = document.getElementById('jar-lieu-chon');
     if (chonInp) {
         chonInp.addEventListener('input', function() { _jarLieuUserEdited = true; });
-        // Reset flag khi user xóa trắng ô (cho phép auto lại)
         chonInp.addEventListener('change', function() {
             if (this.value === '') _jarLieuUserEdited = false;
         });
     }
 
-    // Highlight nút giờ hiện tại
     var nowH = new Date().getHours();
     var curBtn = document.getElementById('sc-' + nowH);
     if (curBtn) curBtn.classList.add('current');
 
-    // Cập nhật filled state khi user nhập liệu
     document.querySelectorAll('.hn-tbl input[type=number]').forEach(function(inp) {
         inp.addEventListener('change', function() {
             var match = this.name.match(/rows\[(\d+)\]/);
@@ -468,7 +510,6 @@ document.addEventListener('DOMContentLoaded', function() {
             var gio = parseInt(match[1]);
             var btn = document.getElementById('sc-' + gio);
             if (!btn) return;
-            // Kiểm tra row đó có giá trị nào không
             var row = document.querySelectorAll('input[name^="rows['+gio+']"]');
             var hasVal = false;
             row.forEach(function(r) { if (r.value !== '') hasVal = true; });
@@ -482,17 +523,12 @@ function jumpToGio(gio) {
     var row = document.getElementById('row-' + gio);
     if (!row) return;
     row.scrollIntoView({behavior:'smooth', block:'center'});
-    // Focus ô đầu tiên của hàng đó
     var firstInp = row.querySelector('input[type=number]');
-    if (firstInp) {
-        setTimeout(function() { firstInp.focus(); }, 400);
-    }
-    // Highlight tạm thời
+    if (firstInp) { setTimeout(function() { firstInp.focus(); }, 400); }
     row.style.transition = 'background .2s';
     row.style.background = '#eff6ff';
     setTimeout(function() { row.style.background = ''; }, 1500);
 }
-
 function jumpToJar() {
     var jarCard = document.querySelector('.jar-card');
     if (jarCard) jarCard.scrollIntoView({behavior:'smooth', block:'start'});

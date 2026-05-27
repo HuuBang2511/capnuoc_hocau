@@ -57,6 +57,7 @@ class NhatKyController extends QuanlyBaseController
             $clo_mat_trong_be     = (isset($post['clo_mat_trong_be']) && $post['clo_mat_trong_be'] !== '') ? (float)$post['clo_mat_trong_be'] : null;
             $clo_khoi_luong_cham  = (isset($post['clo_khoi_luong_cham']) && $post['clo_khoi_luong_cham'] !== '') ? (float)$post['clo_khoi_luong_cham'] : null;
             $clo_ll_nuoc_tho      = (isset($post['clo_ll_nuoc_tho']) && $post['clo_ll_nuoc_tho'] !== '') ? (float)$post['clo_ll_nuoc_tho'] : null;
+            $clo_du_bq_nhap       = (isset($post['clo_du_bq_nhap']) && $post['clo_du_bq_nhap'] !== '') ? (float)$post['clo_du_bq_nhap'] : null;
 
             $saved = 0;
             foreach ($gioList as $gio) {
@@ -86,6 +87,7 @@ class NhatKyController extends QuanlyBaseController
                 $model->clo_mat_trong_be     = $clo_mat_trong_be;
                 $model->clo_khoi_luong_cham  = $clo_khoi_luong_cham;
                 $model->clo_ll_nuoc_tho      = $clo_ll_nuoc_tho;
+                $model->clo_du_bq_nhap       = $clo_du_bq_nhap;
 
                 $model->save();
                 $saved++;

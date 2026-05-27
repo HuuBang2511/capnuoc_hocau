@@ -81,6 +81,7 @@ $valMatBanDau    = ($model && $model->clo_mat_ban_dau !== null) ? $model->clo_ma
 $valMatTrongBe   = ($model && $model->clo_mat_trong_be !== null) ? $model->clo_mat_trong_be : 0.1;
 $valKhoiLuong    = ($model && $model->clo_khoi_luong_cham !== null) ? $model->clo_khoi_luong_cham : 3.0;
 $valLlNuocTho    = ($model && $model->clo_ll_nuoc_tho !== null) ? $model->clo_ll_nuoc_tho : 4500.0;
+$valCloDuBqNhap  = ($model && $model->clo_du_bq_nhap !== null) ? $model->clo_du_bq_nhap : null;
 
 $nguoiTruc = ($model && $model->nguoi_truc) ? $model->nguoi_truc : '';
 $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
@@ -360,7 +361,7 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
                     <tr style="border-top:2px solid #cbd5e1;">
                         <td>Khối lượng Châm (kg/h)</td>
                         <td><input type="number" step="0.1" name="clo_khoi_luong_cham" id="clo_khoi_luong_cham" value="<?= Html::encode($valKhoiLuong) ?>" oninput="runCloCalculation()" /></td>
-                        <td rowspan="4" style="background:#f0fdf4; font-weight:600; text-align:center; vertical-align:middle; color:#166534;">THÔ</td>
+                        <td rowspan="5" style="background:#f0fdf4; font-weight:600; text-align:center; vertical-align:middle; color:#166534;">THÔ</td>
                     </tr>
                     <tr>
                         <td>LL Nước Thô (m³/h)</td>
@@ -368,7 +369,7 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
                     </tr>
                     <tr style="background:#fef9c3;">
                         <td>Lượng Clo dư bình quân (Đo được)</td>
-                        <td id="calc-clo-du-bq" style="font-weight:700; text-align:center; color:#b45309;">0.00</td>
+                        <td><input type="number" step="0.01" name="clo_du_bq_nhap" id="inp-clo-du-bq" value="<?= $valCloDuBqNhap !== null ? Html::encode($valCloDuBqNhap) : '' ?>" inputmode="decimal" oninput="runCloCalculation()" style="width:80px;padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;text-align:center;font-weight:600;" /></td>
                     </tr>
                     <tr style="background:#ecfdf5;">
                         <td style="font-weight:600; color:#065f46;">Nước thô Nồng độ clo</td>
@@ -448,12 +449,9 @@ function runCloCalculation() {
     var khoiLuong   = parseFloat(document.getElementById('clo_khoi_luong_cham').value) || 0;
     var llNuocTho   = parseFloat(document.getElementById('clo_ll_nuoc_tho').value) || 0;
     
-    // Lấy Clo dư BQ hiện tại trên lưới giao diện
-    var cloDuBqEl = document.getElementById('bq-clo_du');
-    var cloDuBq   = cloDuBqEl ? parseFloat(cloDuBqEl.textContent) : 0;
-    if (isNaN(cloDuBq)) cloDuBq = 0;
-    
-    document.getElementById('calc-clo-du-bq').textContent = cloDuBq.toFixed(2);
+    // Lấy Clo dư BQ từ input nhập tay
+    var cloDuBqInp = document.getElementById('inp-clo-du-bq');
+    var cloDuBq    = cloDuBqInp ? (parseFloat(cloDuBqInp.value) || 0) : 0;
 
     // 1. Nước thô Nồng độ clo = (Khối lượng châm / LL Nước thô) * 1000
     var cloNuocTho = 0;

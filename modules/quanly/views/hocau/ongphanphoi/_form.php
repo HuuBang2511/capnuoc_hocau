@@ -147,7 +147,7 @@ $geojson_data = !empty($model->geojson) ? Json::encode($model->geojson) : 'null'
                                         ],
                                         'pluginOptions' => [
                                             'initialPreviewAsData' => true,
-                                            'allowedFileExtensions' => ['png', 'jpg', 'jpeg', 'docx', 'pdf', 'xlsx'],
+                                            'allowedFileExtensions' => ['png', 'jpg', 'jpeg', 'doc', 'docx', 'xls', 'xlsx', 'pdf', 'zip', 'rar', '7z', 'dwg'],
                                             'showPreview' => true,
                                             'showCaption' => true,
                                             'showRemove' => true,
@@ -168,7 +168,7 @@ $geojson_data = !empty($model->geojson) ? Json::encode($model->geojson) : 'null'
                                             'initialPreview' => $file,
                                             'initialPreviewAsData' => true,
                                             'initialPreviewFileType' => 'pdf',
-                                            'allowedFileExtensions' => ['png', 'jpg', 'jpeg', 'docx', 'pdf', 'xlsx'],
+                                            'allowedFileExtensions' => ['png', 'jpg', 'jpeg', 'doc', 'docx', 'xls', 'xlsx', 'pdf', 'zip', 'rar', '7z', 'dwg'],
                                             'showPreview' => true,
                                             'showCaption' => true,
                                             'showRemove' => true,
@@ -185,7 +185,7 @@ $geojson_data = !empty($model->geojson) ? Json::encode($model->geojson) : 'null'
                                         ],
                                         'pluginOptions' => [
                                             'initialPreviewAsData' => true,
-                                            'allowedFileExtensions' =>['png', 'jpg', 'jpeg', 'docx', 'pdf', 'xlsx'],
+                                            'allowedFileExtensions' => ['png', 'jpg', 'jpeg', 'doc', 'docx', 'xls', 'xlsx', 'pdf', 'zip', 'rar', '7z', 'dwg'],
                                             'showPreview' => true,
                                             'showCaption' => true,
                                             'showRemove' => true,

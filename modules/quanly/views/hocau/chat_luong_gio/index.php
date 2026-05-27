@@ -352,32 +352,32 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
                     <tr>
                         <td>Lượng clo mất đi ban đầu</td>
                         <td><input type="number" step="0.01" name="clo_mat_ban_dau" id="clo_mat_ban_dau" value="<?= Html::encode($valMatBanDau) ?>" oninput="runCloCalculation()" /></td>
-                        <td rowspan="2" style="background:#eff6ff; font-weight:600; text-align:center; vertical-align:middle; color:#1e3a5f; width:70px;">SẠCH</td>
+                        <td rowspan="4" style="background:#eff6ff; font-weight:600; text-align:center; vertical-align:middle; color:#1e3a5f; width:70px;">SẠCH</td>
                     </tr>
                     <tr>
                         <td>Lượng clo mất trong bể</td>
                         <td><input type="number" step="0.01" name="clo_mat_trong_be" id="clo_mat_trong_be" value="<?= Html::encode($valMatTrongBe) ?>" oninput="runCloCalculation()" /></td>
                     </tr>
+                    <tr style="background:#fef9c3;">
+                        <td>Lượng Clo dư bình quân (Đo được)</td>
+                        <td><input type="number" step="0.01" name="clo_du_bq_nhap" id="inp-clo-du-bq" value="<?= $valCloDuBqNhap !== null ? Html::encode($valCloDuBqNhap) : '' ?>" inputmode="decimal" oninput="runCloCalculation()" style="width:80px;padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;text-align:center;font-weight:600;" /></td>
+                    </tr>
+                    <tr style="background:#eff6ff;">
+                        <td style="font-weight:600; color:#1e40af;">Nồng độ clo châm nước cấp</td>
+                        <td id="out-clo-cham-nc" class="cl-calc-output" style="border:2px solid #3b82f6;">0.00</td>
+                    </tr>
                     <tr style="border-top:2px solid #cbd5e1;">
                         <td>Khối lượng Châm (kg/h)</td>
                         <td><input type="number" step="0.1" name="clo_khoi_luong_cham" id="clo_khoi_luong_cham" value="<?= Html::encode($valKhoiLuong) ?>" oninput="runCloCalculation()" /></td>
-                        <td rowspan="5" style="background:#f0fdf4; font-weight:600; text-align:center; vertical-align:middle; color:#166534;">THÔ</td>
+                        <td rowspan="3" style="background:#f0fdf4; font-weight:600; text-align:center; vertical-align:middle; color:#166534;">THÔ</td>
                     </tr>
                     <tr>
                         <td>LL Nước Thô (m³/h)</td>
                         <td><input type="number" step="1" name="clo_ll_nuoc_tho" id="clo_ll_nuoc_tho" value="<?= Html::encode($valLlNuocTho) ?>" oninput="runCloCalculation()" /></td>
                     </tr>
-                    <tr style="background:#fef9c3;">
-                        <td>Lượng Clo dư bình quân (Đo được)</td>
-                        <td><input type="number" step="0.01" name="clo_du_bq_nhap" id="inp-clo-du-bq" value="<?= $valCloDuBqNhap !== null ? Html::encode($valCloDuBqNhap) : '' ?>" inputmode="decimal" oninput="runCloCalculation()" style="width:80px;padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;text-align:center;font-weight:600;" /></td>
-                    </tr>
                     <tr style="background:#ecfdf5;">
                         <td style="font-weight:600; color:#065f46;">Nước thô Nồng độ clo</td>
                         <td id="out-clo-nuoc-tho" class="cl-calc-output">0.00</td>
-                    </tr>
-                    <tr style="background:#eff6ff;">
-                        <td style="font-weight:600; color:#1e40af;">Nồng độ clo châm nước cấp</td>
-                        <td id="out-clo-cham-nc" class="cl-calc-output" style="border:2px solid #3b82f6;">0.00</td>
                     </tr>
                 </table>
             </div>

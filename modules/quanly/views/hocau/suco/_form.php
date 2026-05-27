@@ -148,7 +148,6 @@ $this->params['breadcrumbs'][] = $this->title;
                                     'options'=>['multiple'=>true],
                                     'pluginOptions' => [
                                         'initialPreviewAsData' => true,
-                                        'allowedFileExtensions' => ['png', 'jpg', 'jpeg', 'doc', 'docx', 'xls', 'xlsx', 'pdf', 'zip', 'rar', '7z', 'dwg'],
                                         'showPreview' => true,
                                         'showCaption' => true,
                                         'showRemove' => true,
@@ -167,7 +166,6 @@ $this->params['breadcrumbs'][] = $this->title;
                                             'initialPreview' => $file,
                                             'initialPreviewAsData' => true,
                                             'initialPreviewFileType' => 'pdf', // Thay đổi linh hoạt nếu cần thiết
-                                            'allowedFileExtensions' => ['png', 'jpg', 'jpeg', 'doc', 'docx', 'xls', 'xlsx', 'pdf', 'zip', 'rar', '7z', 'dwg'],
                                             'showPreview' => true,
                                             'showCaption' => true,
                                             'showRemove' => true,
@@ -182,7 +180,6 @@ $this->params['breadcrumbs'][] = $this->title;
                                         'options'=>['multiple'=>true],
                                         'pluginOptions' => [
                                             'initialPreviewAsData' => true,
-                                            'allowedFileExtensions' => ['png', 'jpg', 'jpeg', 'doc', 'docx', 'xls', 'xlsx', 'pdf', 'zip', 'rar', '7z', 'dwg'],
                                             'showPreview' => true,
                                             'showCaption' => true,
                                             'showRemove' => true,

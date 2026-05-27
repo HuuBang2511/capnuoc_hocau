@@ -38,16 +38,24 @@ $this->params['breadcrumbs'][] = $this->title;
 <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
 
 <?php 
+    $file = [];
+    $fileConfig = [];
     if($model->file_dinhkem != null){
-        $file = [];
-        $model->file_dinhkem = json_decode($model->file_dinhkem, true);
-
-        foreach($model->file_dinhkem as $i => $item){
-            $file[] = Url::to(['/quanly/hocau/dongho-tong/download-file', 'path' => $item]);
+        // Xử lý an toàn: phòng trường hợp file_dinhkem đã bị decode thành array từ trước
+        $file_arr = is_string($model->file_dinhkem) ? json_decode($model->file_dinhkem, true) : $model->file_dinhkem;
+        if(is_array($file_arr)){
+            foreach($file_arr as $i => $item){
+                $file[] = Url::to(['/quanly/hocau/' . Yii::$app->controller->id . '/download-file', 'path' => $item]);
+                
+                // Cấu hình URL gọi AJAX để xóa file
+                $fileConfig[] = [
+                    'caption' => basename($item),
+                    'url' => Url::to(['/quanly/hocau/' . Yii::$app->controller->id . '/delete-file', 'id' => $model->id]),
+                    'key' => $item,
+                ];
+            }
         }
     }
-
-    
 ?>
 
 <?php $form = ActiveForm::begin([
@@ -162,7 +170,8 @@ $this->params['breadcrumbs'][] = $this->title;
                                         'multiple'=>true
                                     ],
                                     'pluginOptions' => [
-                                        'overwriteInitial' => true,
+                                        'overwriteInitial' => false,
+                                        'initialPreviewConfig' => $fileConfig,
                                         'initialPreview' => $file,
                                         'initialPreviewAsData' => true,
                                         'initialPreviewFileType' => 'pdf',

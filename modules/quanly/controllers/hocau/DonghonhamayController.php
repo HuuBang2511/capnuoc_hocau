@@ -198,4 +198,36 @@ class DonghonhamayController extends QuanlyBaseController
         }
         throw new NotFoundHttpException('The requested page does not exist.');
     }
+
+    public function actionDeleteFile($id)
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        $path = Yii::$app->request->post('key');
+        $model = $this->findModel($id);
+        
+        if ($model->file_dinhkem != null) {
+            $files = json_decode($model->file_dinhkem, true);
+            if (is_array($files)) {
+                // Lọc bỏ file đã bị bấm X khỏi mảng
+                $files = array_filter($files, function($v) use ($path) {
+                    return $v !== $path;
+                });
+                
+                // Lưu lại mảng mới vào DB (bypass validation để chạy nhanh)
+                $model->file_dinhkem = json_encode(array_values($files));
+                $model->save(false);
+                
+                // Xóa file vật lý trên NAS
+                $cleanPath = str_replace(['..\\', '../', '..'], '', $path);
+                $fullPath  = $this->nasBasePath . str_replace('/', '\\', $cleanPath);
+                if (file_exists($fullPath)) {
+                    @unlink($fullPath);
+                }
+                
+                // Trả về JSON rỗng theo đúng chuẩn của Kartik FileInput để nó xóa hình trên UI
+                return []; 
+            }
+        }
+        return ['error' => 'Lỗi xóa file'];
+    }
 }

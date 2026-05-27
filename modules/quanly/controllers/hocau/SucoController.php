@@ -73,6 +73,12 @@ class SucoController extends QuanlyBaseController
 
             if($filedinhkem->fileupload != null){
                 $file = [];
+                if ($model->file_dinhkem != null) {
+                    $existingFiles = json_decode($model->file_dinhkem, true);
+                    if (is_array($existingFiles)) {
+                        $file = $existingFiles;
+                    }
+                }
                 // Thư mục lưu tương đối trong DB
                 $relativePath = 'uploads/suco/' . $model->id . '/';
                 // Thư mục vật lý trên NAS

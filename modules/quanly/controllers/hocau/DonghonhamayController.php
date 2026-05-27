@@ -67,6 +67,12 @@ class DonghonhamayController extends QuanlyBaseController
 
             if ($filedinhkem->fileupload != null) {
                 $file        = [];
+                if ($model->file_dinhkem != null) {
+                    $existingFiles = json_decode($model->file_dinhkem, true);
+                    if (is_array($existingFiles)) {
+                        $file = $existingFiles;
+                    }
+                }
                 $relative    = 'uploads/donghonhamay/' . $model->id . '/';
                 $physicalDir = $this->nasBasePath . str_replace('/', '\\', $relative);
 

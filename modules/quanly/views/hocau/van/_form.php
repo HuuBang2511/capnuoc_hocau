@@ -45,12 +45,12 @@ $this->params['breadcrumbs'][] = $this->title;
         $file_arr = is_string($model->file_dinhkem) ? json_decode($model->file_dinhkem, true) : $model->file_dinhkem;
         if(is_array($file_arr)){
             foreach($file_arr as $i => $item){
-                $file[] = Url::to(['/quanly/hocau/' . Yii::$app->controller->id . '/download-file', 'path' => $item]);
+                $file[] = Url::to(['download-file', 'path' => $item]);
                 
                 // Cấu hình URL gọi AJAX để xóa file
                 $fileConfig[] = [
                     'caption' => basename($item),
-                    'url' => Url::to(['/quanly/hocau/' . Yii::$app->controller->id . '/delete-file', 'id' => $model->id]),
+                    'url' => Url::to(['delete-file', 'id' => $model->id]),
                     'key' => $item,
                 ];
             }

@@ -76,7 +76,11 @@ if ($model->tinhtrangsuco_id == 3) $statusClass = 'success';
                             ],
                             'n_xuly',
                             'n_hoancong',
-                            'nguyennhan:ntext',
+                            [
+                                'attribute' => 'nguyennhansuco_id',
+                                'label' => 'Nguyên nhân sự cố',
+                                'value' => (isset($model->nguyennhansuco) && $model->nguyennhansuco !== null && isset($model->nguyennhansuco->ten)) ? $model->nguyennhansuco->ten : '',
+                            ],
                             'cachxuly:ntext',
                             'ghichu:ntext',
                         ],

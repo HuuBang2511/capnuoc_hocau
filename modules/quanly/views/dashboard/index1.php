@@ -1528,6 +1528,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    document.getElementById('sl-kpi-row').style.display = 'none';
     loadSLTab('realtime');
 
     setInterval(function() {

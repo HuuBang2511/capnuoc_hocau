@@ -372,7 +372,11 @@ class NhatKyController extends QuanlyBaseController
                         $v = isset($rowData[$cf]) ? $rowData[$cf] : null;
                         $rec->$cf = ($v !== '' && $v !== null) ? (int)$v : null;
                     }
-                    $rec->save();
+                    if (!$rec->save(false)) {
+                        $errTxt = date('Y-m-d H:i:s') . ' | ngay_pt=' . $ngayPt
+                            . ' | errors=' . json_encode($rec->errors, JSON_UNESCAPED_UNICODE) . "\n";
+                        @file_put_contents('C:/xampp/tmp/pt_save_err.txt', $errTxt, FILE_APPEND);
+                    }
                 }
             }
 

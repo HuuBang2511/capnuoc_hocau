@@ -225,6 +225,29 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
     .rt-gear-item:hover { background:#f8fafc; }
     .rt-gear-item input[type=checkbox] { accent-color:#3699ff; cursor:pointer; }
     .rt-field-row.rt-hidden { display:none; }
+    /* custom row: nút xóa */
+    .rt-custom-del {
+        background:none; border:none; color:#f64e60; cursor:pointer;
+        font-size:.7rem; padding:0 0 0 6px; line-height:1; opacity:.6;
+        transition:opacity .15s;
+    }
+    .rt-custom-del:hover { opacity:1; }
+    /* add-form trong gear dropdown */
+    .rt-gear-add-form {
+        padding:8px 12px; border-top:1px solid #f1f5f9; margin-top:4px;
+    }
+    .rt-gear-add-form input {
+        width:100%; border:1px solid #e2e8f0; border-radius:5px;
+        padding:4px 7px; font-size:.72rem; color:#334155; margin-bottom:5px;
+        outline:none; box-sizing:border-box;
+    }
+    .rt-gear-add-form input:focus { border-color:#3699ff; }
+    .rt-gear-add-btn {
+        width:100%; background:#3699ff; color:#fff; border:none;
+        border-radius:5px; padding:4px 0; font-size:.72rem; font-weight:600;
+        cursor:pointer; transition:background .15s;
+    }
+    .rt-gear-add-btn:hover { background:#2563eb; }
 
     /* ── CỘT MỞ RỘNG BẢNG 24 TRẠM ──────────────────────────────── */
     .rt-table th.col-extra,
@@ -1151,21 +1174,47 @@ document.addEventListener('DOMContentLoaded', function() {
         try { localStorage.setItem(LS_TBL, JSON.stringify(c)); } catch(e) {}
     }
 
+    // ── Custom channels localStorage ─────────────────────────────
+    // Cấu trúc: { tbn: [{id:'Wincc01_Level', label:'Mực Nước Hồ'}, ...], nm: [...], nt5: [...] }
+    var LS_CUSTOM = 'rt_custom_cfg';
+    function loadCustom() {
+        try {
+            var v = JSON.parse(localStorage.getItem(LS_CUSTOM));
+            return (v && typeof v === 'object') ? v : {tbn:[], nm:[], nt5:[]};
+        } catch(e) { return {tbn:[], nm:[], nt5:[]}; }
+    }
+    function saveCustom(c) {
+        try { localStorage.setItem(LS_CUSTOM, JSON.stringify(c)); } catch(e) {}
+    }
+
     function renderRealtime(slData) {
         var trams = (slData && slData.trams) ? slData.trams : [];
-        
-        // Cố tình bỏ phần tính toán và hiển thị cho '#sl-kpi-row'
-        // vì vùng này đã được ẩn bằng hàm switchSLTab() 
 
-        // Fetch 3 trạm từ t_Channel_Configurations qua proxy
-        fetch('/iot_api.php?action=stations&key=' + IOT_KEY)
-            .then(function(r){ return r.json(); })
-            .then(function(stData) {
-                renderRealtimeLayout(trams, stData);
-            })
-            .catch(function() {
-                renderRealtimeLayout(trams, {});
+        // Gom tất cả custom channel IDs từ 3 card
+        var custom = loadCustom();
+        var allCustomIds = [];
+        ['tbn','nm','nt5'].forEach(function(cid) {
+            (custom[cid] || []).forEach(function(item) {
+                if (item.id && allCustomIds.indexOf(item.id) === -1) {
+                    allCustomIds.push(item.id);
+                }
             });
+        });
+
+        // Fetch stations + custom channels song song
+        var fetchStations = fetch('/iot_api.php?action=stations&key=' + IOT_KEY)
+            .then(function(r){ return r.json(); })
+            .catch(function(){ return {}; });
+
+        var fetchChan = allCustomIds.length > 0
+            ? fetch('/iot_api.php?action=channel_value&channels=' + allCustomIds.join(',') + '&key=' + IOT_KEY)
+                .then(function(r){ return r.json(); })
+                .catch(function(){ return {}; })
+            : Promise.resolve({});
+
+        Promise.all([fetchStations, fetchChan]).then(function(results) {
+            renderRealtimeLayout(trams, results[0], results[1] || {});
+        });
 
         // Mỗi card có 1 key trong cfg: { tbn: {ph:1,do_duc:1,luu_luong:1}, nm: {...}, nt5: {...} }
         var CARD_FIELDS = {
@@ -1210,11 +1259,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     f.label +
                 '</label>';
             }).join('');
+            // Custom rows trong dropdown (nút xóa)
+            var customList = (loadCustom()[cardId] || []).map(function(item, idx) {
+                return '<div class="rt-gear-item" style="justify-content:space-between;">' +
+                    '<span style="color:#3699ff;">&#x25C6; ' + item.label + '</span>' +
+                    '<button class="rt-custom-del" data-card="' + cardId + '" data-idx="' + idx + '" title="Xóa">' +
+                        '&#10005;' +
+                    '</button>' +
+                '</div>';
+            }).join('');
+            // Form thêm thông số
+            var addForm =
+                '<div class="rt-gear-add-form">' +
+                    '<input type="text" placeholder="Channel ID (vd: Wincc01_Level)" class="rt-add-chid" data-card="' + cardId + '">' +
+                    '<input type="text" placeholder="Tên hiển thị (vd: Mực Nước Hồ)" class="rt-add-label" data-card="' + cardId + '">' +
+                    '<button class="rt-gear-add-btn" onclick="rtAddCustom(this)" data-card="' + cardId + '">&#43; Thêm thông số</button>' +
+                '</div>';
             return '<div class="rt-gear-wrap">' +
                 '<button class="rt-gear-btn" onclick="rtToggleGear(this)" title="Tùy chỉnh hiển thị">' +
                     '<i class="fa-solid fa-gear"></i>' +
                 '</button>' +
-                '<div class="rt-gear-dropdown">' + items + '</div>' +
+                '<div class="rt-gear-dropdown" style="min-width:220px;">' + items + customList + addForm + '</div>' +
             '</div>';
         }
 
@@ -1231,7 +1296,8 @@ document.addEventListener('DOMContentLoaded', function() {
             '</div>';
         }
 
-        function renderRealtimeLayout(trams, stData) {
+        function renderRealtimeLayout(trams, stData, customData) {
+            customData = customData || {};
             var nm  = stData.nha_may  || {};
             var tbn = stData.tram_bo_nuoc_tho || {};
             var nt5 = stData.nt5      || {};
@@ -1248,6 +1314,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     stationRowCfg('tbn','ph',        'pH',         fmtVal(tbn.ph),        'ph',   '#1bc5bd', tbn.ts) +
                     stationRowCfg('tbn','do_duc',    'Độ Đục',     fmtVal(tbn.do_duc),    'ntu',  '#ffa800', tbn.ts) +
                     stationRowCfg('tbn','luu_luong', 'Lưu Lượng',  fmtVal(tbn.luu_luong), 'm³/h', '#3699ff', tbn.ts) +
+                    buildCustomRows('tbn', customData) +
                 '</div>';
 
             // ── Block Nhà Máy (site 60000) ──
@@ -1264,6 +1331,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     stationRowCfg('nm','ph',        'pH',            fmtVal(nm.ph),        'ph',   '#1bc5bd', nm.ts) +
                     stationRowCfg('nm','clo',       'Clo',           fmtVal(nm.clo),       'ppm',  '#8950fc', nm.ts) +
                     stationRowCfg('nm','muc_be',    'Mức Bể Chứa',   fmtVal(nm.muc_be),    'm',    '#ffa800', nm.ts) +
+                    buildCustomRows('nm', customData) +
                 '</div>';
 
             // ── Block TB TA NT5 ──
@@ -1282,6 +1350,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     stationRowCfg('nt5','tan_so_1',  'Tần Số Bơm 1',    fmtVal(nt5.tan_so_1),  'hz',   '#3699ff', nt5.ts) +
                     stationRowCfg('nt5','tan_so_2',  'Tần Số Bơm 2',    fmtVal(nt5.tan_so_2),  'hz',   '#00d4ff', nt5.ts) +
                     stationRowCfg('nt5','cong_suat', 'Công Suất',        fmtVal(nt5.cong_suat), 'KW',   '#ffa800', nt5.ts) +
+                    buildCustomRows('nt5', customData) +
                 '</div>';
 
             // ── Bảng 24 trạm — ap_luc (sort only), ll_thuan, ll_nghich, ap_truoc, ap_sau ──
@@ -1421,6 +1490,58 @@ document.addEventListener('DOMContentLoaded', function() {
         if (v === null || v === undefined || v === '') return '—';
         return parseFloat(v).toFixed(2);
     }
+
+    // Build custom channel rows cho 1 card
+    function buildCustomRows(cardId, customData) {
+        var items = loadCustom()[cardId] || [];
+        if (!items.length) return '';
+        return items.map(function(item) {
+            var ch = customData[item.id] || {};
+            var val  = (ch.value !== undefined && ch.value !== null) ? parseFloat(ch.value).toFixed(2) : '—';
+            var unit = item.unit || ch.unit || '';
+            var ts   = ch.ts   || '';
+            var tsStr = ts ? ts.substring(5,16) : '';
+            return '<div class="rt-field-row" data-custom-card="' + cardId + '" data-custom-id="' + item.id + '">' +
+                '<span class="rt-field-label" style="color:#3699ff;">' + item.label + '</span>' +
+                '<div style="text-align:right;">' +
+                    '<span class="rt-field-ts">' + tsStr + '</span><br>' +
+                    '<span class="rt-field-val" style="color:#60a5fa;">' + val + ' <small style="font-weight:400;color:#94a3b8;">' + unit + '</small></span>' +
+                '</div>' +
+            '</div>';
+        }).join('');
+    }
+
+    // Thêm custom channel từ form trong gear dropdown
+    window.rtAddCustom = function(btn) {
+        var cardId = btn.dataset.card;
+        var wrap   = btn.closest('.rt-gear-add-form');
+        var chid   = wrap.querySelector('.rt-add-chid').value.trim();
+        var label  = wrap.querySelector('.rt-add-label').value.trim();
+        if (!chid || !label) { alert('Vui lòng nhập Channel ID và Tên hiển thị'); return; }
+        var c = loadCustom();
+        if (!c[cardId]) c[cardId] = [];
+        // Kiểm tra trùng channel ID trong card
+        var dup = false;
+        c[cardId].forEach(function(x){ if (x.id === chid) dup = true; });
+        if (dup) { alert('Channel ID "' + chid + '" đã có trong card này'); return; }
+        c[cardId].push({id: chid, label: label});
+        saveCustom(c);
+        // Reload realtime để hiện thông số mới
+        loadSLTab('realtime');
+    };
+
+    // Xóa custom channel
+    document.addEventListener('click', function(e) {
+        if (!e.target.classList.contains('rt-custom-del')) return;
+        var cardId = e.target.dataset.card;
+        var idx    = parseInt(e.target.dataset.idx);
+        var c = loadCustom();
+        if (c[cardId]) {
+            c[cardId].splice(idx, 1);
+            saveCustom(c);
+            loadSLTab('realtime');
+        }
+    });
 
     // ════════════════════════════════════════════════════════════
     // Load & switch tab

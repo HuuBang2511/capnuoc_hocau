@@ -1,27 +1,28 @@
 <?php
 namespace app\modules\quanly\models\hocau;
-use app\modules\quanly\base\QuanlyBaseModel;
+use yii\db\ActiveRecord;
 
 /**
  * Model nk_phan_tich_tuan — khớp đúng Excel BM 01.02
- * Đầy đủ tất cả cột NT + NS
+ * Extends ActiveRecord trực tiếp (không qua QuanlyBaseModel)
+ * để tránh UtilityService::convertDateFromMaskedInput() làm hỏng ngay_pt.
  */
-class NkPhanTichTuan extends QuanlyBaseModel
+class NkPhanTichTuan extends ActiveRecord
 {
     // QCVN 01-1:2018/BYT — giới hạn nước sạch (NS)
     const QCVN_NS = [
-        'ns_do_cung'  => 300,
-        'ns_clorua'   => 250,
-        'ns_sulfat'   => 250,
+        'ns_do_cung'     => 300,
+        'ns_clorua'      => 250,
+        'ns_sulfat'      => 250,
         'ns_permanganat' => 2.0,
-        'ns_coliform' => 0,
-        'ns_florua'   => 1.5,
-        'ns_al'       => 0.2,
-        'ns_fe'       => 0.3,
-        'ns_mn'       => 0.1,
-        'ns_amoni'    => 3.0,
-        'ns_nitrat'   => 50.0,
-        'ns_nitrit'   => 3.0,
+        'ns_coliform'    => 0,
+        'ns_florua'      => 1.5,
+        'ns_al'          => 0.2,
+        'ns_fe'          => 0.3,
+        'ns_mn'          => 0.1,
+        'ns_amoni'       => 3.0,
+        'ns_nitrat'      => 50.0,
+        'ns_nitrit'      => 3.0,
     ];
 
     public static function tableName() { return 'nk_phan_tich_tuan'; }
@@ -31,23 +32,23 @@ class NkPhanTichTuan extends QuanlyBaseModel
         return [
             [['ngay_pt'], 'required'],
             ['ngay_pt', 'date', 'format' => 'php:Y-m-d'],
-            [['tuan_so'], 'integer','min'=>1,'max'=>5],
-            [['thang'],   'integer','min'=>1,'max'=>12],
-            [['nam'],     'integer','min'=>2000,'max'=>2099],
+            [['tuan_so'], 'integer', 'min' => 1, 'max' => 5],
+            [['thang'],   'integer', 'min' => 1, 'max' => 12],
+            [['nam'],     'integer', 'min' => 2000, 'max' => 2099],
             // Nước thô (NT)
             [['nt_do_kiem','nt_do_cung','nt_clorua','nt_tss',
                'nt_sulfat','nt_cod','nt_florua',
                'nt_al','nt_fe','nt_mn',
-               'nt_amoni','nt_nitrat','nt_nitrit'], 'number','min'=>0],
-            ['nt_permanganat', 'number','min'=>0],
-            ['nt_coliform',    'integer','min'=>0],
+               'nt_amoni','nt_nitrat','nt_nitrit'], 'number', 'min' => 0],
+            ['nt_permanganat', 'number', 'min' => 0],
+            ['nt_coliform',    'integer', 'min' => 0],
             // Nước sạch (NS)
             [['ns_do_kiem','ns_do_cung','ns_clorua','ns_tss',
                'ns_sulfat','ns_cod','ns_florua',
                'ns_al','ns_fe','ns_mn',
-               'ns_amoni','ns_nitrat','ns_nitrit'], 'number','min'=>0],
-            ['ns_permanganat', 'number','min'=>0],
-            ['ns_coliform',    'integer','min'=>0],
+               'ns_amoni','ns_nitrat','ns_nitrit'], 'number', 'min' => 0],
+            ['ns_permanganat', 'number', 'min' => 0],
+            ['ns_coliform',    'integer', 'min' => 0],
             [['ghi_chu','nguoi_pt','nguoi_nhap','nguoi_kt'], 'string'],
         ];
     }
@@ -57,7 +58,6 @@ class NkPhanTichTuan extends QuanlyBaseModel
         return [
             'ngay_pt'        => 'Ngày phân tích',
             'tuan_so'        => 'Tuần số',
-            // NT
             'nt_do_kiem'     => 'NT Độ kiềm (CaCO3 mg/L)',
             'nt_do_cung'     => 'NT Độ cứng (CaCO3 mg/L)',
             'nt_clorua'      => 'NT Clorua (mg/L)',
@@ -73,7 +73,6 @@ class NkPhanTichTuan extends QuanlyBaseModel
             'nt_cod'         => 'NT COD (mg/L)',
             'nt_coliform'    => 'NT Coliform (VK/100ml)',
             'nt_florua'      => 'NT Florua (µg/L)',
-            // NS
             'ns_do_kiem'     => 'NS Độ kiềm (CaCO3 mg/L)',
             'ns_do_cung'     => 'NS Độ cứng (≤300 CaCO3 mg/L)',
             'ns_clorua'      => 'NS Clorua (≤250 mg/L)',
@@ -89,7 +88,6 @@ class NkPhanTichTuan extends QuanlyBaseModel
             'ns_cod'         => 'NS COD (mg/L)',
             'ns_coliform'    => 'NS Coliform (VK/100ml)',
             'ns_florua'      => 'NS Florua (µg/L)',
-            // Người
             'nguoi_pt'       => 'Người thực hiện',
             'nguoi_kt'       => 'Người kiểm tra',
         ];
@@ -99,51 +97,5 @@ class NkPhanTichTuan extends QuanlyBaseModel
     {
         if (!isset(self::QCVN_NS[$field]) || $this->$field === null) return 'ok';
         return (float)$this->$field > self::QCVN_NS[$field] ? 'bad' : 'ok';
-    }
-
-    /**
-     * Override beforeSave: giữ ngay_pt ở format Y-m-d, không để
-     * QuanlyBaseModel::beforeSave() gọi UtilityService::convertDateFromMaskedInput()
-     * làm hỏng giá trị ngày trước khi INSERT/UPDATE.
-     */
-    public function beforeSave($insert)
-    {
-        // Lưu ngay_pt gốc (Y-m-d) trước khi parent::beforeSave() convert
-        $ngayPtGoc = $this->ngay_pt;
-
-        $result = parent::beforeSave($insert);
-
-        // Restore ngay_pt về Y-m-d sau khi parent có thể đã convert sai
-        if ($ngayPtGoc !== null && $ngayPtGoc !== '') {
-            // Đảm bảo luôn là Y-m-d dù parent convert thành gì
-            $ts = strtotime(str_replace('/', '-', (string)$ngayPtGoc));
-            if ($ts !== false) {
-                $this->ngay_pt = date('Y-m-d', $ts);
-            } else {
-                $this->ngay_pt = $ngayPtGoc;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * Override afterFind: không convert ngay_pt — giữ nguyên Y-m-d từ DB
-     * để controller và view luôn nhận đúng format.
-     */
-    public function afterFind()
-    {
-        // Lưu ngay_pt trước khi parent::afterFind() convert
-        $ngayPtGoc = $this->ngay_pt;
-
-        parent::afterFind();
-
-        // Restore về Y-m-d
-        if ($ngayPtGoc !== null && $ngayPtGoc !== '') {
-            $ts = strtotime(str_replace('/', '-', (string)$ngayPtGoc));
-            if ($ts !== false) {
-                $this->ngay_pt = date('Y-m-d', $ts);
-            }
-        }
     }
 }

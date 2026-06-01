@@ -100,4 +100,50 @@ class NkPhanTichTuan extends QuanlyBaseModel
         if (!isset(self::QCVN_NS[$field]) || $this->$field === null) return 'ok';
         return (float)$this->$field > self::QCVN_NS[$field] ? 'bad' : 'ok';
     }
+
+    /**
+     * Override beforeSave: giữ ngay_pt ở format Y-m-d, không để
+     * QuanlyBaseModel::beforeSave() gọi UtilityService::convertDateFromMaskedInput()
+     * làm hỏng giá trị ngày trước khi INSERT/UPDATE.
+     */
+    public function beforeSave($insert)
+    {
+        // Lưu ngay_pt gốc (Y-m-d) trước khi parent::beforeSave() convert
+        $ngayPtGoc = $this->ngay_pt;
+
+        $result = parent::beforeSave($insert);
+
+        // Restore ngay_pt về Y-m-d sau khi parent có thể đã convert sai
+        if ($ngayPtGoc !== null && $ngayPtGoc !== '') {
+            // Đảm bảo luôn là Y-m-d dù parent convert thành gì
+            $ts = strtotime(str_replace('/', '-', (string)$ngayPtGoc));
+            if ($ts !== false) {
+                $this->ngay_pt = date('Y-m-d', $ts);
+            } else {
+                $this->ngay_pt = $ngayPtGoc;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Override afterFind: không convert ngay_pt — giữ nguyên Y-m-d từ DB
+     * để controller và view luôn nhận đúng format.
+     */
+    public function afterFind()
+    {
+        // Lưu ngay_pt trước khi parent::afterFind() convert
+        $ngayPtGoc = $this->ngay_pt;
+
+        parent::afterFind();
+
+        // Restore về Y-m-d
+        if ($ngayPtGoc !== null && $ngayPtGoc !== '') {
+            $ts = strtotime(str_replace('/', '-', (string)$ngayPtGoc));
+            if ($ts !== false) {
+                $this->ngay_pt = date('Y-m-d', $ts);
+            }
+        }
+    }
 }

@@ -372,9 +372,19 @@ class NhatKyController extends QuanlyBaseController
                         $v = isset($rowData[$cf]) ? $rowData[$cf] : null;
                         $rec->$cf = ($v !== '' && $v !== null) ? (int)$v : null;
                     }
-                    if (!$rec->save(false)) {
-                        $errTxt = date('Y-m-d H:i:s') . ' | ngay_pt=' . $ngayPt
-                            . ' | errors=' . json_encode($rec->errors, JSON_UNESCAPED_UNICODE) . "\n";
+                    $saveResult = $rec->save(false);
+                    $debugLine = date('Y-m-d H:i:s')
+                        . ' | isNew=' . ($rec->isNewRecord ? 'YES' : 'NO')
+                        . ' | ngay_pt=' . $ngayPt
+                        . ' | tuan_so=' . $tuanSo
+                        . ' | save=' . ($saveResult ? 'TRUE' : 'FALSE')
+                        . ' | id=' . $rec->id
+                        . ' | db=' . get_class(\Yii::$app->db)
+                        . ' | dsn=' . \Yii::$app->db->dsn
+                        . "\n";
+                    @file_put_contents('C:/xampp/tmp/pt_save_err.txt', $debugLine, FILE_APPEND);
+                    if (!$saveResult) {
+                        $errTxt = '  errors=' . json_encode($rec->errors, JSON_UNESCAPED_UNICODE) . "\n";
                         @file_put_contents('C:/xampp/tmp/pt_save_err.txt', $errTxt, FILE_APPEND);
                     }
                 }

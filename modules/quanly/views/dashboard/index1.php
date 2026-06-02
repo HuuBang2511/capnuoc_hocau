@@ -1678,6 +1678,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 var rows = data.days.slice(-days);
                 renderTTRows(rows, days);
+                // Auto scroll về cột phải nhất (ngày mới nhất) — cho mobile
+                setTimeout(function() {
+                    var wrap = document.querySelector('#tt-content .tt-scroll-wrap');
+                    if (!wrap) wrap = document.querySelector('#tt-content table');
+                    if (wrap && wrap.parentElement) wrap.parentElement.scrollLeft = wrap.parentElement.scrollWidth;
+                }, 50);
             })
             .catch(function() {
                 document.getElementById('tt-content').innerHTML = '<div class="tt-loading" style="color:#f64e60;"><i class="fa-solid fa-circle-exclamation me-2"></i>Không kết nối được SCADA server</div>';

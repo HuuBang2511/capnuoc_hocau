@@ -128,6 +128,13 @@ $this->params['breadcrumbs'][] = $this->title;
                         'pluginOptions' => ['allowClear' => true],
                 ]) ?>
             </div>
+            <div class="col-lg-3">
+                <?= $form->field($model, 'tinhtrang_id')->widget(Select2::className(), [
+                        'data' => ArrayHelper::map($categories['tinhtrang'], 'id', 'ten'),
+                        'options' => ['placeholder' => 'Trạng thái' ],
+                        'pluginOptions' => ['allowClear' => true],
+                ]) ?>
+            </div>
         </div>
 
         <div class="row">

@@ -158,7 +158,7 @@ class DashboardController extends QuanlyBaseController
         // BẢNG SỰ CỐ MỚI NHẤT (STATUS = 1)
         $recentIncidents = Suco::find()
             ->where(['status' => 1])
-            ->with(['nguyennhansuco', 'loaisuco'])
+            ->with(['nguyennhansuco', 'loaisuco', 'tinhtrang'])
             ->orderBy(['created_at' => SORT_DESC])
             ->limit(8)
             ->all();

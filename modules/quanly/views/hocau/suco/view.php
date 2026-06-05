@@ -83,6 +83,20 @@ if ($model->tinhtrangsuco_id == 3) $statusClass = 'success';
                             ],
                             'cachxuly:ntext',
                             'ghichu:ntext',
+                            [
+                                'attribute' => 'tinhtrang_id',
+                                'label' => 'Trạng thái',
+                                'format' => 'raw',
+                                'value' => (function() use ($model) {
+                                    if (isset($model->tinhtrang) && $model->tinhtrang !== null && isset($model->tinhtrang->ten)) {
+                                        $colors = ['#1bc5bd', '#ffa800', '#f64e60', '#3699ff', '#8950fc', '#181c32', '#e4e6ef', '#00d4ff'];
+                                        $colorIdx = (($model->tinhtrang_id - 1) % count($colors));
+                                        $color = $colors[$colorIdx];
+                                        return '<span class="badge" style="background-color:' . $color . ';color:#fff;padding:5px 12px;font-size:0.85rem;">' . \yii\helpers\Html::encode($model->tinhtrang->ten) . '</span>';
+                                    }
+                                    return '<span class="badge bg-secondary" style="padding:5px 12px;font-size:0.85rem;">Chưa cập nhật</span>';
+                                })(),
+                            ],
                         ],
                     ]) ?>
                 </div>

@@ -615,11 +615,26 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
                                 <td><?= $sc->nguyennhansuco ? $sc->nguyennhansuco->ten : '-' ?></td>
                                 <td><?= Yii::$app->formatter->asDate($sc->created_at,'php:d/m/Y H:i') ?></td>
                                 <td>
-                                    <?php if($sc->status==1): ?>
-                                        <span class="badge bg-light text-success fw-bold px-3 py-2">Hoàn thành</span>
-                                    <?php else: ?>
-                                        <span class="badge bg-light text-danger fw-bold px-3 py-2">Đang xử lý</span>
-                                    <?php endif; ?>
+                                    <?php
+                                        $colors = [
+                                            ['bg' => '#c9f7f5', 'text' => '#1bc5bd'], // xanh ngọc
+                                            ['bg' => '#fff4de', 'text' => '#ffa800'], // cam
+                                            ['bg' => '#ffe2e5', 'text' => '#f64e60'], // đỏ
+                                            ['bg' => '#e1f0ff', 'text' => '#3699ff'], // xanh dương
+                                            ['bg' => '#d4edda', 'text' => '#28a745'], // xanh lá
+                                            ['bg' => '#d1ecf1', 'text' => '#17a2b8'], // cyan
+                                            ['bg' => '#eee5ff', 'text' => '#8950fc'], // tím
+                                            ['bg' => '#fce8e6', 'text' => '#ea4335'], // đỏ nhạt
+                                        ];
+                                        if ($sc->tinhtrang !== null && isset($sc->tinhtrang->ten)) {
+                                            $ttId = (int)$sc->tinhtrang_id;
+                                            $colorIdx = $ttId > 0 ? ($ttId - 1) % count($colors) : 0;
+                                            $ttColor = $colors[$colorIdx];
+                                            echo '<span class="badge fw-bold px-3 py-2" style="background:' . $ttColor['bg'] . ';color:' . $ttColor['text'] . ';font-size:.78rem;">' . Html::encode($sc->tinhtrang->ten) . '</span>';
+                                        } else {
+                                            echo '<span class="badge fw-bold px-3 py-2" style="background:#f3f6f9;color:#7e8299;font-size:.78rem;">Chưa cập nhật</span>';
+                                        }
+                                    ?>
                                 </td>
                                 <td class="text-end pe-4">
                                     <a href="<?= Url::to(['hocau/suco/view','id'=>$sc->id]) ?>" class="btn btn-icon btn-sm btn-light-primary"><i class="fa-solid fa-arrow-right"></i></a>

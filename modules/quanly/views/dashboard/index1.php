@@ -630,7 +630,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
                                             $ttId = (int)$sc->tinhtrang_id;
                                             $colorIdx = $ttId > 0 ? ($ttId - 1) % count($colors) : 0;
                                             $ttColor = $colors[$colorIdx];
-                                            echo '<span class="badge fw-bold px-3 py-2" style="background:' . $ttColor['bg'] . ';color:' . $ttColor['text'] . ';font-size:.78rem;">' . Html::encode($sc->tinhtrang->ten) . '</span>';
+                                            echo '<span class="badge fw-bold px-3 py-2" style="background:' . $ttColor['bg'] . ';color:' . $ttColor['text'] . ';font-size:.78rem;">' . \yii\helpers\Html::encode($sc->tinhtrang->ten) . '</span>';
                                         } else {
                                             echo '<span class="badge fw-bold px-3 py-2" style="background:#f3f6f9;color:#7e8299;font-size:.78rem;">Chưa cập nhật</span>';
                                         }

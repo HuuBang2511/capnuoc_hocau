@@ -154,54 +154,9 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
 .btn-save{width:100%;padding:13px;background:#3b82f6;color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:600;cursor:pointer}
 .flash-ok{background:#dcfce7;color:#166534;padding:9px 14px;margin-bottom:0;font-size:.85rem}
 @media(max-width:768px){.cl-calc-grid{grid-template-columns:1fr}.ng-grid{grid-template-columns:1fr}}
-
-/* ===== PRINT ===== */
-.print-header{display:none}
-@media print{
-    .hn-nav,.qnav-bar,.hn-ca-sw,.hn-shortcuts,.flash-ok,.btn-save,button[type=submit],.jar-card,.cl-calc-grid{display:none!important}
-    .print-header{display:block!important;margin-bottom:8px}
-
-    .hn-card{border:none!important;overflow:visible!important;border-radius:0!important}
-    .hn-ca-header{font-size:7pt!important;padding:3px 6px!important;border-radius:0!important}
-    .hn-tbl{font-size:6pt!important}
-    .hn-tbl th{padding:2px 1px!important;font-size:5.5pt!important;line-height:1.1!important}
-    .hn-tbl td{padding:1px 2px!important}
-    .hn-tbl input[type=number]{width:28px!important;font-size:5.5pt!important;padding:0!important;border:none!important;background:transparent!important}
-    .hn-tbl tr.bq-row td{background:#fafab0!important}
-    .nguoi-card{padding:5px!important;font-size:7.5pt!important;margin-top:5px!important}
-    .nk-field input{padding:2px 4px!important;font-size:7.5pt!important;border:1px solid #ccc!important}
-    @page{size:A4 landscape;margin:8mm}
-    *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
-}
 </style>
 
 <div class="hn-wrap">
-<!-- PRINT HEADER -->
-<div class="print-header">
-<table style="width:100%;border:1.5px solid #000;border-collapse:collapse;margin-bottom:6px;font-family:Arial,sans-serif;">
-    <tr>
-        <td rowspan="3" style="width:14%;border:1px solid #000;padding:4px;text-align:center;vertical-align:middle;">
-            <img src="<?= Yii::$app->homeUrl ?>images/logo_tuanloc.jpg" style="height:55px;width:auto;" /><br>
-            <span style="font-size:6.5pt;font-weight:700;color:#1e3a5f;">CONG TY CP CAP NUOC<br>HO CAU MOI</span>
-        </td>
-        <td rowspan="3" style="border:1px solid #000;padding:4px;text-align:center;vertical-align:middle;">
-            <div style="font-size:13pt;font-weight:700;letter-spacing:.02em;">NHAT KY PHAN TICH HANG NGAY</div>
-            <div style="font-size:8pt;margin-top:3px;color:#334155;"><?= date('d/m/Y', strtotime($ngay)) ?> &mdash; <?= $tenCa ?></div>
-        </td>
-        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;width:18%;">Ma so:</td>
-        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;width:18%;"></td>
-    </tr>
-    <tr>
-        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;">Ngay ban hanh:</td>
-        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;"></td>
-    </tr>
-    <tr>
-        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;">Ngay sua doi:</td>
-        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;"></td>
-    </tr>
-</table>
-</div>
-
     <div class="hn-nav">
         <?php for ($i = 2; $i >= 0; $i--):
             $d   = date('Y-m-d', strtotime('-' . $i . ' days'));
@@ -429,16 +384,29 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
         </div>
 
         <div class="nguoi-card" style="margin-top:16px;">
-            <div style="font-size:.85rem;font-weight:700;color:#334155;margin-bottom:10px;">👤 Người thực hiện</div>
-            <div class="ng-grid">
-                <div class="nk-field">
-                    <label>Người trực ca <?= $ca == 1 ? 'sáng' : 'đêm' ?></label>
-                    <input type="text" name="nguoi_truc" value="<?= Html::encode($nguoiTruc) ?>" placeholder="Họ và tên..." />
+            <div style="font-size:.85rem;font-weight:700;color:#334155;margin-bottom:12px;">👤 Người thực hiện</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+
+                <div style="text-align:center;">
+                    <div style="font-size:.78rem;color:#64748b;margin-bottom:4px;">Người trực ca <?= $ca == 1 ? 'sáng' : 'đêm' ?></div>
+                    <input type="text" name="nguoi_truc" value="<?= Html::encode($nguoiTruc) ?>"
+                           placeholder="Họ và tên..."
+                           style="width:100%;padding:6px 10px;border:none;border-bottom:1.5px solid #94a3b8;
+                                  border-radius:0;font-size:.9rem;outline:none;text-align:center;
+                                  background:transparent;box-sizing:border-box;" />
+                    <div style="font-size:.7rem;color:#94a3b8;margin-top:28px;">(Ký, ghi rõ họ tên)</div>
                 </div>
-                <div class="nk-field">
-                    <label>Người kiểm tra (Checked by)</label>
-                    <input type="text" name="nguoi_kt" value="<?= Html::encode($nguoiKt) ?>" placeholder="Họ và tên..." />
+
+                <div style="text-align:center;">
+                    <div style="font-size:.78rem;color:#64748b;margin-bottom:4px;">Người kiểm tra (Checked by)</div>
+                    <input type="text" name="nguoi_kt" value="<?= Html::encode($nguoiKt) ?>"
+                           placeholder="Họ và tên..."
+                           style="width:100%;padding:6px 10px;border:none;border-bottom:1.5px solid #94a3b8;
+                                  border-radius:0;font-size:.9rem;outline:none;text-align:center;
+                                  background:transparent;box-sizing:border-box;" />
+                    <div style="font-size:.7rem;color:#94a3b8;margin-top:28px;">(Ký, ghi rõ họ tên)</div>
                 </div>
+
             </div>
         </div>
 

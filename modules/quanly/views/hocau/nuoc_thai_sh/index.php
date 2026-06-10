@@ -41,9 +41,54 @@ $this->title = 'Nước thải sinh hoạt';
 .nts-badge.warn { background:#fef9c3; color:#854d0e; }
 .nts-badge.bad  { background:#fee2e2; color:#991b1b; }
 @media(max-width:576px){ .nts-grid { grid-template-columns:1fr; } }
+
+/* ===== PRINT ===== */
+.print-header{display:none}
+@media print{
+    .nav-day,.qnav-bar,.flash-ok,.nts-btn,button[type=submit]{display:none!important}
+    .print-header{display:block!important;margin-bottom:8px}
+
+    .nts-wrap{padding:0!important;max-width:100%!important}
+    .nts-card{border:1px solid #ccc!important;border-radius:0!important;padding:8px!important;margin-bottom:6px!important}
+    .nts-field input{border:1px solid #ccc!important;padding:3px 5px!important;font-size:8pt!important;border-radius:0!important}
+    .nts-field label{font-size:7.5pt!important}
+    .nts-hint{font-size:6.5pt!important}
+    .nts-grid{gap:8px!important}
+    .nts-table{font-size:7.5pt!important}
+    .nts-table th,.nts-table td{padding:4px!important}
+    .nts-title{font-size:9pt!important;margin-bottom:6px!important}
+    @page{size:A4 portrait;margin:8mm}
+    *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+}
 </style>
 
 <div class="nts-wrap">
+<!-- PRINT HEADER -->
+<div class="print-header">
+<table style="width:100%;border:1.5px solid #000;border-collapse:collapse;margin-bottom:6px;font-family:Arial,sans-serif;">
+    <tr>
+        <td rowspan="3" style="width:14%;border:1px solid #000;padding:4px;text-align:center;vertical-align:middle;">
+            <img src="<?= Yii::$app->homeUrl ?>images/logo_tuanloc.jpg" style="height:55px;width:auto;" /><br>
+            <span style="font-size:6.5pt;font-weight:700;color:#1e3a5f;">CONG TY CP CAP NUOC<br>HO CAU MOI</span>
+        </td>
+        <td rowspan="3" style="border:1px solid #000;padding:4px;text-align:center;vertical-align:middle;">
+            <div style="font-size:13pt;font-weight:700;letter-spacing:.02em;">NUOC THAI SINH HOAT</div>
+            <div style="font-size:8pt;margin-top:3px;color:#334155;"><?= date('d/m/Y', strtotime($ngay)) ?></div>
+        </td>
+        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;width:18%;">Ma so:</td>
+        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;width:18%;"></td>
+    </tr>
+    <tr>
+        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;">Ngay ban hanh:</td>
+        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;"></td>
+    </tr>
+    <tr>
+        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;">Ngay sua doi:</td>
+        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;"></td>
+    </tr>
+</table>
+</div>
+
     <div class="nav-day">
         <?php for ($i=2;$i>=0;$i--):
             $d = date('Y-m-d', strtotime("-$i days"));

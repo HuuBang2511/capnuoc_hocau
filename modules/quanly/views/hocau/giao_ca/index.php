@@ -50,9 +50,54 @@ $this->title = 'Sổ giao ca — ' . $tenCa;
     .gc-grid3 { grid-template-columns:1fr; }
     .gc-field input { font-size:16px; }
 }
+
+/* ===== PRINT ===== */
+.print-header{display:none}
+@media print{
+    .gc-day-nav,.qnav-bar,.ca-switch,.flash-ok,.gc-btn,button[type=submit]{display:none!important}
+    .print-header{display:block!important;margin-bottom:8px}
+
+    .gc-wrap{padding:0!important;max-width:100%!important}
+    .gc-card{border:1px solid #ccc!important;border-radius:0!important;padding:8px!important;margin-bottom:6px!important}
+    .gc-field input,.gc-field textarea{border:1px solid #ccc!important;padding:3px 5px!important;font-size:8pt!important;border-radius:0!important}
+    .gc-field label{font-size:7.5pt!important;color:#333!important}
+    .gc-section{font-size:7.5pt!important;margin:6px 0 4px!important;padding-bottom:2px!important;border-bottom:1px solid #ddd!important}
+    .gc-subsection{font-size:7pt!important;padding:1px 4px!important;margin:3px 0!important}
+    .gc-calc{font-size:7pt!important;margin-top:1px!important}
+    .gc-grid{gap:6px!important}.gc-grid3{gap:6px!important}
+    textarea{height:24px!important;resize:none!important}
+    @page{size:A4 portrait;margin:8mm}
+    *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+}
 </style>
 
 <div class="gc-wrap">
+<!-- PRINT HEADER -->
+<div class="print-header">
+<table style="width:100%;border:1.5px solid #000;border-collapse:collapse;margin-bottom:6px;font-family:Arial,sans-serif;">
+    <tr>
+        <td rowspan="3" style="width:14%;border:1px solid #000;padding:4px;text-align:center;vertical-align:middle;">
+            <img src="<?= Yii::$app->homeUrl ?>images/logo_tuanloc.jpg" style="height:55px;width:auto;" /><br>
+            <span style="font-size:6.5pt;font-weight:700;color:#1e3a5f;">CONG TY CP CAP NUOC<br>HO CAU MOI</span>
+        </td>
+        <td rowspan="3" style="border:1px solid #000;padding:4px;text-align:center;vertical-align:middle;">
+            <div style="font-size:13pt;font-weight:700;letter-spacing:.02em;">SO GIAO CA</div>
+            <div style="font-size:8pt;margin-top:3px;color:#334155;"><?= date('d/m/Y', strtotime($ngay)) ?> &mdash; <?= $tenCa ?></div>
+        </td>
+        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;width:18%;">Ma so:</td>
+        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;width:18%;"></td>
+    </tr>
+    <tr>
+        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;">Ngay ban hanh:</td>
+        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;"></td>
+    </tr>
+    <tr>
+        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;">Ngay sua doi:</td>
+        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;"></td>
+    </tr>
+</table>
+</div>
+
 
     <!-- Thanh chọn ngày -->
     <div class="gc-day-nav">

@@ -613,7 +613,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
                                     <small class="text-muted"><i class="fa-solid fa-location-dot me-1"></i> <?= $sc->vitri ?></small>
                                 </td>
                                 <td><?= $sc->nguyennhansuco ? $sc->nguyennhansuco->ten : '-' ?></td>
-                                <td><?= $sc->n_phathien ? Yii::$app->formatter->asDate($sc->n_phathien, 'php:d/m/Y H:i') : '<i class="text-muted" style="font-size: 0.85em;">Chưa nhập ngày phát hiện</i>' ?></td>
+                                <td><?= $sc->n_phathien ? Yii::$app->formatter->asDate(str_replace('/', '-', $sc->n_phathien), 'php:d/m/Y H:i') : '<i class="text-muted" style="font-size: 0.85em;">Chưa nhập ngày phát hiện</i>' ?></td>
                                 <td>
                                     <?php
                                         $colors = [

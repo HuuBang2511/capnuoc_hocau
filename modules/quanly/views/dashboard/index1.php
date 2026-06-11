@@ -1189,17 +1189,33 @@ document.addEventListener('DOMContentLoaded', function() {
         try { localStorage.setItem(LS_TBL, JSON.stringify(c)); } catch(e) {}
     }
 
-    // ── Custom channels localStorage ─────────────────────────────
-    // Cấu trúc: { tbn: [{id:'Wincc01_Level', label:'Mực Nước Hồ'}, ...], nm: [...], nt5: [...] }
+    // ── Custom channels — DB-backed, localStorage cache ─────────────
+    // DB la nguon chinh; localStorage chi la cache tranh fetch lai khi chua doi
     var LS_CUSTOM = 'rt_custom_cfg';
+    var RT_CUSTOM_API = '/iot_api.php?action=rt_custom&key=' + IOT_KEY;
+
     function loadCustom() {
         try {
             var v = JSON.parse(localStorage.getItem(LS_CUSTOM));
             return (v && typeof v === 'object') ? v : {tbn:[], nm:[], nt5:[]};
         } catch(e) { return {tbn:[], nm:[], nt5:[]}; }
     }
-    function saveCustom(c) {
+    function saveCustomCache(c) {
         try { localStorage.setItem(LS_CUSTOM, JSON.stringify(c)); } catch(e) {}
+    }
+
+    // Fetch config tu DB, cap nhat cache, re-render
+    function syncCustomFromDB(callback) {
+        fetch(RT_CUSTOM_API)
+            .then(function(r){ return r.json(); })
+            .then(function(data) {
+                saveCustomCache(data);
+                if (typeof callback === 'function') callback(data);
+            })
+            .catch(function(e) {
+                console.warn('rt_custom sync fail:', e);
+                if (typeof callback === 'function') callback(loadCustom());
+            });
     }
 
     function renderRealtime(slData) {
@@ -1278,7 +1294,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var customList = (loadCustom()[cardId] || []).map(function(item, idx) {
                 return '<div class="rt-gear-item" style="justify-content:space-between;">' +
                     '<span style="color:#3699ff;">&#x25C6; ' + item.label + '</span>' +
-                    '<button class="rt-custom-del" data-card="' + cardId + '" data-idx="' + idx + '" title="Xóa">' +
+                    '<button class="rt-custom-del" data-card="' + cardId + '" data-idx="' + idx + '" data-chanid="' + item.id + '" title="Xóa">' +
                         '&#10005;' +
                     '</button>' +
                 '</div>';
@@ -1533,29 +1549,54 @@ document.addEventListener('DOMContentLoaded', function() {
         var chid   = wrap.querySelector('.rt-add-chid').value.trim();
         var label  = wrap.querySelector('.rt-add-label').value.trim();
         if (!chid || !label) { alert('Vui lòng nhập Channel ID và Tên hiển thị'); return; }
-        var c = loadCustom();
-        if (!c[cardId]) c[cardId] = [];
-        // Kiểm tra trùng channel ID trong card
-        var dup = false;
-        c[cardId].forEach(function(x){ if (x.id === chid) dup = true; });
-        if (dup) { alert('Channel ID "' + chid + '" đã có trong card này'); return; }
-        c[cardId].push({id: chid, label: label});
-        saveCustom(c);
-        // Reload realtime để hiện thông số mới
-        loadSLTab('realtime');
+        btn.disabled = true;
+        btn.textContent = 'Đang lưu...';
+        fetch(RT_CUSTOM_API, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({action:'add', card_id:cardId, channel_id:chid, label:label})
+        })
+        .then(function(r){ return r.json(); })
+        .then(function(res) {
+            btn.disabled = false;
+            btn.textContent = '\u002B Thêm thông số';
+            if (res.success) {
+                wrap.querySelector('.rt-add-chid').value = '';
+                wrap.querySelector('.rt-add-label').value = '';
+                syncCustomFromDB(function() { loadSLTab('realtime'); });
+            } else {
+                alert(res.msg || 'Lỗi khi lưu');
+            }
+        })
+        .catch(function() {
+            btn.disabled = false;
+            btn.textContent = '\u002B Thêm thông số';
+            alert('Không kết nối được server');
+        });
     };
 
     // Xóa custom channel
     document.addEventListener('click', function(e) {
         if (!e.target.classList.contains('rt-custom-del')) return;
         var cardId = e.target.dataset.card;
-        var idx    = parseInt(e.target.dataset.idx);
-        var c = loadCustom();
-        if (c[cardId]) {
-            c[cardId].splice(idx, 1);
-            saveCustom(c);
-            loadSLTab('realtime');
+        var chanId = e.target.dataset.chanid;
+        if (!chanId) {
+            // fallback: lay tu idx neu khong co chanid
+            var idx = parseInt(e.target.dataset.idx);
+            var c   = loadCustom();
+            if (c[cardId] && c[cardId][idx]) chanId = c[cardId][idx].id;
         }
+        if (!chanId) return;
+        fetch(RT_CUSTOM_API, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({action:'delete', card_id:cardId, channel_id:chanId})
+        })
+        .then(function(r){ return r.json(); })
+        .then(function() {
+            syncCustomFromDB(function() { loadSLTab('realtime'); });
+        })
+        .catch(function() { alert('Không kết nối được server'); });
     });
 
     // ════════════════════════════════════════════════════════════
@@ -1665,7 +1706,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.getElementById('sl-kpi-row').style.display = 'none';
-    loadSLTab('realtime');
+    // Sync custom config tu DB truoc khi render lan dau
+    syncCustomFromDB(function() { loadSLTab('realtime'); });
 
     setInterval(function() {
         if (!document.hidden) {

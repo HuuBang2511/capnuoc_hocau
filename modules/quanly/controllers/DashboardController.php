@@ -185,4 +185,106 @@ class DashboardController extends QuanlyBaseController
             'recentIncidents' => $recentIncidents
         ]);
     }
+    /**
+     * actionApiRtCustom — GET: tra ve config, POST: luu/xoa
+     * Route: /quanly/dashboard/api-rt-custom
+     *
+     * GET  → {"tbn":[{id,label,thu_tu},...], "nm":[...], "nt5":[...]}
+     * POST → {"action":"add",    "card_id":"tbn","channel_id":"Wincc01_Level","label":"Mực Nước Hồ"}
+     * POST → {"action":"delete", "card_id":"tbn","channel_id":"Wincc01_Level"}
+     * POST → {"action":"reorder","card_id":"tbn","items":[{"channel_id":"...","thu_tu":0},...]}
+     */
+    public function actionApiRtCustom()
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $db = Yii::$app->db;
+
+        // ── GET: tra ve toan bo config ────────────────────────
+        if (Yii::$app->request->isGet) {
+            $rows = $db->createCommand(
+                'SELECT card_id, channel_id, label, thu_tu
+                 FROM rt_custom_config
+                 ORDER BY card_id ASC, thu_tu ASC, id ASC'
+            )->queryAll();
+
+            $result = array('tbn' => array(), 'nm' => array(), 'nt5' => array());
+            foreach ($rows as $row) {
+                $cid = $row['card_id'];
+                if (isset($result[$cid])) {
+                    $result[$cid][] = array(
+                        'id'    => $row['channel_id'],
+                        'label' => $row['label'],
+                    );
+                }
+            }
+            return $result;
+        }
+
+        // ── POST: add / delete / reorder ──────────────────────
+        if (Yii::$app->request->isPost) {
+            $body    = Yii::$app->request->rawBody;
+            $data    = json_decode($body, true);
+            $action  = isset($data['action'])     ? trim($data['action'])     : '';
+            $cardId  = isset($data['card_id'])     ? trim($data['card_id'])    : '';
+            $chanId  = isset($data['channel_id']) ? trim($data['channel_id']) : '';
+            $label   = isset($data['label'])       ? trim($data['label'])      : '';
+
+            $validCards = array('tbn', 'nm', 'nt5');
+            if (!in_array($cardId, $validCards)) {
+                Yii::$app->response->statusCode = 400;
+                return array('success' => false, 'msg' => 'card_id khong hop le');
+            }
+
+            if ($action === 'add') {
+                if (empty($chanId) || empty($label)) {
+                    Yii::$app->response->statusCode = 400;
+                    return array('success' => false, 'msg' => 'Thieu channel_id hoac label');
+                }
+                // Validate channel_id: chi cho phep alphanumeric va underscore
+                if (!preg_match('/^[a-zA-Z0-9_]+$/', $chanId)) {
+                    Yii::$app->response->statusCode = 400;
+                    return array('success' => false, 'msg' => 'channel_id khong hop le');
+                }
+                // thu_tu = max hien tai + 1
+                $maxThuTu = (int)$db->createCommand(
+                    'SELECT COALESCE(MAX(thu_tu), -1) FROM rt_custom_config WHERE card_id = :cid',
+                    array(':cid' => $cardId)
+                )->queryScalar();
+
+                try {
+                    $db->createCommand()->insert('rt_custom_config', array(
+                        'card_id'    => $cardId,
+                        'channel_id' => $chanId,
+                        'label'      => mb_substr($label, 0, 100),
+                        'thu_tu'     => $maxThuTu + 1,
+                    ))->execute();
+                    return array('success' => true);
+                } catch (\Exception $e) {
+                    // UNIQUE constraint: channel da ton tai trong card nay
+                    Yii::$app->response->statusCode = 409;
+                    return array('success' => false, 'msg' => 'Channel da co trong card nay');
+                }
+            }
+
+            if ($action === 'delete') {
+                if (empty($chanId)) {
+                    Yii::$app->response->statusCode = 400;
+                    return array('success' => false, 'msg' => 'Thieu channel_id');
+                }
+                $db->createCommand()->delete('rt_custom_config', array(
+                    'card_id'    => $cardId,
+                    'channel_id' => $chanId,
+                ))->execute();
+                return array('success' => true);
+            }
+
+            Yii::$app->response->statusCode = 400;
+            return array('success' => false, 'msg' => 'action khong hop le');
+        }
+
+        Yii::$app->response->statusCode = 405;
+        return array('success' => false, 'msg' => 'Method not allowed');
+    }
+
 }

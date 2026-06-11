@@ -1192,7 +1192,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ── Custom channels — DB-backed, localStorage cache ─────────────
     // DB la nguon chinh; localStorage chi la cache tranh fetch lai khi chua doi
     var LS_CUSTOM = 'rt_custom_cfg';
-    var RT_CUSTOM_API = '/iot_api.php?action=rt_custom&key=' + IOT_KEY;
+    var RT_CUSTOM_API = '/quanly/dashboard/api-rt-custom';
 
     function loadCustom() {
         try {

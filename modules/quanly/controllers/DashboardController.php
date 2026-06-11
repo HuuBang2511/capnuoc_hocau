@@ -29,6 +29,27 @@ use yii\helpers\Url;
 
 class DashboardController extends QuanlyBaseController
 {
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        // Disable CSRF cho API endpoint (JS goi truc tiep)
+        $behaviors['verifier'] = [
+            'class' => \yii\filters\VerbFilter::class,
+            'actions' => [
+                'api-rt-custom' => ['GET', 'POST'],
+            ],
+        ];
+        return $behaviors;
+    }
+
+    public function beforeAction($action)
+    {
+        if ($action->id === 'api-rt-custom') {
+            Yii::$app->controller->enableCsrfValidation = false;
+        }
+        return parent::beforeAction($action);
+    }
+
     public function actionIndex()
     {
         // --- PHẦN 1: KPI 10 ĐỐI TƯỢNG (STATUS = 1) ---
@@ -158,7 +179,7 @@ class DashboardController extends QuanlyBaseController
         // BẢNG SỰ CỐ MỚI NHẤT (STATUS = 1)
         $recentIncidents = Suco::find()
             ->where(['status' => 1])
-            ->with(['nguyennhansuco', 'loaisuco', 'tinhtrang'])
+            ->with(['nguyennhansuco', 'loaisuco'])
             ->orderBy(['created_at' => SORT_DESC])
             ->limit(8)
             ->all();

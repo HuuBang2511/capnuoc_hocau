@@ -1755,7 +1755,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.tt-days-btn').forEach(function(b){ b.classList.remove('active'); });
         document.getElementById('tt-content').innerHTML = '<div class="tt-loading"><div class="sl-spinner"></div> Đang tải...</div>';
 
-        fetch(IOT_BASE + '?action=sanluong&loai=thatthoat&key=' + IOT_KEY)
+        var daysNeeded = Math.ceil((new Date() - new Date(from)) / 86400000) + 2;
+daysNeeded = Math.max(35, Math.min(daysNeeded, 90));
+fetch(IOT_BASE + '?action=sanluong&loai=thatthoat&so_ngay=' + daysNeeded + '&key=' + IOT_KEY)
             .then(function(r){ return r.json(); })
             .then(function(data) {
                 if (!data.days || !data.days.length) {

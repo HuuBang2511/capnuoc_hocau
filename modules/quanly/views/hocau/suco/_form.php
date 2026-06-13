@@ -268,7 +268,25 @@ const overlayers = {
     format: 'image/png',
     transparent: true,
     maxZoom: 22 
-})
+}),
+    "Ống phân phối": L.tileLayer.wms('https://cello.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
+        layers: 'capnuoc_hocau:network_ongphanphoi',
+        format: 'image/png',
+        transparent: true,
+        maxZoom: 22
+    }),
+    "Ống truyền dẫn": L.tileLayer.wms('https://cello.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
+        layers: 'capnuoc_hocau:network_ongtruyendan',
+        format: 'image/png',
+        transparent: true,
+        maxZoom: 22
+    }),
+    "Ống dân sinh": L.tileLayer.wms('https://cello.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms', {
+        layers: 'capnuoc_hocau:network_ongdansinh',
+        format: 'image/png',
+        transparent: true,
+        maxZoom: 22
+    })
 }
 
 L.control.layers(baseLayers, overlayers).addTo(map);

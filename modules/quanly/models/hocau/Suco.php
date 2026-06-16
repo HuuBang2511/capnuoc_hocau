@@ -71,7 +71,7 @@ class Suco extends QuanlyBaseModel
             [['vitri', 'd_phathien', 'd_xuly', 'nguyennhan'], 'string', 'max' => 50],
             [['loai', 'mataisan'], 'string', 'max' => 255],
             [['cachxuly'], 'string', 'max' => 100],
-            [['ghichu'], 'string', 'max' => 200],
+            [['ghichu'], 'string', 'max' => 500],
             [['loaisuco_id'], 'exist', 'skipOnError' => true, 'targetClass' => DmSucoLoai::className(), 'targetAttribute' => ['loaisuco_id' => 'id']],
             [['nguyennhansuco_id'], 'exist', 'skipOnError' => true, 'targetClass' => DmSucoNguyennhan::className(), 'targetAttribute' => ['nguyennhansuco_id' => 'id']],
             [['tinhtrangsuco_id'], 'exist', 'skipOnError' => true, 'targetClass' => DmSucoTinhtrang::className(), 'targetAttribute' => ['tinhtrangsuco_id' => 'id']],

@@ -14,6 +14,23 @@ use app\modules\quanly\components\SanLuongDongHoExcel;
 
 class NhatKyController extends QuanlyBaseController
 {
+    /**
+     * Cho phep gateway SCADA (192.168.31.6) goi actionApiSanLuong
+     * ma khong can session login.
+     */
+    public function beforeAction($action)
+    {
+        if ($action->id === 'api-san-luong') {
+            $ip = Yii::$app->request->userIP;
+            if ($ip === '192.168.31.6') {
+                // Goi Yii\base\Controller::beforeAction de chay attach behavior
+                // nhung SKIP auth check cua BaseController
+                return \yii\base\Controller::beforeAction($action);
+            }
+        }
+        return parent::beforeAction($action);
+    }
+
     public function actionBaoCao()
     {
         return $this->render('/hocau/bao_cao/index');

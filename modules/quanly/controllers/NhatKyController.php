@@ -17,16 +17,34 @@ class NhatKyController extends QuanlyBaseController
     /**
      * Cho phep gateway SCADA (192.168.31.6) goi actionApiSanLuong
      * ma khong can session login.
+     * Override behaviors() de them guestAllowed cho action nay khi tu IP gateway.
      */
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        // Neu request tu SCADA gateway, bo qua access control cho api-san-luong
+        $ip = Yii::$app->request->userIP;
+        if ($ip === '192.168.31.6') {
+            // Xoa tat ca access filter de gateway goi duoc khong can login
+            foreach ($behaviors as $name => $behavior) {
+                $class = is_array($behavior) ? ($behavior['class'] ?? '') : '';
+                if (strpos($class, 'Access') !== false || strpos($class, 'Auth') !== false) {
+                    unset($behaviors[$name]);
+                }
+            }
+        }
+        return $behaviors;
+    }
+
     public function beforeAction($action)
     {
-        if ($action->id === 'api-san-luong') {
-            $ip = Yii::$app->request->userIP;
-            if ($ip === '192.168.31.6') {
-                // Goi Yii\base\Controller::beforeAction de chay attach behavior
-                // nhung SKIP auth check cua BaseController
-                return \yii\base\Controller::beforeAction($action);
-            }
+        // SCADA gateway (192.168.31.6) duoc phep goi api-san-luong khong can login
+        // Skip TOAN BO parent::beforeAction (bao gom BaseController auth check)
+        if ($action->id === 'api-san-luong'
+            && Yii::$app->request->userIP === '192.168.31.6') {
+            // Goi Yii\base\Controller::beforeAction de chay behaviors/events
+            // nhung KHONG goi BaseController::beforeAction (co auth check)
+            return \yii\web\Controller::beforeAction($action);
         }
         return parent::beforeAction($action);
     }

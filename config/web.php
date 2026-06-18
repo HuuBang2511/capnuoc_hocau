@@ -9,7 +9,7 @@ $config = [
     'timeZone' => 'Asia/Ho_Chi_Minh',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
-//    'layout' => 'main',
+    //    'layout' => 'main',
     // 'language' => 'vi-VN',
     // 'sourceLanguage' => 'en-US',
     'defaultRoute' => 'quanly/dashboard/index',
@@ -91,7 +91,7 @@ $config = [
         ],
         'urlManager' => [
             'enablePrettyUrl' => true,
-//            'enableStrictParsing' => true,
+            //            'enableStrictParsing' => true,
             'showScriptName' => false,
             'rules' => [
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'user'],
@@ -142,14 +142,21 @@ $config = [
         'class' => \yii\filters\AccessControl::className(),
         'rules' => [
             [
-//                'controllers' => ['site'],
+                // SCADA gateway duoc phep goi api-san-luong khong can login
+                'controllers' => ['quanly/nhat-ky'],
+                'actions' => ['api-san-luong'],
+                'allow' => true,
+                'ips' => ['192.168.31.6'],
+            ],
+            [
+                //                'controllers' => ['site'],
                 'actions' => ['login', 'register'],
                 'allow' => true,
             ],
             [
                 'controllers' => ['quanly/map'],
                 'allow' => true,
-//                'actions' => ['index'], // Chỉ cho phép truy cập action index trong controller API
+                //                'actions' => ['index'], // Chỉ cho phép truy cập action index trong controller API
                 'roles' => ['?'], // Cho phép truy cập không cần đăng nhập
             ],
             [
@@ -196,7 +203,7 @@ $config['modules']['gridview'] = [
 
 $config['modules']['gii'] = [
     'class' => 'yii\gii\Module',
-//    'allowedIPs' => ['127.0.0.1', '::1', '192.168.0.*', '192.168.178.20'],
+    //    'allowedIPs' => ['127.0.0.1', '::1', '192.168.0.*', '192.168.178.20'],
     'generators' => [
         'DCrud' => [
             'class' => 'app\widgets\crud\generators\Generator',

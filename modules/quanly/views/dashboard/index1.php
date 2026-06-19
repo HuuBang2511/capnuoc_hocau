@@ -1787,10 +1787,13 @@ fetch(IOT_BASE + '?action=sanluong&loai=thatthoat&so_ngay=' + daysNeeded + '&key
     function renderTTRows(rows, days) {
         var today    = new Date();
         var todayStr = today.toLocaleDateString('vi-VN', {day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'/');
+        var todayIso = today.toISOString().slice(0, 10); // YYYY-MM-DD — loai khoi tinh TB
 
-        var validRows    = rows.filter(function(d){ return d.ti_le !== null && d.ti_le !== undefined && d.nuoc_cap > 0 && d.nuoc_kh > 0; });
-        var sumRaw       = rows.reduce(function(s,d){ return s+(d.nuoc_tho||0); }, 0);
-        var sumCap       = rows.reduce(function(s,d){ return s+(d.nuoc_cap||0); }, 0);
+        // rowsForAvg: bo ngay hom nay vi chua chot, tinh vao se sai TB
+        var rowsForAvg   = rows.filter(function(d){ return d.ngay !== todayIso; });
+        var validRows    = rowsForAvg.filter(function(d){ return d.ti_le !== null && d.ti_le !== undefined && d.nuoc_cap > 0 && d.nuoc_kh > 0; });
+        var sumRaw       = rowsForAvg.reduce(function(s,d){ return s+(d.nuoc_tho||0); }, 0);
+        var sumCap       = rowsForAvg.reduce(function(s,d){ return s+(d.nuoc_cap||0); }, 0);
         var sumKH        = validRows.reduce(function(s,d){ return s+(d.nuoc_kh||0); }, 0);
         var sumNRW       = validRows.reduce(function(s,d){ return s+(d.that_thoat||0); }, 0);
         var sumCapValid  = validRows.reduce(function(s,d){ return s+(d.nuoc_cap||0); }, 0);

@@ -617,8 +617,17 @@ class NhatKyController extends QuanlyBaseController
                 if ($sl !== null) { $tongTong += $sl; $countNgay++; }
             }
 
+            // Tong: tinh toan bo ngay (ke ca hom nay chua chot)
+            // TB/ngay: chi chia cho so ngay da chot (bo ngay hom nay)
+            $today = date('Y-m-d');
+            $countNgayForAvg = 0;
+            foreach ($ngayList as $ngay) {
+                if ($ngay !== $today && $rowData['ngay_data'][$ngay] !== null) {
+                    $countNgayForAvg++;
+                }
+            }
             $rowData['tong']    = $countNgay > 0 ? round($tongTong) : null;
-            $rowData['tb_ngay'] = $countNgay > 0 ? round($tongTong / $countNgay) : null;
+            $rowData['tb_ngay'] = $countNgayForAvg > 0 ? round($tongTong / $countNgayForAvg) : null;
             $rows[] = $rowData;
         }
 

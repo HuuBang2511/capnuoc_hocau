@@ -1854,7 +1854,7 @@ fetch(IOT_BASE + '?action=sanluong&loai=thatthoat&so_ngay=' + daysNeeded + '&key
                 var sumVal = (row.key==='nuoc_kh'||row.key==='that_thoat') ? (row.key==='nuoc_kh'?sumKH:sumNRW) : (row.sum||0);
                 var cntForAvg = (row.key==='nuoc_kh'||row.key==='that_thoat')
                     ? validRows.length
-                    : rows.filter(function(d){ return (d[row.key]||0)>0; }).length;
+                    : rowsForAvg.filter(function(d){ return (d[row.key]||0)>0; }).length;
                 var tbVal = cntForAvg > 0 ? sumVal / cntForAvg : 0;
                 var fmtInt = function(v){ return v>0 ? Math.round(v).toLocaleString('vi-VN') : '—'; };
                 sumCell = '<td class="tt-sum-col ' + (row.valCls||'') + '">' + fmtInt(sumVal) + '</td>' +

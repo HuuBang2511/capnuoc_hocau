@@ -17,14 +17,13 @@ function getWeeksPT($m, $y) {
 }
 $weeks = getWeeksPT($thang, $nam);
 
-// Map tuan_so => array of records (nhiều bản ghi / tuần)
+// Map tuan_so => array of records
 $tuanMap = [];
 foreach ($lichTuan as $r) {
     $tuanMap[$r->tuan_so][] = $r;
 }
 
-// Cột bảng — khớp đúng DB
-// [field_nt, field_ns, label, qcvn_ns_max, step]
+// Cột bảng — [field_nt, field_ns, label, qcvn_ns_max, step]
 $COLS = [
     ['nt_do_kiem',     'ns_do_kiem',     'Độ kiềm<br><small>Alkalinity<br>CaCO3 mg/L</small>', null,  '0.1'],
     ['nt_do_cung',     'ns_do_cung',     'Độ cứng<br><small>Hardness<br>CaCO3 mg/L</small>',   300,   '0.1'],
@@ -42,6 +41,10 @@ $COLS = [
     ['nt_coliform',    'ns_coliform',    'Coliform<br><small>VK/100ml</small>',                  0,     '1'],
     ['nt_florua',      'ns_florua',      'Florua<br><small>µg/L</small>',                        1.5,   '0.001'],
 ];
+
+// Chia cột cho 2 trang in
+$COLS_P1 = array_slice($COLS, 0, 8);  // Độ kiềm → Amoni
+$COLS_P2 = array_slice($COLS, 8);      // Nitrat → Florua
 ?>
 <style>
 .pt-wrap{max-width:100%;padding:12px 8px}
@@ -86,33 +89,47 @@ $COLS = [
 
 /* ===== PRINT ===== */
 .print-header{display:none}
+.print-block{display:none}  /* Các bảng print-only — ẩn trên màn hình */
 @media print{
     .qnav-bar,.nav-thang,.pt-nav,.flash-ok,button[type=submit],input[type=submit]{display:none!important}
-    .print-header{display:block!important;margin-bottom:8px}
-
-    /* Bỏ overflow để bảng hiện đủ khi in */
-    .tbl-wrap{overflow:visible!important;width:100%!important}
-
-    /* Scale toàn bộ bảng data vừa trang A4 landscape */
-    .pt-card .tbl-wrap{
-        transform-origin:top left;
-        transform:scale(0.62);
-        width:161%!important; /* 100/0.62 ≈ 161 — bù lại space sau scale */
-        margin-bottom:-38%!important; /* kéo content phía dưới lên bù khoảng trống */
-    }
-
-    *{font-size:7pt!important}
-    table{font-size:6.5pt!important}
-    th,td{padding:2px 3px!important}
-    input[type=number],input[type=text]{width:40px!important;font-size:6pt!important;padding:1px!important;border:none!important;background:transparent!important}
-    input[type=date]{width:70px!important;font-size:6pt!important;padding:1px!important;border:none!important;background:transparent!important}
+    .print-header{display:block!important;margin-bottom:6px}
+    /* Ẩn bảng gốc có overflow-x scroll, hiện các bảng print */
+    .tbl-wrap{display:none!important}
+    .print-block{display:block!important}
+    /* Ngắt trang trước bảng thứ 2 */
+    .print-page-2{page-break-before:always}
     @page{size:A4 landscape;margin:8mm}
     *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+    .pt-wrap{padding:0!important}
+    .pt-card{padding:4px!important;margin-bottom:4px!important;border-radius:0!important;border:none!important;box-shadow:none!important}
+    .pt-title{display:none!important}
+    /* Style bảng khi in */
+    .print-tbl{width:100%;border-collapse:collapse}
+    .print-tbl th{padding:3px 4px;text-align:center;border:1px solid #94a3b8;white-space:normal;font-weight:700;line-height:1.2;font-size:7pt}
+    .print-tbl th small{font-size:5.5pt}
+    .print-tbl th.h-main{background:#1e3a5f;color:#fff}
+    .print-tbl th.h-nt{background:#0369a1;color:#fff}
+    .print-tbl th.h-ns{background:#166534;color:#fff}
+    .print-tbl td{padding:3px 4px;border:1px solid #cbd5e1;text-align:center;vertical-align:middle;font-size:7.5pt}
+    .print-tbl td.tuan-cell{background:#f8fafc!important;font-weight:700;font-size:7pt;padding:3px 5px;white-space:nowrap}
+    .print-tbl td.ngay-cell{background:#f8fafc!important;font-size:7pt;padding:2px 4px}
+    .print-tbl td.nt-col{background:#f0f9ff!important}
+    .print-tbl td.ns-col{background:#f0fdf4!important}
+    .print-tbl tr.bq-row td{background:#fffbeb!important;font-weight:700}
+    .print-tbl tr.bq-month td{background:#fef9c3!important;font-weight:700}
+    .print-tbl tr.row-2 td.nt-col{background:#e0f2fe!important}
+    .print-tbl tr.row-2 td.ns-col{background:#dcfce7!important}
+    .print-tbl tr.row-3 td.nt-col{background:#bae6fd!important}
+    .print-tbl tr.row-3 td.ns-col{background:#bbf7d0!important}
+    /* Người thực hiện */
+    .nguoi-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:20px!important;margin-top:12px}
+    .nk-field input{font-size:9pt!important;border:none!important;border-bottom:1.5px solid #000!important;border-radius:0!important;padding:3px 4px!important;width:100%!important;background:transparent!important}
+    .nk-field label{font-size:7.5pt!important;color:#64748b}
 }
 </style>
 
 <div class="pt-wrap">
-<!-- PRINT HEADER -->
+<!-- PRINT HEADER (ẩn trên màn hình, hiện khi in) -->
 <div class="print-header">
 <table style="width:100%;border:1.5px solid #000;border-collapse:collapse;margin-bottom:6px;font-family:Arial,sans-serif;">
     <tr>
@@ -178,6 +195,9 @@ $COLS = [
                 <span style="float:right;font-size:.72rem;color:#94a3b8;font-weight:400">BM.01.02</span>
             </div>
 
+            <!-- ====================================================
+                 BẢNG GỐC — hiện trên màn hình (scrollable), ẩn khi in
+                 ==================================================== -->
             <div class="tbl-wrap">
             <table class="pt-tbl">
                 <thead>
@@ -193,16 +213,12 @@ $COLS = [
                 <tbody>
                 <?php foreach ($weeks as $tuanSo => $weekInfo):
                     $recs = isset($tuanMap[$tuanSo]) ? $tuanMap[$tuanSo] : [];
-                    // Đảm bảo đúng 3 hàng
                     while (count($recs) < 3) $recs[] = null;
                     $recs = array_slice($recs, 0, 3);
                     $s = date('d/m', strtotime($weekInfo['start']));
                     $e = date('d/m', strtotime($weekInfo['end']));
-                    // Tính BQ 3 ngày của tuần này
                     $tuanBqSums = []; $tuanBqCnts = [];
-                    foreach ($COLS as $ci => $c) {
-                        $tuanBqSums[$ci] = [0, 0]; $tuanBqCnts[$ci] = [0, 0];
-                    }
+                    foreach ($COLS as $ci => $c) { $tuanBqSums[$ci] = [0, 0]; $tuanBqCnts[$ci] = [0, 0]; }
                     foreach ($recs as $rec) {
                         if (!$rec) continue;
                         foreach ($COLS as $ci => $c) {
@@ -212,9 +228,7 @@ $COLS = [
                         }
                     }
                 ?>
-                <?php foreach ($recs as $ri => $rec):
-                    $rowClass = 'row-' . ($ri + 1);
-                ?>
+                <?php foreach ($recs as $ri => $rec): $rowClass = 'row-' . ($ri + 1); ?>
                 <tr class="<?= $rowClass ?>">
                     <?php if ($ri === 0): ?>
                     <td class="tuan-cell" rowspan="3">
@@ -223,12 +237,10 @@ $COLS = [
                     </td>
                     <?php endif; ?>
                     <td class="ngay-cell">
-                        <input type="date"
-                               name="rows[<?= $tuanSo ?>][<?= $ri ?>][ngay_pt]"
+                        <input type="date" name="rows[<?= $tuanSo ?>][<?= $ri ?>][ngay_pt]"
                                value="<?= Html::encode($rec !== null ? $rec->ngay_pt : '') ?>" />
                         <?php if ($rec !== null): ?>
-                        <input type="hidden" name="rows[<?= $tuanSo ?>][<?= $ri ?>][id]"
-                               value="<?= $rec->id ?>" />
+                        <input type="hidden" name="rows[<?= $tuanSo ?>][<?= $ri ?>][id]" value="<?= $rec->id ?>" />
                         <?php endif; ?>
                     </td>
                     <?php foreach ($COLS as $ci => $c):
@@ -238,14 +250,12 @@ $COLS = [
                         $badNs = ($qc !== null && $vns !== null && ($qc == 0 ? (float)$vns > 0 : (float)$vns > $qc));
                     ?>
                     <td class="nt-col">
-                        <input type="number"
-                               name="rows[<?= $tuanSo ?>][<?= $ri ?>][<?= $fnt ?>]"
+                        <input type="number" name="rows[<?= $tuanSo ?>][<?= $ri ?>][<?= $fnt ?>]"
                                value="<?= $vnt !== null ? Html::encode($vnt) : '' ?>"
                                step="<?= $step ?>" inputmode="decimal" />
                     </td>
                     <td class="ns-col">
-                        <input type="number"
-                               name="rows[<?= $tuanSo ?>][<?= $ri ?>][<?= $fns ?>]"
+                        <input type="number" name="rows[<?= $tuanSo ?>][<?= $ri ?>][<?= $fns ?>]"
                                value="<?= $vns !== null ? Html::encode($vns) : '' ?>"
                                step="<?= $step ?>" inputmode="decimal"
                                class="<?= $badNs ? 'bad' : '' ?>"
@@ -268,11 +278,8 @@ $COLS = [
                 <?php endforeach; ?>
                 <!-- BQ tháng -->
                 <?php
-                // Tính BQ tổng tháng
                 $monthSums = []; $monthCnts = [];
-                foreach ($COLS as $ci => $c) {
-                    $monthSums[$ci] = [0,0]; $monthCnts[$ci] = [0,0];
-                }
+                foreach ($COLS as $ci => $c) { $monthSums[$ci] = [0,0]; $monthCnts[$ci] = [0,0]; }
                 foreach ($lichTuan as $r) {
                     foreach ($COLS as $ci => $c) {
                         list($fnt,$fns) = $c;
@@ -282,9 +289,7 @@ $COLS = [
                 }
                 ?>
                 <tr class="bq-row" style="border-top:2px solid #cbd5e1">
-                    <td colspan="2" style="font-weight:700;font-size:.75rem;background:#fef9c3">
-                        TB Tháng <?= $thang ?>
-                    </td>
+                    <td colspan="2" style="font-weight:700;font-size:.75rem;background:#fef9c3">TB Tháng <?= $thang ?></td>
                     <?php foreach ($COLS as $ci => $c):
                         $bqNt = $monthCnts[$ci][0] > 0 ? round($monthSums[$ci][0]/$monthCnts[$ci][0],3) : null;
                         $bqNs = $monthCnts[$ci][1] > 0 ? round($monthSums[$ci][1]/$monthCnts[$ci][1],3) : null;
@@ -295,8 +300,129 @@ $COLS = [
                 </tr>
                 </tbody>
             </table>
+            </div><!-- /.tbl-wrap -->
+
+            <?php
+            // ============================================================
+            // TÍNH BQ THÁNG CHO TỪNG NHÓM CỘT (dùng cho 2 bảng print)
+            // ============================================================
+            $bqThangP1 = []; $bqThangP2 = [];
+            foreach ($COLS_P1 as $ci => $c) {
+                list($fnt,$fns) = $c;
+                $sNt=0;$cNt=0;$sNs=0;$cNs=0;
+                foreach ($lichTuan as $r) {
+                    if ($r->$fnt !== null) { $sNt+=$r->$fnt; $cNt++; }
+                    if ($r->$fns !== null) { $sNs+=$r->$fns; $cNs++; }
+                }
+                $bqThangP1[$ci] = [
+                    $cNt>0 ? round($sNt/$cNt,3) : null,
+                    $cNs>0 ? round($sNs/$cNs,3) : null,
+                ];
+            }
+            foreach ($COLS_P2 as $ci => $c) {
+                list($fnt,$fns) = $c;
+                $sNt=0;$cNt=0;$sNs=0;$cNs=0;
+                foreach ($lichTuan as $r) {
+                    if ($r->$fnt !== null) { $sNt+=$r->$fnt; $cNt++; }
+                    if ($r->$fns !== null) { $sNs+=$r->$fns; $cNs++; }
+                }
+                $bqThangP2[$ci] = [
+                    $cNt>0 ? round($sNt/$cNt,3) : null,
+                    $cNs>0 ? round($sNs/$cNs,3) : null,
+                ];
+            }
+
+            // Helper render 1 bảng print
+            function renderPrintBlock($colsSlice, $bqThang, $weeks, $tuanMap, $thang, $nam, $pageClass) {
+                $pageLabel = ($pageClass === '') ? '1/2' : '2/2';
+            ?>
+            <div class="print-block <?= $pageClass ?>">
+                <div style="font-size:8pt;font-weight:700;color:#1e3a5f;margin-bottom:4px;border-bottom:1.5px solid #1e3a5f;padding-bottom:3px;">
+                    KẾT QUẢ CHẤT LƯỢNG NƯỚC HÀNG THÁNG (WEEKLY WATER TEST RESULT)
+                    — Tháng <?= $thang ?> Năm <?= $nam ?>
+                    <span style="margin-left:8px;font-weight:400;font-size:7pt;color:#64748b;">Trang <?= $pageLabel ?></span>
+                    <span style="float:right;font-size:7pt;color:#94a3b8;font-weight:400">BM.01.02</span>
+                </div>
+                <table class="print-tbl">
+                    <thead>
+                        <tr>
+                            <th class="h-main" rowspan="2" style="min-width:55px">Tuần</th>
+                            <th class="h-main" rowspan="2" style="min-width:68px">Ngày PT</th>
+                            <?php foreach ($colsSlice as $c): ?>
+                            <th class="h-nt"><?= $c[2] ?><br><small>NT</small></th>
+                            <th class="h-ns"><?= $c[2] ?><br><small>NS<?= $c[3]!==null?' ≤'.$c[3]:'' ?></small></th>
+                            <?php endforeach; ?>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($weeks as $tuanSo => $weekInfo):
+                        $recs = isset($tuanMap[$tuanSo]) ? $tuanMap[$tuanSo] : [];
+                        while (count($recs) < 3) $recs[] = null;
+                        $recs = array_slice($recs, 0, 3);
+                        $s = date('d/m', strtotime($weekInfo['start']));
+                        $e = date('d/m', strtotime($weekInfo['end']));
+                        // BQ tuần cho slice này
+                        $tBqS=[]; $tBqC=[];
+                        foreach ($colsSlice as $ci=>$c) { $tBqS[$ci]=[0,0]; $tBqC[$ci]=[0,0]; }
+                        foreach ($recs as $rec) {
+                            if (!$rec) continue;
+                            foreach ($colsSlice as $ci=>$c) {
+                                list($fnt,$fns)=$c;
+                                if ($rec->$fnt!==null){$tBqS[$ci][0]+=$rec->$fnt;$tBqC[$ci][0]++;}
+                                if ($rec->$fns!==null){$tBqS[$ci][1]+=$rec->$fns;$tBqC[$ci][1]++;}
+                            }
+                        }
+                    ?>
+                    <?php foreach ($recs as $ri => $rec): $rowClass = 'row-'.($ri+1); ?>
+                    <tr class="<?= $rowClass ?>">
+                        <?php if ($ri === 0): ?>
+                        <td class="tuan-cell" rowspan="3">
+                            Tuần <?= $tuanSo ?><br>
+                            <span style="font-size:5.5pt;font-weight:400;color:#94a3b8"><?= $s ?>–<?= $e ?></span>
+                        </td>
+                        <?php endif; ?>
+                        <td class="ngay-cell"><?= ($rec&&$rec->ngay_pt) ? date('d/m/Y',strtotime($rec->ngay_pt)) : '' ?></td>
+                        <?php foreach ($colsSlice as $ci=>$c):
+                            list($fnt,$fns,$label,$qc,$step)=$c;
+                            $vnt=($rec!==null)?$rec->$fnt:null;
+                            $vns=($rec!==null)?$rec->$fns:null;
+                            $badNs=($qc!==null&&$vns!==null&&($qc==0?(float)$vns>0:(float)$vns>$qc));
+                        ?>
+                        <td class="nt-col"><?= $vnt!==null?$vnt:'' ?></td>
+                        <td class="ns-col"<?= $badNs?' style="color:#dc2626;font-weight:700"':'' ?>><?= $vns!==null?$vns:'' ?></td>
+                        <?php endforeach; ?>
+                    </tr>
+                    <?php endforeach; ?>
+                    <!-- BQ tuần -->
+                    <tr class="bq-row">
+                        <td colspan="2" style="font-size:6.5pt;background:#fffbeb">TB Tuần <?= $tuanSo ?></td>
+                        <?php foreach ($colsSlice as $ci=>$c):
+                            $bNt=$tBqC[$ci][0]>0?round($tBqS[$ci][0]/$tBqC[$ci][0],3):null;
+                            $bNs=$tBqC[$ci][1]>0?round($tBqS[$ci][1]/$tBqC[$ci][1],3):null;
+                        ?>
+                        <td class="nt-col"><?= $bNt!==null?$bNt:'—' ?></td>
+                        <td class="ns-col"><?= $bNs!==null?$bNs:'—' ?></td>
+                        <?php endforeach; ?>
+                    </tr>
+                    <?php endforeach; ?>
+                    <!-- BQ tháng -->
+                    <tr class="bq-month" style="border-top:2px solid #94a3b8">
+                        <td colspan="2" style="font-size:7pt;font-weight:700;background:#fef9c3">TB Tháng <?= $thang ?></td>
+                        <?php foreach ($colsSlice as $ci=>$c): ?>
+                        <td class="nt-col"><?= $bqThang[$ci][0]!==null?$bqThang[$ci][0]:'—' ?></td>
+                        <td class="ns-col"><?= $bqThang[$ci][1]!==null?$bqThang[$ci][1]:'—' ?></td>
+                        <?php endforeach; ?>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
-        </div>
+            <?php } // end renderPrintBlock
+
+            renderPrintBlock($COLS_P1, $bqThangP1, $weeks, $tuanMap, $thang, $nam, '');
+            renderPrintBlock($COLS_P2, $bqThangP2, $weeks, $tuanMap, $thang, $nam, 'print-page-2');
+            ?>
+
+        </div><!-- /.pt-card -->
 
         <div class="pt-card">
             <div style="font-size:.88rem;font-weight:700;color:#334155;margin-bottom:10px;">👤 Người thực hiện</div>

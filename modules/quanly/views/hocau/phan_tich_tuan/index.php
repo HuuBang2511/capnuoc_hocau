@@ -90,10 +90,22 @@ $COLS = [
     .qnav-bar,.nav-thang,.pt-nav,.flash-ok,button[type=submit],input[type=submit]{display:none!important}
     .print-header{display:block!important;margin-bottom:8px}
 
+    /* Bỏ overflow để bảng hiện đủ khi in */
+    .tbl-wrap{overflow:visible!important;width:100%!important}
+
+    /* Scale toàn bộ bảng data vừa trang A4 landscape */
+    .pt-card .tbl-wrap{
+        transform-origin:top left;
+        transform:scale(0.62);
+        width:161%!important; /* 100/0.62 ≈ 161 — bù lại space sau scale */
+        margin-bottom:-38%!important; /* kéo content phía dưới lên bù khoảng trống */
+    }
+
     *{font-size:7pt!important}
     table{font-size:6.5pt!important}
     th,td{padding:2px 3px!important}
     input[type=number],input[type=text]{width:40px!important;font-size:6pt!important;padding:1px!important;border:none!important;background:transparent!important}
+    input[type=date]{width:70px!important;font-size:6pt!important;padding:1px!important;border:none!important;background:transparent!important}
     @page{size:A4 landscape;margin:8mm}
     *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
 }

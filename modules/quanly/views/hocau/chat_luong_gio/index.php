@@ -154,9 +154,53 @@ $nguoiKt   = ($model && $model->nguoi_kt)   ? $model->nguoi_kt   : '';
 .btn-save{width:100%;padding:13px;background:#3b82f6;color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:600;cursor:pointer}
 .flash-ok{background:#dcfce7;color:#166534;padding:9px 14px;margin-bottom:0;font-size:.85rem}
 @media(max-width:768px){.cl-calc-grid{grid-template-columns:1fr}.ng-grid{grid-template-columns:1fr}}
+
+/* ===== PRINT ===== */
+.print-header{display:none}
+@media print{
+    .hn-nav,.qnav-bar,.hn-ca-sw,.hn-shortcuts,.flash-ok,button[type=submit],input[type=submit]{display:none!important}
+    .print-header{display:block!important;margin-bottom:6px}
+    .hn-wrap{padding:0}
+    .hn-ca-header{border-radius:0;margin-bottom:4px}
+    .hn-card{border-radius:0;overflow:visible!important}
+    .cl-calc-grid{grid-template-columns:1fr 1fr}
+    .nguoi-card{border-radius:0}
+    *{font-size:7pt!important}
+    .hn-tbl{font-size:6.5pt!important}
+    th,td{padding:2px 3px!important}
+    input[type=number],input[type=text]{width:40px!important;font-size:6pt!important;padding:1px!important;border:none!important;background:transparent!important}
+    @page{size:A4 landscape;margin:8mm}
+    *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+}
 </style>
 
 <div class="hn-wrap">
+<!-- PRINT HEADER -->
+<div class="print-header">
+<table style="width:100%;border:1.5px solid #000;border-collapse:collapse;margin-bottom:6px;font-family:Arial,sans-serif;">
+    <tr>
+        <td rowspan="3" style="width:14%;border:1px solid #000;padding:4px;text-align:center;vertical-align:middle;">
+            <img src="<?= Yii::$app->homeUrl ?>images/logo_tuanloc.jpg" style="height:55px;width:auto;" /><br>
+            <span style="font-size:6.5pt;font-weight:700;color:#1e3a5f;">CONG TY CP CAP NUOC<br>HO CAU MOI</span>
+        </td>
+        <td rowspan="3" style="border:1px solid #000;padding:4px;text-align:center;vertical-align:middle;">
+            <div style="font-size:13pt;font-weight:700;letter-spacing:.02em;">NHAT KY PHAN TICH HANG NGAY</div>
+            <div style="font-size:8pt;margin-top:3px;color:#334155;"><?= $tenCa ?> — <?= date('d/m/Y', strtotime($ngay)) ?></div>
+        </td>
+        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;width:18%;">Ma so:</td>
+        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;width:18%;"></td>
+    </tr>
+    <tr>
+        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;">Nguoi truc ca:</td>
+        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;"><?= Html::encode($nguoiTruc) ?></td>
+    </tr>
+    <tr>
+        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;">Nguoi kiem tra:</td>
+        <td style="border:1px solid #000;padding:3px 8px;font-size:8pt;"><?= Html::encode($nguoiKt) ?></td>
+    </tr>
+</table>
+</div>
+
     <div class="hn-nav">
         <?php for ($i = 2; $i >= 0; $i--):
             $d   = date('Y-m-d', strtotime('-' . $i . ' days'));

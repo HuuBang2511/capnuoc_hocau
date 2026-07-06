@@ -369,13 +369,17 @@ class NhatKyController extends QuanlyBaseController
                 'ns_sulfat','ns_permanganat','ns_cod','ns_florua',
             ];
 
+            $savedCount    = 0;
+            $skippedNoDate = 0;
+            $failedRows    = [];
+
             foreach ($rows as $tuanSo => $tuanRows) {
                 if (!is_array($tuanRows)) continue;
 
                 foreach ($tuanRows as $ri => $rowData) {
                     if (!is_array($rowData)) continue;
                     $ngayPt = isset($rowData['ngay_pt']) ? trim($rowData['ngay_pt']) : '';
-                    if (!$ngayPt) continue;
+                    if (!$ngayPt) { $skippedNoDate++; continue; }
 
                     $recId = isset($rowData['id']) && $rowData['id'] ? (int)$rowData['id'] : null;
                     $rec   = null;
@@ -407,11 +411,23 @@ class NhatKyController extends QuanlyBaseController
                         $v = isset($rowData[$cf]) ? $rowData[$cf] : null;
                         $rec->$cf = ($v !== '' && $v !== null) ? (int)$v : null;
                     }
-                    $rec->save(false);
+
+                    if ($rec->save(false)) {
+                        $savedCount++;
+                    } else {
+                        $failedRows[] = 'Tuần ' . $tuanSo . ' - dòng ' . ($ri + 1);
+                    }
                 }
             }
 
-            Yii::$app->session->setFlash('success_tuan', 'Đã lưu CL nước tháng ' . $thang . '/' . $nam);
+            if ($savedCount > 0 && empty($failedRows)) {
+                Yii::$app->session->setFlash('success_tuan', 'Đã lưu ' . $savedCount . ' dòng — CL nước tháng ' . $thang . '/' . $nam);
+            } elseif ($savedCount > 0) {
+                Yii::$app->session->setFlash('warning_tuan', 'Đã lưu ' . $savedCount . ' dòng, nhưng LỖI ở: ' . implode(', ', $failedRows));
+            } else {
+                Yii::$app->session->setFlash('error_tuan',
+                    'KHÔNG có dòng nào được lưu! ' . $skippedNoDate . ' dòng bị bỏ qua do CHƯA nhập "Ngày PT" — vui lòng chọn ngày cho từng dòng rồi bấm Lưu lại.');
+            }
             return $this->redirect(['phan-tich-tuan', 'thang' => $thang, 'nam' => $nam]);
         }
 

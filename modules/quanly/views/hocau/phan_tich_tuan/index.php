@@ -182,6 +182,12 @@ $COLS_P2 = array_slice($COLS, 8);      // Nitrat → Florua
     <?php if (Yii::$app->session->hasFlash('success_tuan')): ?>
     <div class="flash-ok">✓ <?= Yii::$app->session->getFlash('success_tuan') ?></div>
     <?php endif; ?>
+    <?php if (Yii::$app->session->hasFlash('warning_tuan')): ?>
+    <div class="flash-ok" style="background:#fef9c3;color:#854d0e;">⚠ <?= Yii::$app->session->getFlash('warning_tuan') ?></div>
+    <?php endif; ?>
+    <?php if (Yii::$app->session->hasFlash('error_tuan')): ?>
+    <div class="flash-ok" style="background:#fee2e2;color:#991b1b;">✗ <?= Yii::$app->session->getFlash('error_tuan') ?></div>
+    <?php endif; ?>
 
     <form method="post" id="form-pt">
         <?= Html::hiddenInput(Yii::$app->request->csrfParam, Yii::$app->request->csrfToken) ?>

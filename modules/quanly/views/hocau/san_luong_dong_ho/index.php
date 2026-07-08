@@ -120,6 +120,7 @@ function renderTable(data) {
     const tongNgay = {};
     ngayList.forEach(ngay => { tongNgay[ngay] = null; });
     let tongAll = 0, countAll = 0;
+    let tbAll = 0;
 
     data.rows.forEach(row => {
         html += '<tr>';
@@ -134,6 +135,7 @@ function renderTable(data) {
             html += `<td class="null-val col-tong">—</td>`;
         }
         html += row.tb_ngay !== null ? `<td class="col-tb">${fmt(row.tb_ngay)}</td>` : `<td class="null-val col-tb">—</td>`;
+        if (row.tb_ngay !== null && row.tb_ngay !== undefined) tbAll += row.tb_ngay;
 
         ngayList.forEach(ngay => {
             const v = row.ngay_data[ngay];
@@ -152,7 +154,7 @@ function renderTable(data) {
     html += '<td class="col-kh">TỔNG</td>';
     html += '<td></td><td></td>';
     html += `<td>${fmt(tongAll)}</td>`;
-    html += '<td></td>';
+    html += `<td>${fmt(tbAll)}</td>`;
     ngayList.forEach(ngay => {
         html += tongNgay[ngay] !== null ? `<td>${fmt(tongNgay[ngay])}</td>` : '<td>—</td>';
     });

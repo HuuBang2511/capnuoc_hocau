@@ -1713,15 +1713,19 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!document.hidden) {
             if (curTab === 'ngay' || curTab === 'realtime') loadSLTab(curTab);
         }
-    }, 60000);
+    }, 300000);
 
     // ════════════════════════════════════════════════════════════
     // BẢNG THẤT THOÁT NƯỚC
     // ════════════════════════════════════════════════════════════
     window.ttCurrentDays = 7;
+    window.ttMode = 'days';       // 'days' hoặc 'range' — dùng để interval refresh đúng chế độ đang xem
+    window.ttRangeFrom = null;
+    window.ttRangeTo = null;
 
     window.loadTTTable = function(days, btn) {
         window.ttCurrentDays = days;
+        window.ttMode = 'days';
         document.querySelectorAll('.tt-days-btn').forEach(function(b){ b.classList.remove('active'); });
         if (btn && btn.classList.contains('tt-days-btn')) btn.classList.add('active');
         document.getElementById('tt-content').innerHTML = '<div class="tt-loading"><div class="sl-spinner"></div> Đang tải...</div>';
@@ -1752,6 +1756,9 @@ document.addEventListener('DOMContentLoaded', function() {
         var to   = document.getElementById('tt-date-to').value;
         if (!from || !to) { alert('Vui lòng chọn đủ từ ngày và đến ngày'); return; }
         if (from > to)    { alert('Từ ngày phải nhỏ hơn đến ngày'); return; }
+        window.ttMode      = 'range';
+        window.ttRangeFrom = from;
+        window.ttRangeTo   = to;
         document.querySelectorAll('.tt-days-btn').forEach(function(b){ b.classList.remove('active'); });
         document.getElementById('tt-content').innerHTML = '<div class="tt-loading"><div class="sl-spinner"></div> Đang tải...</div>';
 
@@ -1876,10 +1883,14 @@ fetch(IOT_BASE + '?action=sanluong&loai=thatthoat&so_ngay=' + daysNeeded + '&key
     loadTTTable(7, null);
 
     setInterval(function() {
-        if (!document.hidden && window.ttCurrentDays) {
-            window.loadTTTable(window.ttCurrentDays, null);
+        if (!document.hidden) {
+            if (window.ttMode === 'range' && window.ttRangeFrom && window.ttRangeTo) {
+                window.loadTTTableRange();
+            } else if (window.ttCurrentDays) {
+                window.loadTTTable(window.ttCurrentDays, null);
+            }
         }
-    }, 60000);
+    }, 300000);
 
 });
 </script>

@@ -1737,7 +1737,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('tt-content').innerHTML = '<div class="tt-loading" style="color:#3d5a78;">Chưa có dữ liệu</div>';
                     return;
                 }
-                var rows = data.days.slice(-days);
+                var rows = data.days.slice(-(days+1)); // N ngày trước + hôm nay = N+1 cột — khớp cách tính của san-luong-dong-ho (tu_ngay = today-N, den_ngay = today)
                 renderTTRows(rows, days);
                 // Auto scroll về cột phải nhất (ngày mới nhất) — cho mobile
                 setTimeout(function() {

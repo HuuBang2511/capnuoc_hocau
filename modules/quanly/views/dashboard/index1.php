@@ -899,7 +899,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 { type: 'line', label: 'Nước sạch (m³)', data: nuocM, borderColor: C.blue, backgroundColor: 'transparent', borderWidth: 2.5, tension: .3, pointRadius: 3, pointBackgroundColor: C.blue, yAxisID: 'y1' },
                 { type: 'bar',  label: 'PAC (kg)',       data: pacM,  backgroundColor: 'rgba(27,197,189,.6)',  borderColor: C.green,  borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
                 { type: 'bar',  label: 'Chlorine (kg)',  data: cloM,  backgroundColor: 'rgba(137,80,252,.6)', borderColor: C.purple, borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
-                { type: 'bar',  label: 'Polymer (kg)',   data: polyM, backgroundColor: 'rgba(255,168,0,.5)',  borderColor: C.amber,  borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
+                { type: 'bar',  label: 'Polymer (kg)',   data: polyM, backgroundColor: 'rgba(255,168,0,.5)',  borderColor: C.amber,  borderWidth: 1, borderRadius: 3, yAxisID: 'yPoly' },
             ]},
             options: { ...darkOpts, responsive: true, maintainAspectRatio: false,
                 plugins: { legend: { labels: { color: '#5a82a8', usePointStyle: true, boxWidth: 8, font: { size: 11 } } } },
@@ -914,6 +914,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         type: 'linear', display: true, position: 'right',
                         ticks: { color: '#3699ff', font: { size: 10 }, callback: function(v){ return fmt(v); } }, grid: { display: false },
                         title: { display: true, text: 'Nước sạch (m³)', color: '#3699ff', font: { size: 10 } }
+                    },
+                    yPoly: {
+                        type: 'linear', display: true, position: 'right',
+                        ticks: { color: '#c08000', font: { size: 10 }, callback: function(v){ return fmt(v); } }, grid: { display: false },
+                        title: { display: true, text: 'Polymer (kg)', color: '#c08000', font: { size: 10 } }
                     }
                 }
             }
@@ -1027,7 +1032,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 { type: 'line', label: 'Nước sạch (m³)', data: mNuoc, borderColor: C.blue, backgroundColor: 'transparent', borderWidth: 2.5, tension: .3, pointRadius: 3, pointBackgroundColor: C.blue, yAxisID: 'y1' },
                 { type: 'bar',  label: 'PAC (kg)',       data: mPac,  backgroundColor: 'rgba(27,197,189,.6)',  borderColor: C.green,  borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
                 { type: 'bar',  label: 'Chlorine (kg)',  data: mClo,  backgroundColor: 'rgba(137,80,252,.6)', borderColor: C.purple, borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
-                { type: 'bar',  label: 'Polymer (kg)',   data: mPoly, backgroundColor: 'rgba(255,168,0,.5)',  borderColor: C.amber,  borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
+                { type: 'bar',  label: 'Polymer (kg)',   data: mPoly, backgroundColor: 'rgba(255,168,0,.5)',  borderColor: C.amber,  borderWidth: 1, borderRadius: 3, yAxisID: 'yPoly' },
             ]},
             options: { ...darkOpts, responsive: true, maintainAspectRatio: false,
                 plugins: { legend: { labels: { color: '#5a82a8', usePointStyle: true, boxWidth: 8, font: { size: 11 } } } },
@@ -1042,6 +1047,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         type: 'linear', display: true, position: 'right',
                         ticks: { color: '#3699ff', font: { size: 10 }, callback: function(v){ return fmt(v); } }, grid: { display: false },
                         title: { display: true, text: 'Nước sạch (m³)', color: '#3699ff', font: { size: 10 } }
+                    },
+                    yPoly: {
+                        type: 'linear', display: true, position: 'right',
+                        ticks: { color: '#c08000', font: { size: 10 }, callback: function(v){ return fmt(v); } }, grid: { display: false },
+                        title: { display: true, text: 'Polymer (kg)', color: '#c08000', font: { size: 10 } }
                     }
                 }
             }
@@ -1146,7 +1156,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 { type: 'line', label: 'Nước (m³)',     data: yNuoc, borderColor: C.blue, backgroundColor: 'transparent', borderWidth: 2.5, tension: .3, pointRadius: 3, pointBackgroundColor: C.blue, yAxisID: 'y1' },
                 { type: 'bar',  label: 'PAC (kg)',      data: yPac,  backgroundColor: 'rgba(27,197,189,.5)',  borderColor: C.green,  borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
                 { type: 'bar',  label: 'Chlorine (kg)', data: yClo,  backgroundColor: 'rgba(137,80,252,.5)',  borderColor: C.purple, borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
-                { type: 'bar',  label: 'Polymer (kg)',  data: yPoly, backgroundColor: 'rgba(255,168,0,.5)',   borderColor: C.amber,  borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
+                { type: 'bar',  label: 'Polymer (kg)',  data: yPoly, backgroundColor: 'rgba(255,168,0,.5)',   borderColor: C.amber,  borderWidth: 1, borderRadius: 3, yAxisID: 'yPoly' },
             ]},
             options: { ...darkOpts, responsive: true, maintainAspectRatio: false,
                 plugins: { legend: { labels: { color: '#5a82a8', usePointStyle: true, boxWidth: 8, font: { size: 11 } } } },
@@ -1161,6 +1171,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         type: 'linear', display: true, position: 'right',
                         ticks: { color: '#3699ff', font: { size: 10 }, callback: function(v){ return fmt(v); } }, grid: { display: false },
                         title: { display: true, text: 'Nước sạch (m³)', color: '#3699ff', font: { size: 10 } }
+                    },
+                    yPoly: {
+                        type: 'linear', display: true, position: 'right',
+                        ticks: { color: '#c08000', font: { size: 10 }, callback: function(v){ return fmt(v); } }, grid: { display: false },
+                        title: { display: true, text: 'Polymer (kg)', color: '#c08000', font: { size: 10 } }
                     }
                 }
             }
@@ -1617,7 +1632,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        var apiLoai = (loai === 'ngay' || loai === 'thang') ? 'ngay' : 'thang';
+        var apiLoai = (loai === 'ngay') ? 'ngay' : (loai === 'thang' ? 'thang' : 'nam');
 
         Promise.all([
             fetch(IOT_BASE + '?action=sanluong&loai=' + apiLoai + '&key=' + IOT_KEY).then(function(r){ return r.json(); }),

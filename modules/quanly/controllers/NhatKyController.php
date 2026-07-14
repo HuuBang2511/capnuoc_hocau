@@ -678,7 +678,7 @@ class NhatKyController extends QuanlyBaseController
 
         $sqlNgay = "
             SELECT ngay::text AS ngay,
-                   SUM(COALESCE(dien_nha_may_cuoi,0) - COALESCE(dien_nha_may_dau,0)) AS dien,
+                   SUM(dien_nha_may_cuoi - dien_nha_may_dau) AS dien,
                    SUM(COALESCE(pac_kg,      0)) AS pac,
                    SUM(COALESCE(chlorine_kg, 0)) AS chlorine,
                    SUM(COALESCE(polymer_kg,  0)) AS polymer
@@ -691,7 +691,7 @@ class NhatKyController extends QuanlyBaseController
 
         $sqlThang = "
             SELECT TO_CHAR(ngay,'YYYY-MM') AS thang,
-                   SUM(COALESCE(dien_nha_may_cuoi,0) - COALESCE(dien_nha_may_dau,0)) AS dien,
+                   SUM(dien_nha_may_cuoi - dien_nha_may_dau) AS dien,
                    SUM(COALESCE(pac_kg,      0)) AS pac,
                    SUM(COALESCE(chlorine_kg, 0)) AS chlorine,
                    SUM(COALESCE(polymer_kg,  0)) AS polymer
@@ -703,7 +703,7 @@ class NhatKyController extends QuanlyBaseController
 
         $sqlNam = "
             SELECT EXTRACT(YEAR FROM ngay)::text AS nam,
-                   SUM(COALESCE(dien_nha_may_cuoi,0) - COALESCE(dien_nha_may_dau,0)) AS dien,
+                   SUM(dien_nha_may_cuoi - dien_nha_may_dau) AS dien,
                    SUM(COALESCE(pac_kg,      0)) AS pac,
                    SUM(COALESCE(chlorine_kg, 0)) AS chlorine,
                    SUM(COALESCE(polymer_kg,  0)) AS polymer

@@ -240,14 +240,20 @@ class NhatKyController extends QuanlyBaseController
             $model->load(Yii::$app->request->post());
             if ($model->save()) {
                 // Cảnh báo nhập liệu bất thường — không chặn lưu, chỉ nhắc kiểm tra lại
+                // Chỉ xét nguồn nào ĐÃ nhập đủ cả Đầu ca lẫn Cuối ca (bỏ qua nếu 1 trong 2 còn trống)
                 $NGUONG_CANH_BAO_DIEN_KWH = 20000; // KWh/ca/nguồn — điều chỉnh nếu cần
-                $diffs = array(
-                    'Nhà máy'  => (float)$model->dien_nha_may_cuoi      - (float)$model->dien_nha_may_dau,
-                    'Trạm bơm' => (float)$model->dien_tram_bom_cuoi     - (float)$model->dien_tram_bom_dau,
-                    'NT5'      => (float)$model->dien_nt5_tang_ap_cuoi  - (float)$model->dien_nt5_tang_ap_dau,
+                $capNguon = array(
+                    'Nhà máy'  => array($model->dien_nha_may_dau,     $model->dien_nha_may_cuoi),
+                    'Trạm bơm' => array($model->dien_tram_bom_dau,    $model->dien_tram_bom_cuoi),
+                    'NT5'      => array($model->dien_nt5_tang_ap_dau, $model->dien_nt5_tang_ap_cuoi),
                 );
                 $canhBao = array();
-                foreach ($diffs as $ten => $d) {
+                foreach ($capNguon as $ten => $cap) {
+                    list($dau, $cuoi) = $cap;
+                    if ($dau === null || $dau === '' || $cuoi === null || $cuoi === '') {
+                        continue; // chưa nhập đủ, chưa đánh giá được — bỏ qua
+                    }
+                    $d = (float)$cuoi - (float)$dau;
                     if ($d < 0) {
                         $canhBao[] = $ten . ': Cuối ca nhỏ hơn Đầu ca (' . number_format($d) . ') — kiểm tra lại';
                     } elseif ($d > $NGUONG_CANH_BAO_DIEN_KWH) {
@@ -697,9 +703,12 @@ class NhatKyController extends QuanlyBaseController
 
         $sqlNgay = "
             SELECT ngay::text AS ngay,
-                   SUM( COALESCE(dien_nha_may_cuoi,0)       - COALESCE(dien_nha_may_dau,0)
-                      + COALESCE(dien_tram_bom_cuoi,0)      - COALESCE(dien_tram_bom_dau,0)
-                      + COALESCE(dien_nt5_tang_ap_cuoi,0)   - COALESCE(dien_nt5_tang_ap_dau,0) ) AS dien,
+                   SUM( CASE WHEN dien_nha_may_cuoi IS NOT NULL AND dien_nha_may_dau IS NOT NULL
+                             THEN dien_nha_may_cuoi - dien_nha_may_dau ELSE 0 END
+                      + CASE WHEN dien_tram_bom_cuoi IS NOT NULL AND dien_tram_bom_dau IS NOT NULL
+                             THEN dien_tram_bom_cuoi - dien_tram_bom_dau ELSE 0 END
+                      + CASE WHEN dien_nt5_tang_ap_cuoi IS NOT NULL AND dien_nt5_tang_ap_dau IS NOT NULL
+                             THEN dien_nt5_tang_ap_cuoi - dien_nt5_tang_ap_dau ELSE 0 END ) AS dien,
                    SUM(COALESCE(pac_kg,      0)) AS pac,
                    SUM(COALESCE(chlorine_kg, 0)) AS chlorine,
                    SUM(COALESCE(polymer_kg,  0)) AS polymer
@@ -712,9 +721,12 @@ class NhatKyController extends QuanlyBaseController
 
         $sqlThang = "
             SELECT TO_CHAR(ngay,'YYYY-MM') AS thang,
-                   SUM( COALESCE(dien_nha_may_cuoi,0)       - COALESCE(dien_nha_may_dau,0)
-                      + COALESCE(dien_tram_bom_cuoi,0)      - COALESCE(dien_tram_bom_dau,0)
-                      + COALESCE(dien_nt5_tang_ap_cuoi,0)   - COALESCE(dien_nt5_tang_ap_dau,0) ) AS dien,
+                   SUM( CASE WHEN dien_nha_may_cuoi IS NOT NULL AND dien_nha_may_dau IS NOT NULL
+                             THEN dien_nha_may_cuoi - dien_nha_may_dau ELSE 0 END
+                      + CASE WHEN dien_tram_bom_cuoi IS NOT NULL AND dien_tram_bom_dau IS NOT NULL
+                             THEN dien_tram_bom_cuoi - dien_tram_bom_dau ELSE 0 END
+                      + CASE WHEN dien_nt5_tang_ap_cuoi IS NOT NULL AND dien_nt5_tang_ap_dau IS NOT NULL
+                             THEN dien_nt5_tang_ap_cuoi - dien_nt5_tang_ap_dau ELSE 0 END ) AS dien,
                    SUM(COALESCE(pac_kg,      0)) AS pac,
                    SUM(COALESCE(chlorine_kg, 0)) AS chlorine,
                    SUM(COALESCE(polymer_kg,  0)) AS polymer
@@ -726,9 +738,12 @@ class NhatKyController extends QuanlyBaseController
 
         $sqlNam = "
             SELECT EXTRACT(YEAR FROM ngay)::text AS nam,
-                   SUM( COALESCE(dien_nha_may_cuoi,0)       - COALESCE(dien_nha_may_dau,0)
-                      + COALESCE(dien_tram_bom_cuoi,0)      - COALESCE(dien_tram_bom_dau,0)
-                      + COALESCE(dien_nt5_tang_ap_cuoi,0)   - COALESCE(dien_nt5_tang_ap_dau,0) ) AS dien,
+                   SUM( CASE WHEN dien_nha_may_cuoi IS NOT NULL AND dien_nha_may_dau IS NOT NULL
+                             THEN dien_nha_may_cuoi - dien_nha_may_dau ELSE 0 END
+                      + CASE WHEN dien_tram_bom_cuoi IS NOT NULL AND dien_tram_bom_dau IS NOT NULL
+                             THEN dien_tram_bom_cuoi - dien_tram_bom_dau ELSE 0 END
+                      + CASE WHEN dien_nt5_tang_ap_cuoi IS NOT NULL AND dien_nt5_tang_ap_dau IS NOT NULL
+                             THEN dien_nt5_tang_ap_cuoi - dien_nt5_tang_ap_dau ELSE 0 END ) AS dien,
                    SUM(COALESCE(pac_kg,      0)) AS pac,
                    SUM(COALESCE(chlorine_kg, 0)) AS chlorine,
                    SUM(COALESCE(polymer_kg,  0)) AS polymer

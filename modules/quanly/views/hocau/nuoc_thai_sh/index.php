@@ -197,7 +197,7 @@ $this->title = 'Nước thải sinh hoạt';
             <tbody>
             <?php foreach ($lichSu as $r): ?>
                 <tr>
-                    <td><?= date('d/m/Y', strtotime($r->ngay)) ?></td>
+                    <td><?= Html::encode($r->ngay) ?></td>
                     <?php foreach (['ph','tss','amoni','nitrat','coliform'] as $f):
                         $st = $r->getStatus($f);
                     ?>

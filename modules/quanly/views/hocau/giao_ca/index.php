@@ -151,6 +151,12 @@ $this->title = 'Sổ giao ca — ' . $tenCa;
         </div>
         <?php endif; ?>
 
+        <?php if (Yii::$app->session->hasFlash('warning')): ?>
+        <div style="background:#fffbeb;color:#92400e;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:.88rem;border:1px solid #fde68a;">
+            ⚠ <?= Yii::$app->session->getFlash('warning') ?>
+        </div>
+        <?php endif; ?>
+
         <?php $form = ActiveForm::begin(['enableClientValidation'=>false]) ?>
         <?= Html::hiddenInput('NkGiaoCa[ngay]', $ngay) ?>
         <?= Html::hiddenInput('NkGiaoCa[ca]', $ca) ?>

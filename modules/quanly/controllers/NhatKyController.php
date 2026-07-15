@@ -239,7 +239,26 @@ class NhatKyController extends QuanlyBaseController
         if (Yii::$app->request->isPost) {
             $model->load(Yii::$app->request->post());
             if ($model->save()) {
-                Yii::$app->session->setFlash('success', 'Đã lưu sổ giao ca');
+                // Cảnh báo nhập liệu bất thường — không chặn lưu, chỉ nhắc kiểm tra lại
+                $NGUONG_CANH_BAO_DIEN_KWH = 20000; // KWh/ca/nguồn — điều chỉnh nếu cần
+                $diffs = array(
+                    'Nhà máy'  => (float)$model->dien_nha_may_cuoi      - (float)$model->dien_nha_may_dau,
+                    'Trạm bơm' => (float)$model->dien_tram_bom_cuoi     - (float)$model->dien_tram_bom_dau,
+                    'NT5'      => (float)$model->dien_nt5_tang_ap_cuoi  - (float)$model->dien_nt5_tang_ap_dau,
+                );
+                $canhBao = array();
+                foreach ($diffs as $ten => $d) {
+                    if ($d < 0) {
+                        $canhBao[] = $ten . ': Cuối ca nhỏ hơn Đầu ca (' . number_format($d) . ') — kiểm tra lại';
+                    } elseif ($d > $NGUONG_CANH_BAO_DIEN_KWH) {
+                        $canhBao[] = $ten . ': chênh lệch ' . number_format($d) . ' KWh — bất thường, kiểm tra lại số đã nhập';
+                    }
+                }
+                if ($canhBao) {
+                    Yii::$app->session->setFlash('warning', 'Đã lưu sổ giao ca, nhưng phát hiện số liệu điện bất thường: ' . implode(' | ', $canhBao));
+                } else {
+                    Yii::$app->session->setFlash('success', 'Đã lưu sổ giao ca');
+                }
                 return $this->redirect(['giao-ca', 'ngay' => $ngay, 'ca' => $ca]);
             }
         }
@@ -678,7 +697,9 @@ class NhatKyController extends QuanlyBaseController
 
         $sqlNgay = "
             SELECT ngay::text AS ngay,
-                   SUM(dien_nha_may_cuoi - dien_nha_may_dau) AS dien,
+                   SUM( COALESCE(dien_nha_may_cuoi,0)       - COALESCE(dien_nha_may_dau,0)
+                      + COALESCE(dien_tram_bom_cuoi,0)      - COALESCE(dien_tram_bom_dau,0)
+                      + COALESCE(dien_nt5_tang_ap_cuoi,0)   - COALESCE(dien_nt5_tang_ap_dau,0) ) AS dien,
                    SUM(COALESCE(pac_kg,      0)) AS pac,
                    SUM(COALESCE(chlorine_kg, 0)) AS chlorine,
                    SUM(COALESCE(polymer_kg,  0)) AS polymer
@@ -691,7 +712,9 @@ class NhatKyController extends QuanlyBaseController
 
         $sqlThang = "
             SELECT TO_CHAR(ngay,'YYYY-MM') AS thang,
-                   SUM(dien_nha_may_cuoi - dien_nha_may_dau) AS dien,
+                   SUM( COALESCE(dien_nha_may_cuoi,0)       - COALESCE(dien_nha_may_dau,0)
+                      + COALESCE(dien_tram_bom_cuoi,0)      - COALESCE(dien_tram_bom_dau,0)
+                      + COALESCE(dien_nt5_tang_ap_cuoi,0)   - COALESCE(dien_nt5_tang_ap_dau,0) ) AS dien,
                    SUM(COALESCE(pac_kg,      0)) AS pac,
                    SUM(COALESCE(chlorine_kg, 0)) AS chlorine,
                    SUM(COALESCE(polymer_kg,  0)) AS polymer
@@ -703,7 +726,9 @@ class NhatKyController extends QuanlyBaseController
 
         $sqlNam = "
             SELECT EXTRACT(YEAR FROM ngay)::text AS nam,
-                   SUM(dien_nha_may_cuoi - dien_nha_may_dau) AS dien,
+                   SUM( COALESCE(dien_nha_may_cuoi,0)       - COALESCE(dien_nha_may_dau,0)
+                      + COALESCE(dien_tram_bom_cuoi,0)      - COALESCE(dien_tram_bom_dau,0)
+                      + COALESCE(dien_nt5_tang_ap_cuoi,0)   - COALESCE(dien_nt5_tang_ap_dau,0) ) AS dien,
                    SUM(COALESCE(pac_kg,      0)) AS pac,
                    SUM(COALESCE(chlorine_kg, 0)) AS chlorine,
                    SUM(COALESCE(polymer_kg,  0)) AS polymer

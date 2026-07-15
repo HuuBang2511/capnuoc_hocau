@@ -809,23 +809,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Tab: Theo Ngày
     // ════════════════════════════════════════════════════════════
     function renderNgay(d, dbData) {
-        if (!d.labels || !d.labels.length) { showEmpty(); return; }
-
-        var idx    = filterByMonth(d.labels);
-        if (!idx.length) { showEmpty(); return; }
-
-        var labels = idx.map(function(i){ return d.labels[i]; });
-        var nuocM  = idx.map(function(i){ return (d.nuoc_sach[i]||0); });
-        var dienM  = idx.map(function(i){ return ((d.dien_nang||[])[i]||0); });
-        var pacM   = idx.map(function(i){ return ((d.pac||[])[i]||0); });
-        var cloM   = idx.map(function(i){ return ((d.chlorin||[])[i]||0); });
-
-        // Merge DB cho điện / hóa chất nếu SCADA = 0
         var dbNgay = (dbData && dbData.ngay_data) ? dbData.ngay_data : [];
-        dienM = mergeWithDb(labels, dienM, dbNgay, 'dien');
-        pacM  = mergeWithDb(labels, pacM,  dbNgay, 'pac');
-        cloM  = mergeWithDb(labels, cloM,  dbNgay, 'chlorine');
-        var polyM = mergeWithDb(labels, [], dbNgay, 'polymer');
+        if (!dbNgay.length) { showEmpty(); return; }
+
+        var now = new Date();
+        var ym  = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+        var rows = dbNgay.filter(function(r){ return r.ngay && r.ngay.indexOf(ym) === 0; });
+        if (!rows.length) { showEmpty(); return; }
+
+        var labels = rows.map(function(r){ return r.ngay; });
+        var nuocM  = rows.map(function(r){ return parseFloat(r.nuoc_sach || 0); });
+        var dienM  = rows.map(function(r){ return parseFloat(r.dien      || 0); });
+        var pacM   = rows.map(function(r){ return parseFloat(r.pac       || 0); });
+        var cloM   = rows.map(function(r){ return parseFloat(r.chlorine  || 0); });
+        var polyM  = rows.map(function(r){ return parseFloat(r.polymer   || 0); });
 
         var totNuoc = nuocM.reduce(function(s,v){return s+(v||0);},0);
         var totDien = dienM.reduce(function(s,v){return s+(v||0);},0);
@@ -929,40 +926,21 @@ document.addEventListener('DOMContentLoaded', function() {
     // Tab: Theo Tháng
     // ════════════════════════════════════════════════════════════
     function renderThang(d, dbData) {
-        if (!d.labels || !d.labels.length) { showEmpty(); return; }
-
-        // Group daily → monthly
-        var monthMap = {};
-        d.labels.forEach(function(lbl, i) {
-            var ym = lbl ? lbl.substring(0,7) : null;
-            if (!ym) return;
-            if (!monthMap[ym]) monthMap[ym] = { nuoc:0, dien:0, pac:0, clo:0, poly:0 };
-            monthMap[ym].nuoc += (d.nuoc_sach[i]||0);
-            monthMap[ym].dien += ((d.dien_nang||[])[i]||0);
-            monthMap[ym].pac  += ((d.pac||[])[i]||0);
-            monthMap[ym].clo  += ((d.chlorin||[])[i]||0);
-        });
-
-        // Merge DB tháng cho điện/hóa chất
         var dbThang = (dbData && dbData.thang_data) ? dbData.thang_data : [];
-        dbThang.forEach(function(row) {
-            var ym = row.thang; // format YYYY-MM
-            if (!monthMap[ym]) monthMap[ym] = { nuoc:0, dien:0, pac:0, clo:0, poly:0 };
-            if (!monthMap[ym].dien && row.dien)     monthMap[ym].dien = parseFloat(row.dien);
-            if (!monthMap[ym].pac  && row.pac)      monthMap[ym].pac  = parseFloat(row.pac);
-            if (!monthMap[ym].clo  && row.chlorine) monthMap[ym].clo  = parseFloat(row.chlorine);
-            if (row.polymer !== undefined && row.polymer !== null) monthMap[ym].poly += parseFloat(row.polymer);
-        });
+        if (!dbThang.length) { showEmpty(); return; }
 
         var yr = String(new Date().getFullYear());
-        var mLabels = Object.keys(monthMap).sort().filter(function(k){ return k.startsWith(yr); });
-        if (!mLabels.length) { showEmpty(); return; }
+        var rows = dbThang
+            .filter(function(r){ return r.thang && r.thang.indexOf(yr) === 0; })
+            .sort(function(a,b){ return a.thang < b.thang ? -1 : (a.thang > b.thang ? 1 : 0); });
+        if (!rows.length) { showEmpty(); return; }
 
-        var mNuoc = mLabels.map(function(k){ return monthMap[k].nuoc; });
-        var mDien = mLabels.map(function(k){ return monthMap[k].dien; });
-        var mPac  = mLabels.map(function(k){ return monthMap[k].pac;  });
-        var mClo  = mLabels.map(function(k){ return monthMap[k].clo;  });
-        var mPoly = mLabels.map(function(k){ return monthMap[k].poly || 0; });
+        var mLabels = rows.map(function(r){ return r.thang; });
+        var mNuoc   = rows.map(function(r){ return parseFloat(r.nuoc_sach || 0); });
+        var mDien   = rows.map(function(r){ return parseFloat(r.dien      || 0); });
+        var mPac    = rows.map(function(r){ return parseFloat(r.pac       || 0); });
+        var mClo    = rows.map(function(r){ return parseFloat(r.chlorine  || 0); });
+        var mPoly   = rows.map(function(r){ return parseFloat(r.polymer   || 0); });
 
         var totNuoc = mNuoc.reduce(function(s,v){return s+(v||0);},0);
         var totDien = mDien.reduce(function(s,v){return s+(v||0);},0);
@@ -1062,36 +1040,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Tab: Theo Năm
     // ════════════════════════════════════════════════════════════
     function renderNam(d, dbData) {
-        if (!d.labels || !d.labels.length) { showEmpty(); return; }
-
-        var yrMap = {};
-        d.labels.forEach(function(lbl, i) {
-            var yr = lbl ? lbl.substring(0,4) : null;
-            if (!yr) return;
-            if (!yrMap[yr]) yrMap[yr] = { nuoc:0, dien:0, pac:0, clo:0, poly:0 };
-            yrMap[yr].nuoc += (d.nuoc_sach[i]||0);
-            yrMap[yr].dien += ((d.dien_nang||[])[i]||0);
-            yrMap[yr].pac  += ((d.pac||[])[i]||0);
-            yrMap[yr].clo  += ((d.chlorin||[])[i]||0);
-        });
-
-        // Merge DB năm
         var dbNam = (dbData && dbData.nam_data) ? dbData.nam_data : [];
-        dbNam.forEach(function(row) {
-            var yr = row.nam;
-            if (!yrMap[yr]) yrMap[yr] = { nuoc:0, dien:0, pac:0, clo:0, poly:0 };
-            if (!yrMap[yr].dien && row.dien)     yrMap[yr].dien = parseFloat(row.dien);
-            if (!yrMap[yr].pac  && row.pac)      yrMap[yr].pac  = parseFloat(row.pac);
-            if (!yrMap[yr].clo  && row.chlorine) yrMap[yr].clo  = parseFloat(row.chlorine);
-            if (row.polymer !== undefined && row.polymer !== null) yrMap[yr].poly += parseFloat(row.polymer);
-        });
+        if (!dbNam.length) { showEmpty(); return; }
 
-        var yLabels = Object.keys(yrMap).sort();
-        var yNuoc   = yLabels.map(function(k){ return yrMap[k].nuoc; });
-        var yDien   = yLabels.map(function(k){ return yrMap[k].dien; });
-        var yPac    = yLabels.map(function(k){ return yrMap[k].pac;  });
-        var yClo    = yLabels.map(function(k){ return yrMap[k].clo;  });
-        var yPoly   = yLabels.map(function(k){ return yrMap[k].poly || 0; });
+        var rows = dbNam.slice().sort(function(a,b){ return a.nam < b.nam ? -1 : (a.nam > b.nam ? 1 : 0); });
+
+        var yLabels = rows.map(function(r){ return r.nam; });
+        var yNuoc   = rows.map(function(r){ return parseFloat(r.nuoc_sach || 0); });
+        var yDien   = rows.map(function(r){ return parseFloat(r.dien      || 0); });
+        var yPac    = rows.map(function(r){ return parseFloat(r.pac       || 0); });
+        var yClo    = rows.map(function(r){ return parseFloat(r.chlorine  || 0); });
+        var yPoly   = rows.map(function(r){ return parseFloat(r.polymer   || 0); });
 
         var totNuoc = yNuoc.reduce(function(s,v){return s+(v||0);},0);
         var totDien = yDien.reduce(function(s,v){return s+(v||0);},0);

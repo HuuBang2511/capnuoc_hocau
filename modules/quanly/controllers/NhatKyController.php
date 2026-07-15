@@ -709,6 +709,8 @@ class NhatKyController extends QuanlyBaseController
                              THEN dien_tram_bom_cuoi - dien_tram_bom_dau ELSE 0 END
                       + CASE WHEN dien_nt5_tang_ap_cuoi IS NOT NULL AND dien_nt5_tang_ap_dau IS NOT NULL
                              THEN dien_nt5_tang_ap_cuoi - dien_nt5_tang_ap_dau ELSE 0 END ) AS dien,
+                   SUM( CASE WHEN nuoc_cap_cuoi IS NOT NULL AND nuoc_cap_dau IS NOT NULL
+                             THEN nuoc_cap_cuoi - nuoc_cap_dau ELSE 0 END ) AS nuoc_sach,
                    SUM(COALESCE(pac_kg,      0)) AS pac,
                    SUM(COALESCE(chlorine_kg, 0)) AS chlorine,
                    SUM(COALESCE(polymer_kg,  0)) AS polymer
@@ -727,6 +729,8 @@ class NhatKyController extends QuanlyBaseController
                              THEN dien_tram_bom_cuoi - dien_tram_bom_dau ELSE 0 END
                       + CASE WHEN dien_nt5_tang_ap_cuoi IS NOT NULL AND dien_nt5_tang_ap_dau IS NOT NULL
                              THEN dien_nt5_tang_ap_cuoi - dien_nt5_tang_ap_dau ELSE 0 END ) AS dien,
+                   SUM( CASE WHEN nuoc_cap_cuoi IS NOT NULL AND nuoc_cap_dau IS NOT NULL
+                             THEN nuoc_cap_cuoi - nuoc_cap_dau ELSE 0 END ) AS nuoc_sach,
                    SUM(COALESCE(pac_kg,      0)) AS pac,
                    SUM(COALESCE(chlorine_kg, 0)) AS chlorine,
                    SUM(COALESCE(polymer_kg,  0)) AS polymer
@@ -744,6 +748,8 @@ class NhatKyController extends QuanlyBaseController
                              THEN dien_tram_bom_cuoi - dien_tram_bom_dau ELSE 0 END
                       + CASE WHEN dien_nt5_tang_ap_cuoi IS NOT NULL AND dien_nt5_tang_ap_dau IS NOT NULL
                              THEN dien_nt5_tang_ap_cuoi - dien_nt5_tang_ap_dau ELSE 0 END ) AS dien,
+                   SUM( CASE WHEN nuoc_cap_cuoi IS NOT NULL AND nuoc_cap_dau IS NOT NULL
+                             THEN nuoc_cap_cuoi - nuoc_cap_dau ELSE 0 END ) AS nuoc_sach,
                    SUM(COALESCE(pac_kg,      0)) AS pac,
                    SUM(COALESCE(chlorine_kg, 0)) AS chlorine,
                    SUM(COALESCE(polymer_kg,  0)) AS polymer

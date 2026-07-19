@@ -418,6 +418,15 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
                 <span id="sl-live-dot" style="width:8px;height:8px;border-radius:50%;background:#1bc5bd;animation:pulse-dot 2s infinite;" title="Live data"></span>
             </h4>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <!-- Bộ lọc khoảng thời gian cho SCADA -->
+                <div id="sl-date-filter" class="tt-controls" style="display:none; align-items:center; gap:8px;">
+                    <input type="date" id="sl-date-from" class="tt-date-input" title="Từ ngày">
+                    <span style="color:#94a3b8;font-size:.75rem;">→</span>
+                    <input type="date" id="sl-date-to" class="tt-date-input" title="Đến ngày" value="<?= date('Y-m-d') ?>">
+                    <button class="tt-days-btn" onclick="applySLFilter()" title="Lọc dữ liệu">
+                        <i class="fa-solid fa-search"></i>
+                    </button>
+                </div>
                 <div class="sl-tabs">
                     <button class="sl-tab" onclick="switchSLTab('ngay',this)">Theo Ngày</button>
                     <button class="sl-tab" onclick="switchSLTab('thang',this)">Theo Tháng</button>
@@ -770,7 +779,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fetch điện + hóa chất từ nk_giao_ca qua api-van-hanh
     function fetchDbData(callback) {
         if (dbCache !== null) { callback(dbCache); return; }
-        fetch('/quanly/nhat-ky/api-van-hanh')
+        var from = document.getElementById('sl-date-from') ? document.getElementById('sl-date-from').value : '';
+        var to = document.getElementById('sl-date-to') ? document.getElementById('sl-date-to').value : '';
+        var url = '<?= \yii\helpers\Url::to(['/quanly/nhat-ky/api-van-hanh']) ?>';
+        if (from && to) {
+            var separator = url.indexOf('?') !== -1 ? '&' : '?';
+            url += separator + 'tu_ngay=' + encodeURIComponent(from) + '&den_ngay=' + encodeURIComponent(to);
+        }
+        fetch(url)
             .then(function(r){ return r.json(); })
             .then(function(d){ dbCache = d; callback(d); })
             .catch(function(){ dbCache = {}; callback({}); });
@@ -812,9 +828,23 @@ document.addEventListener('DOMContentLoaded', function() {
         var dbNgay = (dbData && dbData.ngay_data) ? dbData.ngay_data : [];
         if (!dbNgay.length) { showEmpty(); return; }
 
-        var now = new Date();
-        var ym  = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
-        var rows = dbNgay.filter(function(r){ return r.ngay && r.ngay.indexOf(ym) === 0; });
+        var from = document.getElementById('sl-date-from') ? document.getElementById('sl-date-from').value : '';
+        var to = document.getElementById('sl-date-to') ? document.getElementById('sl-date-to').value : '';
+        var rows;
+        var monthLabel;
+        if (from && to) {
+            rows = dbNgay.filter(function(r){ return r.ngay && r.ngay >= from && r.ngay <= to; });
+            var fmtD = function(str) {
+                var p = str.split('-');
+                return p[2] + '/' + p[1] + '/' + p[0];
+            };
+            monthLabel = 'từ ' + fmtD(from) + ' đến ' + fmtD(to);
+        } else {
+            var now = new Date();
+            var ym  = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+            rows = dbNgay.filter(function(r){ return r.ngay && r.ngay.indexOf(ym) === 0; });
+            monthLabel = 'tháng ' + (now.getMonth()+1) + '/' + now.getFullYear();
+        }
         if (!rows.length) { showEmpty(); return; }
 
         var labels = rows.map(function(r){ return r.ngay; });
@@ -829,9 +859,6 @@ document.addEventListener('DOMContentLoaded', function() {
         var totPac  = pacM.reduce(function(s,v){return s+(v||0);},0);
         var totClo  = cloM.reduce(function(s,v){return s+(v||0);},0);
         var totPoly = polyM.reduce(function(s,v){return s+(v||0);},0); // Đã thêm tổng Poly
-
-        var now = new Date();
-        var monthLabel = 'tháng ' + (now.getMonth()+1) + '/' + now.getFullYear();
 
         setKpiLabels(
             'Tổng nước sạch ' + monthLabel,
@@ -929,10 +956,25 @@ document.addEventListener('DOMContentLoaded', function() {
         var dbThang = (dbData && dbData.thang_data) ? dbData.thang_data : [];
         if (!dbThang.length) { showEmpty(); return; }
 
-        var yr = String(new Date().getFullYear());
-        var rows = dbThang
-            .filter(function(r){ return r.thang && r.thang.indexOf(yr) === 0; })
-            .sort(function(a,b){ return a.thang < b.thang ? -1 : (a.thang > b.thang ? 1 : 0); });
+        var from = document.getElementById('sl-date-from') ? document.getElementById('sl-date-from').value : '';
+        var to = document.getElementById('sl-date-to') ? document.getElementById('sl-date-to').value : '';
+        var rows;
+        var yrLabel;
+        if (from && to) {
+            var fromM = from.substring(0, 7);
+            var toM = to.substring(0, 7);
+            rows = dbThang.filter(function(r){ return r.thang && r.thang >= fromM && r.thang <= toM; });
+            var fmtM = function(str) {
+                var p = str.split('-');
+                return p[1] + '/' + p[0];
+            };
+            yrLabel = 'từ ' + fmtM(fromM) + ' đến ' + fmtM(toM);
+        } else {
+            var yr = String(new Date().getFullYear());
+            rows = dbThang.filter(function(r){ return r.thang && r.thang.indexOf(yr) === 0; });
+            yrLabel = 'năm ' + yr;
+        }
+        rows = rows.sort(function(a,b){ return a.thang < b.thang ? -1 : (a.thang > b.thang ? 1 : 0); });
         if (!rows.length) { showEmpty(); return; }
 
         var mLabels = rows.map(function(r){ return r.thang; });
@@ -947,7 +989,6 @@ document.addEventListener('DOMContentLoaded', function() {
         var totPac  = mPac.reduce(function(s,v){return s+(v||0);},0);
         var totClo  = mClo.reduce(function(s,v){return s+(v||0);},0);
         var totPoly = mPoly.reduce(function(s,v){return s+(v||0);},0); // Đã thêm tổng Poly
-        var yrLabel = 'năm ' + yr;
 
         setKpiLabels(
             'Tổng nước sạch ' + yrLabel,
@@ -1043,7 +1084,21 @@ document.addEventListener('DOMContentLoaded', function() {
         var dbNam = (dbData && dbData.nam_data) ? dbData.nam_data : [];
         if (!dbNam.length) { showEmpty(); return; }
 
-        var rows = dbNam.slice().sort(function(a,b){ return a.nam < b.nam ? -1 : (a.nam > b.nam ? 1 : 0); });
+        var from = document.getElementById('sl-date-from') ? document.getElementById('sl-date-from').value : '';
+        var to = document.getElementById('sl-date-to') ? document.getElementById('sl-date-to').value : '';
+        var rows;
+        var yrLabel;
+        if (from && to) {
+            var fromY = from.substring(0, 4);
+            var toY = to.substring(0, 4);
+            rows = dbNam.filter(function(r){ return r.nam && r.nam >= fromY && r.nam <= toY; });
+            yrLabel = 'từ ' + fromY + ' đến ' + toY;
+        } else {
+            rows = dbNam;
+            yrLabel = 'toàn lịch sử';
+        }
+        rows = rows.slice().sort(function(a,b){ return a.nam < b.nam ? -1 : (a.nam > b.nam ? 1 : 0); });
+        if (!rows.length) { showEmpty(); return; }
 
         var yLabels = rows.map(function(r){ return r.nam; });
         var yNuoc   = rows.map(function(r){ return parseFloat(r.nuoc_sach || 0); });
@@ -1058,7 +1113,13 @@ document.addEventListener('DOMContentLoaded', function() {
         var totCloNam = yClo.reduce(function(s,v){return s+(v||0);},0);
         var totPolyNam= yPoly.reduce(function(s,v){return s+(v||0);},0); // Đã thêm tổng Poly
 
-        setKpiLabels('Tổng nước sạch (toàn lịch sử)', 'Tổng điện năng (toàn lịch sử)', 'Tổng PAC (toàn lịch sử)', 'Tổng Chlorine (toàn lịch sử)', 'Tổng Polymer (toàn lịch sử)');
+        setKpiLabels(
+            'Tổng nước sạch (' + yrLabel + ')',
+            'Tổng điện năng (' + yrLabel + ')',
+            'Tổng PAC (' + yrLabel + ')',
+            'Tổng Chlorine (' + yrLabel + ')',
+            'Tổng Polymer (' + yrLabel + ')'
+        );
         updateKPI(
             fmtN(totNuoc)   + '<span class="sl-kpi-unit">m³</span>',
             fmtN(totDien)   + '<span class="sl-kpi-unit">KWh</span>',
@@ -1073,13 +1134,13 @@ document.addEventListener('DOMContentLoaded', function() {
             '<div class="sl-chart-stack">' +
                 '<div class="sl-card">' +
                     '<div class="sl-card-title"><span class="dot" style="--dot-color:#3699ff;"></span>' +
-                        'Nước sạch & Điện năng theo năm — Toàn bộ dữ liệu' +
+                        'Nước sạch & Điện năng theo năm — ' + (from && to ? 'từ ' + from.substring(0, 4) + ' đến ' + to.substring(0, 4) : 'Toàn bộ dữ liệu') +
                     '</div>' +
                     '<div class="sl-canvas-wrap" style="min-height:300px;"><canvas id="slCumNam"></canvas></div>' +
                 '</div>' +
                 '<div class="sl-card">' +
                     '<div class="sl-card-title"><span class="dot" style="--dot-color:#1bc5bd;"></span>' +
-                        'Hóa chất & Nước sạch / năm' +
+                        'Hóa chất & Nước sạch theo năm — ' + (from && to ? 'từ ' + from.substring(0, 4) + ' đến ' + to.substring(0, 4) : 'Toàn bộ dữ liệu') +
                     '</div>' +
                     '<div class="sl-canvas-wrap" style="min-height:300px;"><canvas id="slNamHoaChat"></canvas></div>' +
                 '</div>' +
@@ -1166,7 +1227,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ── Custom channels — DB-backed, localStorage cache ─────────────
     // DB la nguon chinh; localStorage chi la cache tranh fetch lai khi chua doi
     var LS_CUSTOM = 'rt_custom_cfg';
-    var RT_CUSTOM_API = '/quanly/dashboard/api-rt-custom';
+    var RT_CUSTOM_API = '<?= \yii\helpers\Url::to(['/quanly/dashboard/api-rt-custom']) ?>';
 
     function loadCustom() {
         try {
@@ -1616,15 +1677,47 @@ document.addEventListener('DOMContentLoaded', function() {
             if(document.getElementById(id)) document.getElementById(id).innerHTML = '—';
         });
 
-        // Ẩn/Hiện dòng KPI 5 ô dựa vào loại Tab
+        // Ẩn/Hiện dòng KPI 5 ô dựa vào loại Tab và bộ lọc ngày tháng
         const kpiRow = document.getElementById('sl-kpi-row');
+        const dateFilter = document.getElementById('sl-date-filter');
         if (loai === 'realtime') {
             kpiRow.style.display = 'none'; // Ẩn khi là realtime
+            if (dateFilter) dateFilter.style.display = 'none';
         } else {
             kpiRow.style.display = ''; // Khôi phục hiển thị cho các Tab khác
+            if (dateFilter) dateFilter.style.display = 'flex';
+        }
+
+        // Khởi tạo ngày mặc định nếu chưa chọn
+        if (loai !== 'realtime' && dateFilter) {
+            var fromInput = document.getElementById('sl-date-from');
+            var toInput = document.getElementById('sl-date-to');
+            if (fromInput && !fromInput.value) {
+                var now = new Date();
+                var y = now.getFullYear();
+                var m = String(now.getMonth() + 1).padStart(2, '0');
+                fromInput.value = y + '-' + m + '-01'; // ngày đầu tháng hiện tại
+            }
+            if (toInput && !toInput.value) {
+                var now = new Date();
+                var y = now.getFullYear();
+                var m = String(now.getMonth() + 1).padStart(2, '0');
+                var d = String(now.getDate()).padStart(2, '0');
+                toInput.value = y + '-' + m + '-' + d; // ngày hôm nay
+            }
         }
 
         loadSLTab(loai);
+    };
+
+    window.applySLFilter = function() {
+        var from = document.getElementById('sl-date-from').value;
+        var to = document.getElementById('sl-date-to').value;
+        if (!from || !to) { alert('Vui lòng chọn đầy đủ từ ngày và đến ngày'); return; }
+        if (from > to) { alert('Từ ngày phải nhỏ hơn hoặc bằng đến ngày'); return; }
+        
+        dbCache = null; // xóa cache để fetch lại dữ liệu từ DB theo khoảng ngày đã chọn
+        loadSLTab(curTab);
     };
 
     // ── Gear toggle handler ──────────────────────────────────────

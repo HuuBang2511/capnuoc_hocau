@@ -696,10 +696,18 @@ class NhatKyController extends QuanlyBaseController
         return $result;
     }
 
-    public function actionApiVanHanh()
+    public function actionApiVanHanh($tu_ngay = null, $den_ngay = null)
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         $db = Yii::$app->db;
+
+        $params = [];
+        if ($tu_ngay && $den_ngay) {
+            $whereNgay = "ngay >= :tu_ngay AND ngay <= :den_ngay";
+            $params = [':tu_ngay' => $tu_ngay, ':den_ngay' => $den_ngay];
+        } else {
+            $whereNgay = "ngay >= CURRENT_DATE - INTERVAL '365 days' AND ngay <= CURRENT_DATE";
+        }
 
         $sqlNgay = "
             SELECT ngay::text AS ngay,
@@ -715,11 +723,16 @@ class NhatKyController extends QuanlyBaseController
                    SUM(COALESCE(chlorine_kg, 0)) AS chlorine,
                    SUM(COALESCE(polymer_kg,  0)) AS polymer
             FROM nk_giao_ca
-            WHERE ngay >= CURRENT_DATE - INTERVAL '365 days'
-              AND ngay <= CURRENT_DATE
+            WHERE $whereNgay
             GROUP BY ngay
             ORDER BY ngay ASC
         ";
+
+        if ($tu_ngay && $den_ngay) {
+            $whereThang = "ngay >= :tu_ngay AND ngay <= :den_ngay";
+        } else {
+            $whereThang = "ngay >= DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '23 months'";
+        }
 
         $sqlThang = "
             SELECT TO_CHAR(ngay,'YYYY-MM') AS thang,
@@ -735,10 +748,16 @@ class NhatKyController extends QuanlyBaseController
                    SUM(COALESCE(chlorine_kg, 0)) AS chlorine,
                    SUM(COALESCE(polymer_kg,  0)) AS polymer
             FROM nk_giao_ca
-            WHERE ngay >= DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '23 months'
+            WHERE $whereThang
             GROUP BY TO_CHAR(ngay,'YYYY-MM')
             ORDER BY thang ASC
         ";
+
+        if ($tu_ngay && $den_ngay) {
+            $whereNam = "WHERE ngay >= :tu_ngay AND ngay <= :den_ngay";
+        } else {
+            $whereNam = "";
+        }
 
         $sqlNam = "
             SELECT EXTRACT(YEAR FROM ngay)::text AS nam,
@@ -754,6 +773,7 @@ class NhatKyController extends QuanlyBaseController
                    SUM(COALESCE(chlorine_kg, 0)) AS chlorine,
                    SUM(COALESCE(polymer_kg,  0)) AS polymer
             FROM nk_giao_ca
+            $whereNam
             GROUP BY EXTRACT(YEAR FROM ngay)
             ORDER BY nam ASC
         ";
@@ -771,9 +791,9 @@ class NhatKyController extends QuanlyBaseController
         };
 
         return array(
-            'ngay_data'  => $cast($db->createCommand($sqlNgay)->queryAll(),  'ngay'),
-            'thang_data' => $cast($db->createCommand($sqlThang)->queryAll(), 'thang'),
-            'nam_data'   => $cast($db->createCommand($sqlNam)->queryAll(),   'nam'),
+            'ngay_data'  => $cast($db->createCommand($sqlNgay)->bindValues($params)->queryAll(),  'ngay'),
+            'thang_data' => $cast($db->createCommand($sqlThang)->bindValues($params)->queryAll(), 'thang'),
+            'nam_data'   => $cast($db->createCommand($sqlNam)->bindValues($params)->queryAll(),   'nam'),
         );
     }
 

@@ -419,7 +419,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
             </h4>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                 <!-- Bộ lọc khoảng thời gian cho SCADA -->
-                <div id="sl-date-filter" class="tt-controls" style="display:none; align-items:center; gap:8px;">
+                <div id="sl-date-filter" class="tt-controls" style="display:flex; align-items:center; gap:8px;">
                     <input type="date" id="sl-date-from" class="tt-date-input" title="Từ ngày">
                     <span style="color:#94a3b8;font-size:.75rem;">→</span>
                     <input type="date" id="sl-date-to" class="tt-date-input" title="Đến ngày" value="<?= date('Y-m-d') ?>">
@@ -428,10 +428,10 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.um
                     </button>
                 </div>
                 <div class="sl-tabs">
-                    <button class="sl-tab" onclick="switchSLTab('ngay',this)">Theo Ngày</button>
+                    <button class="sl-tab active" onclick="switchSLTab('ngay',this)">Theo Ngày</button>
                     <button class="sl-tab" onclick="switchSLTab('thang',this)">Theo Tháng</button>
                     <button class="sl-tab" onclick="switchSLTab('nam',this)">Theo Năm</button>
-                    <button class="sl-tab active" onclick="switchSLTab('realtime',this)">Realtime</button>
+                    <button class="sl-tab" onclick="switchSLTab('realtime',this)">Realtime</button>
                 </div>
                 <a href="/quanly/nhat-ky/bao-cao" class="tt-report-btn" title="Báo cáo hàng ngày">
                     <i class="fa-solid fa-file-excel"></i><span>Báo cáo</span>
@@ -711,7 +711,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const IOT_KEY  = 'SCADA_HOCAU_2024_SECRET_KEY';
 
     let slCharts = {};
-    let curTab   = 'realtime';
+    let curTab   = 'ngay';
     // DB data fetch từ api-van-hanh (điện, hóa chất từ nk_giao_ca)
     let dbCache  = null;
 
@@ -1671,7 +1671,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.switchSLTab = function(loai, btn) {
         curTab = loai;
         document.querySelectorAll('.sl-tab').forEach(function(b){ b.classList.remove('active'); });
-        btn.classList.add('active');
+        if (btn) btn.classList.add('active');
         
         ['kpi-nuoc','kpi-dien','kpi-pac','kpi-clo','kpi-poly'].forEach(function(id){
             if(document.getElementById(id)) document.getElementById(id).innerHTML = '—';
@@ -1688,23 +1688,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (dateFilter) dateFilter.style.display = 'flex';
         }
 
-        // Khởi tạo ngày mặc định nếu chưa chọn
-        if (loai !== 'realtime' && dateFilter) {
+        // Xóa trống bộ lọc ngày tháng khi chuyển Tab để khôi phục mặc định của tab đó
+        if (dateFilter) {
             var fromInput = document.getElementById('sl-date-from');
             var toInput = document.getElementById('sl-date-to');
-            if (fromInput && !fromInput.value) {
-                var now = new Date();
-                var y = now.getFullYear();
-                var m = String(now.getMonth() + 1).padStart(2, '0');
-                fromInput.value = y + '-' + m + '-01'; // ngày đầu tháng hiện tại
-            }
-            if (toInput && !toInput.value) {
-                var now = new Date();
-                var y = now.getFullYear();
-                var m = String(now.getMonth() + 1).padStart(2, '0');
-                var d = String(now.getDate()).padStart(2, '0');
-                toInput.value = y + '-' + m + '-' + d; // ngày hôm nay
-            }
+            if (fromInput) fromInput.value = '';
+            if (toInput) toInput.value = '';
+            dbCache = null; // Xóa cache dữ liệu DB để tải lại dữ liệu mặc định không lọc
         }
 
         loadSLTab(loai);
@@ -1772,9 +1762,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    document.getElementById('sl-kpi-row').style.display = 'none';
     // Sync custom config tu DB truoc khi render lan dau
-    syncCustomFromDB(function() { loadSLTab('realtime'); });
+    syncCustomFromDB(function() {
+        var btnNgay = document.querySelector('.sl-tabs .sl-tab');
+        if (btnNgay) {
+            switchSLTab('ngay', btnNgay);
+        } else {
+            switchSLTab('ngay', null);
+        }
+    });
 
     setInterval(function() {
         if (!document.hidden) {

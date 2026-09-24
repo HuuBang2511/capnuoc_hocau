@@ -12,9 +12,9 @@ LeafletDrawAsset::register($this);
 LeafletMeasureAsset::register($this);
 LeafletLocateAsset::register($this);
 
-$geoserverWmsUrl = 'https://cello.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms';
-$geoserverWfsUrl = 'https://cello.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wfs';
-$geoserverWmtsUrl = 'https://cello.capnuochocaumoi.vn/geoserver/gwc/service/wmts';
+$geoserverWmsUrl = 'http://cello.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wms';
+$geoserverWfsUrl = 'http://cello.capnuochocaumoi.vn/geoserver/capnuoc_hocau/wfs';
+$geoserverWmtsUrl = 'http://cello.capnuochocaumoi.vn/geoserver/gwc/service/wmts';
 
 $detailLinks = [
     'network_cocmoc' => Url::to(['/quanly/hocau/cocmoc/view']),

@@ -1781,7 +1781,14 @@ $this->beginPage();
             const layer = document.getElementById('dl-layer').value;
             const fmt = document.getElementById('dl-fmt').value;
             if (!layer) { alert('Vui lòng chọn lớp!'); return; }
-            window.open(`${GEO_WFS}?service=WFS&version=1.0.0&request=GetFeature&typeName=${layer}&outputFormat=${fmt}`, '_blank');
+            const params = new URLSearchParams({
+                service: 'WFS',
+                version: '1.0.0',
+                request: 'GetFeature',
+                typeName: layer,
+                outputFormat: fmt
+            });
+            window.location.assign(`${GEO_WFS}?${params.toString()}`);
         }
 
         // ================================================================
